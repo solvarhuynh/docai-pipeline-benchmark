@@ -1,4 +1,4 @@
-# DocAI Dual-Pipeline Benchmark Dependencies
+# DocAI Document Intelligence Platform — Product & Research Dependencies
 
 # Web API and Validation
 fastapi>=0.110.0
@@ -35,6 +35,5 @@ dash>=2.16.0
 
 # Testing & Quality
 pytest>=8.0.0
-
 
 

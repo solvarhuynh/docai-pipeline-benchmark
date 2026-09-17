@@ -14,7 +14,7 @@ from docai.data.loaders import list_available_datasets
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Khảo sát dữ liệu thô cho DocAI Benchmark")
+    parser = argparse.ArgumentParser(description="Khảo sát dữ liệu thô cho DocAI Product & Research")
     parser.add_argument(
         "--dataset",
         type=str,
@@ -31,7 +31,7 @@ def main():
     args = parser.parse_args()
 
     print("==================================================")
-    print("DOCAI DUAL-PIPELINE BENCHMARK - EDA SURVEY")
+    print("DOCAI PRODUCT & RESEARCH - EDA SURVEY")
     print("==================================================")
     print(f"Thư mục dữ liệu thô: {settings.raw_data_dir}\n")
 

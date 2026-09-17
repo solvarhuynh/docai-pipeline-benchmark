@@ -1,5 +1,5 @@
 """
-Module schema chuẩn hoá cho toàn bộ pipeline DocAI Dual-Pipeline Benchmark.
+Module schema chuẩn hoá cho toàn bộ DocAI Document Intelligence Platform.
 
 Thuộc: Giai đoạn 1 (Khảo sát và chuẩn bị dữ liệu thật) và Giai đoạn 7 (Fraud/Risk Engine).
 Nhiệm vụ: Định nghĩa khung Pydantic model cho JSON schema thống nhất để cả Track A (Classic)

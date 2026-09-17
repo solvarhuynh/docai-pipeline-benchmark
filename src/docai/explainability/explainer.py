@@ -1,5 +1,5 @@
 """
-Module giải thích mô hình (Explainability Layer) cho DocAI Benchmark.
+Module giải thích mô hình (Explainability Layer) cho DocAI Document Intelligence Platform.
 
 Thuộc: Giai đoạn 8 (Explainability Layer).
 Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 8; task-split.md, Giai đoạn 8.

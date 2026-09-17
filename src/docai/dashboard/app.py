@@ -33,15 +33,15 @@ def create_dashboard_app():
 
     app = dash.Dash(
         __name__,
-        title="DocAI Dual-Pipeline Benchmark Dashboard",
+        title="DocAI Document Intelligence Platform",
         suppress_callback_exceptions=True
     )
 
     app.layout = html.Div(
         children=[
-            html.H1("DocAI Dual-Pipeline Benchmark Dashboard", style={"textAlign": "center"}),
+            html.H1("DocAI Document Intelligence Platform", style={"textAlign": "center"}),
             html.P(
-                "Khung trực quan hoá so sánh pipeline Document AI cổ điển và VLM-native "
+                "Khu vực Product và Research Lab cho hệ thống Document AI "
                 "(Stack: Python -> pandas -> Plotly -> Dash).",
                 style={"textAlign": "center"}
             ),

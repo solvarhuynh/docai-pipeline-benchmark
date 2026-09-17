@@ -1,5 +1,5 @@
 """
-FastAPI Service cho hệ thống DocAI Dual-Pipeline Benchmark.
+FastAPI Service cho DocAI Document Intelligence Platform.
 
 Thuộc: Giai đoạn 10 (FastAPI Service & Tài liệu hoá).
 Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 10; task-split.md, Giai đoạn 10.
@@ -26,7 +26,7 @@ from docai.core.schema import DocumentType, UnifiedDocumentOutput
 app = FastAPI(
     title=settings.api_title,
     version=settings.api_version,
-    description="API so sánh pipeline Document AI cổ điển (Track A) và VLM-native (Track B) trên hóa đơn và hợp đồng."
+    description="Product API xử lý Invoice/Receipt bằng hai engine Document AI; endpoint compare phục vụ Research Lab."
 )
 
 
@@ -57,7 +57,7 @@ async def health_check():
 @app.post(
     "/parse/classic",
     response_model=UnifiedDocumentOutput,
-    tags=["Parsing"],
+    tags=["Product / Parsing"],
     summary="Phân tích tài liệu sử dụng Track A (Classic Multi-stage Pipeline)"
 )
 async def parse_classic(
@@ -77,7 +77,7 @@ async def parse_classic(
 @app.post(
     "/parse/vlm",
     response_model=UnifiedDocumentOutput,
-    tags=["Parsing"],
+    tags=["Product / Parsing"],
     summary="Phân tích tài liệu sử dụng Track B (VLM-native Single-pass Pipeline)"
 )
 async def parse_vlm(
@@ -97,7 +97,7 @@ async def parse_vlm(
 @app.post(
     "/compare",
     response_model=CompareResponse,
-    tags=["Benchmark"],
+    tags=["Research / Comparison"],
     summary="Chạy song song Track A và Track B và trả về kết quả đối chiếu"
 )
 async def compare_pipelines(
@@ -116,7 +116,7 @@ async def compare_pipelines(
 
 @app.post(
     "/explain",
-    tags=["Explainability"],
+    tags=["Product / Explainability"],
     summary="Tạo bản đồ nhiệt chú ý (heatmap overlay) giải thích vùng ảnh trích xuất"
 )
 async def explain_field(

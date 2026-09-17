@@ -1,5 +1,5 @@
 """
-Module xử lý dữ liệu cho hệ thống DocAI Benchmark.
+Module xử lý dữ liệu cho DocAI Document Intelligence Platform và Research layer.
 
 Cung cấp các hàm tải dữ liệu (loaders), tiền xử lý (preprocessing), thống kê (statistics)
 và phân tích khám phá dữ liệu (eda) dùng chung cho cả notebook và scripts.

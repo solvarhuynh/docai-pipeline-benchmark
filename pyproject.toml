@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "docai"
 version = "0.1.0"
-description = "Benchmarking classic multi-stage Document AI against modern VLM-native parsing on real invoices and legal contracts."
+description = "Document Intelligence platform for invoice and receipt extraction with classic and VLM processing backends, plus research benchmarking."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [

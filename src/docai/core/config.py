@@ -1,5 +1,5 @@
 """
-Cấu hình tập trung cho toàn bộ hệ thống DocAI Benchmark.
+Cấu hình tập trung cho toàn bộ DocAI Document Intelligence Platform.
 
 Cung cấp đường dẫn tuyệt đối an toàn tới các thư mục dữ liệu, mô hình và các tham số
 môi trường mà không cần dùng các thủ thuật can thiệp sys.path.
@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 class Settings(BaseModel):
     """
-    Cấu hình hệ thống DocAI Benchmark.
+    Cấu hình hệ thống DocAI Document Intelligence Platform.
     """
 
     # Thư mục gốc của repository: src/docai/core/config.py -> 4 cấp parent là repo root
@@ -49,7 +49,7 @@ class Settings(BaseModel):
     # Cấu hình API Server
     api_host: str = Field(default="0.0.0.0")
     api_port: int = Field(default=8000)
-    api_title: str = Field(default="DocAI Dual-Pipeline Benchmark API")
+    api_title: str = Field(default="DocAI Document Intelligence Platform API")
     api_version: str = Field(default="1.0.0")
     debug: bool = Field(default_factory=lambda: os.getenv("DOCAI_DEBUG", "0") == "1")
 

@@ -1,5 +1,5 @@
 """
-Module Dashboard trực quan hoá dựa trên Plotly Dash cho DocAI Benchmark.
+Module Dashboard trực quan hoá dựa trên Plotly Dash cho DocAI Document Intelligence Platform.
 
 Khẳng định kiến trúc: Sử dụng Plotly Dash (Python -> pandas -> Plotly -> Dash),
 tuyệt đối không sử dụng Power BI hoặc các định dạng đóng .pbix.

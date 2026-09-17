@@ -1,5 +1,5 @@
 """
-Module VLM-native parser (Track B - Single pass) cho DocAI Benchmark.
+Module VLM-native parser (Track B - Single pass) cho Product và Research layer của DocAI.
 
 Thuộc: Giai đoạn 5 (Track B: VLM-native parsing - hóa đơn) và Giai đoạn 6 (Mở rộng Hợp đồng).
 Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 5; task-split.md, Giai đoạn 5.

@@ -1,5 +1,5 @@
 """
-Module chứa các pipeline Document AI chính của dự án DocAI Benchmark.
+Module chứa các processing backend chính của DocAI Document Intelligence Platform.
 
 Bao gồm:
 - track_a: Pipeline cổ điển đa tầng (Layout Detection + PaddleOCR + LayoutLMv3 KIE).

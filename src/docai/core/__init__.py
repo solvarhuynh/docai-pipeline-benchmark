@@ -1,5 +1,5 @@
 """
-Module lõi (Core) của hệ thống DocAI Benchmark.
+Module lõi (Core) của DocAI Document Intelligence Platform.
 
 Chứa cấu hình hệ thống (config) và hợp đồng schema Pydantic thống nhất (schema).
 """

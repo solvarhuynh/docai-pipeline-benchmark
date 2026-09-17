@@ -1,3 +1,3 @@
 """
-Test suite cho DocAI Dual-Pipeline Benchmark.
+Test suite cho DocAI Document Intelligence Platform.
 """
