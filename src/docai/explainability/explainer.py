@@ -2,7 +2,7 @@
 Module giải thích mô hình (Explainability Layer) cho DocAI Benchmark.
 
 Thuộc: Giai đoạn 8 (Explainability Layer).
-Tham chiếu: implementation-guide.md, Giai đoạn 8; task-split.md, Giai đoạn 8.
+Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 8; task-split.md, Giai đoạn 8.
 
 Mục đích:
 Trang bị khả năng giải thích cho cả hai pipeline thay vì trả về JSON như hộp đen:
@@ -31,7 +31,7 @@ TODO chi tiết:
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 import numpy as np
 from PIL import Image
 

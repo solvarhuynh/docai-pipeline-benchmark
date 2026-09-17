@@ -2,7 +2,7 @@
 Module động cơ kiểm tra gian lận và cảnh báo rủi ro (Fraud & Risk Engine).
 
 Thuộc: Giai đoạn 7 (Fraud/Risk Engine).
-Tham chiếu: implementation-guide.md, Giai đoạn 7; task-split.md, Giai đoạn 7.
+Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 7; task-split.md, Giai đoạn 7.
 
 Mục đích:
 Kết hợp AI trích xuất với luật logic nghiệp vụ để phát hiện rủi ro:
@@ -14,12 +14,13 @@ Kết hợp AI trích xuất với luật logic nghiệp vụ để phát hiện
    - Clause-risk flagging: Tự động cảnh báo khi hợp đồng thiếu các điều khoản chuẩn bắt buộc
      (Governing Law, Termination, Dispute Resolution) hoặc có điều khoản bất thường dựa trên taxonomy CUAD.
 
-TODO chi tiết:
-1. Viết hàm chuẩn hoá số tiền từ chuỗi (loại bỏ dấu chấm, phẩy, ký hiệu tiền tệ VND/USD) thành float.
-2. Viết hàm kiểm tra đối chiếu số học với ngưỡng dung sai làm tròn (tolerance: +-1000 VND hoặc +-0.01 USD).
-3. Định nghĩa danh mục taxonomy 41 loại điều khoản của CUAD và danh sách điều khoản bắt buộc / rủi ro cao.
-4. Xây dựng hàm tổng `run(doc: UnifiedDocumentOutput) -> list[RiskFlag]`.
-5. Viết unit test kiểm thử với 1 hóa đơn cố tình sai số liệu và 1 hợp đồng cố tình thiếu điều khoản.
+Phần baseline hiện có:
+- Đối chiếu số học, quét confidence, kiểm tra ba điều khoản hợp đồng bắt buộc qua `run()`.
+- Unit test cho các rule hiện có tại `tests/unit/test_fraud_rules.py`.
+
+Phần còn lại thuộc phase sau:
+- Chuẩn hoá tiền tệ/định dạng số đầy đủ cho VND/USD và chọn tolerance theo loại tiền.
+- Mở rộng taxonomy CUAD và danh sách rủi ro cao.
 """
 
 from typing import List

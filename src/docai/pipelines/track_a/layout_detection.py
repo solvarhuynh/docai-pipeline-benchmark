@@ -2,7 +2,7 @@
 Module phân vùng Layout (Layout Detection) cho Track A - Classic Pipeline.
 
 Thuộc: Giai đoạn 3 (Track A: Layout Detection & OCR - hóa đơn).
-Tham chiếu: implementation-guide.md, Giai đoạn 3; task-split.md, Giai đoạn 3.
+Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 3; task-split.md, Giai đoạn 3.
 
 Mục đích:
 Sử dụng mô hình pretrained YOLOv8-doc hoặc DocLayout-YOLO để phân vùng các khu vực trong hóa đơn

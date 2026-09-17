@@ -6,8 +6,6 @@ from docai.core.schema import (
     BoundingBox,
     DocumentType,
     ExtractedField,
-    RiskFlag,
-    SeverityLevel,
     UnifiedDocumentOutput,
 )
 

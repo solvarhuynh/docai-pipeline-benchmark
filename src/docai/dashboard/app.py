@@ -16,7 +16,7 @@ Cam kết kiến trúc:
 Không sử dụng Power BI, không phụ thuộc file .pbix hay công cụ BI độc quyền bên ngoài.
 """
 
-from typing import Any, Dict, Optional
+from docai.core.config import settings
 
 
 def create_dashboard_app():
@@ -67,6 +67,6 @@ def create_dashboard_app():
 if __name__ == "__main__":
     dash_app = create_dashboard_app()
     if dash_app is not None:
-        dash_app.run(debug=True, port=8050)
+        dash_app.run(debug=settings.debug, port=8050)
     else:
         print("Vui lòng cài đặt dash và plotly để chạy dashboard: pip install dash plotly")

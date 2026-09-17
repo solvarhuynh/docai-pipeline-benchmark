@@ -3,7 +3,6 @@ Unit test kiểm tra module cấu hình hệ thống (docai.core.config).
 """
 
 import unittest
-from pathlib import Path
 from docai.core.config import Settings, settings
 
 

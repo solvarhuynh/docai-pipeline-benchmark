@@ -2,13 +2,13 @@
 Module tính toán chỉ số đánh giá thực nghiệm (Evaluation Metrics).
 
 Thuộc: Giai đoạn 4, 5, 6, 9 (Đánh giá benchmark và so sánh 2 track).
-Tham chiếu: implementation-guide.md; task-split.md.
+Tham chiếu: docs/specs/implementation-guide.md; task-split.md.
 
 Mục đích:
 Cung cấp các công thức tính toán chỉ số khách quan:
 - F1 field-level (Precision, Recall, F1)
 - Agreement ratio (tỷ lệ đồng thuận giữa Track A và Track B)
-- Latency (độ trễ trung bình, median, p95)
+- Latency (độ trễ và các thống kê phân bố hiện có; P90/P95 thuộc benchmark sau)
 """
 
 from typing import Any, Dict, List

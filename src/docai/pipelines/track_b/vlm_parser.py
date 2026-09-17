@@ -2,7 +2,7 @@
 Module VLM-native parser (Track B - Single pass) cho DocAI Benchmark.
 
 Thuộc: Giai đoạn 5 (Track B: VLM-native parsing - hóa đơn) và Giai đoạn 6 (Mở rộng Hợp đồng).
-Tham chiếu: implementation-guide.md, Giai đoạn 5; task-split.md, Giai đoạn 5.
+Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 5; task-split.md, Giai đoạn 5.
 
 Mục đích:
 Sử dụng Vision-Language Model mã nguồn mở (PaddleOCR-VL hoặc dots.ocr) để đọc và trích xuất
@@ -26,12 +26,11 @@ TODO chi tiết:
 6. Mở rộng thử nghiệm zero-shot trên hợp đồng CUAD ở Giai đoạn 6 để đo độ giảm F1 (generalization drop).
 """
 
-import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Union
 from PIL import Image
 
-from docai.core.schema import DocumentType, ExtractedField, UnifiedDocumentOutput
+from docai.core.schema import DocumentType, UnifiedDocumentOutput
 
 
 class VLMDocumentParser:
@@ -76,7 +75,6 @@ class VLMDocumentParser:
             UnifiedDocumentOutput chuẩn hoá.
         """
         # TODO: Giai đoạn 5 - Triển khai gọi VLM và parse JSON response
-        start_time = time.time()
         raise NotImplementedError("TODO: Giai đoạn 5 - Chạy mô hình VLM-native (PaddleOCR-VL/dots.ocr)")
 
     def parse_raw_json_to_output(

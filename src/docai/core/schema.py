@@ -50,6 +50,11 @@ class BoundingBox(BaseModel):
             raise ValueError(f"xmin ({self.xmin}) không thể lớn hơn xmax ({self.xmax})")
         if self.ymin > self.ymax:
             raise ValueError(f"ymin ({self.ymin}) không thể lớn hơn ymax ({self.ymax})")
+        if self.normalized and any(
+            coordinate < 0.0 or coordinate > 1.0
+            for coordinate in (self.xmin, self.ymin, self.xmax, self.ymax)
+        ):
+            raise ValueError("Bounding box normalized=True phải có tọa độ trong khoảng [0, 1]")
         return self
 
 

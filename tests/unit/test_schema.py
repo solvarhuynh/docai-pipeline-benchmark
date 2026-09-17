@@ -28,6 +28,10 @@ class TestSchemaModels(unittest.TestCase):
         self.assertEqual(bbox.ymax, 200.0)
         self.assertFalse(bbox.normalized)
 
+    def test_normalized_bounding_box_range(self):
+        with self.assertRaises(ValidationError):
+            BoundingBox(xmin=0.0, ymin=0.0, xmax=1.1, ymax=1.0, normalized=True)
+
     def test_bounding_box_invalid_coords(self):
         # xmin > xmax phải báo lỗi
         with self.assertRaises(ValidationError):

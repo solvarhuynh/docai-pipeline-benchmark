@@ -2,14 +2,14 @@
 Module điều phối chạy benchmark và so sánh đối đầu (Benchmark Runner).
 
 Thuộc: Giai đoạn 9 và 10 (Benchmark tổng hợp và API so sánh).
-Tham chiếu: implementation-guide.md; task-split.md.
+Tham chiếu: docs/specs/implementation-guide.md; task-split.md.
 
 Mục đích:
 Cung cấp class BenchmarkRunner nhận đầu vào là tài liệu, thực thi song song hai track,
 đo lường độ trễ và tính toán tỷ lệ đồng thuận để phục vụ endpoint /compare và báo cáo benchmark.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 from docai.core.schema import DocumentType, UnifiedDocumentOutput
 from docai.evaluation.metrics import calculate_field_agreement
 
@@ -18,9 +18,6 @@ class BenchmarkRunner:
     """
     Trình điều phối so sánh hiệu năng giữa Track A và Track B.
     """
-
-    def __init__(self):
-        pass
 
     def compare_outputs(
         self,
