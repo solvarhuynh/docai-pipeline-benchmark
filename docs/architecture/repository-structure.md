@@ -1,97 +1,67 @@
-# Repository structure — DocAI
+# Repository structure — where each responsibility lives
 
-Repository giữ `src/` layout hiện tại. Tên thư mục phản ánh responsibility kỹ thuật; `frontend/` và `backend/` riêng không cần thiết vì vai trò đã được thể hiện bởi `src/docai/dashboard/` và `src/docai/api/`.
-
-## Cây thư mục
+The repository has one browser application and one Python package. A folder is created only when it has a clear responsibility.
 
 ```text
 docai-pipeline-benchmark/
+├── frontend/                      # React + TypeScript + Vite web UI
+│   ├── src/
+│   │   ├── components/             # Reusable UI pieces
+│   │   ├── pages/                  # Home, Invoice, Contract, Research
+│   │   ├── services/               # HTTP calls to FastAPI
+│   │   ├── types/                  # TypeScript API contract
+│   │   ├── App.tsx                 # Small route/page shell
+│   │   ├── main.tsx                # Browser entry point
+│   │   └── styles.css
+│   ├── package.json                # Node development/build tooling
+│   ├── tsconfig*.json
+│   ├── vite.config.ts
+│   └── index.html
 ├── src/docai/
-│   ├── core/                    # Shared Pydantic contracts và config
-│   ├── data/                    # Ingestion, preprocessing, statistics
-│   ├── pipelines/
-│   │   ├── track_a/             # Classic: layout → OCR → KIE
-│   │   └── track_b/             # VLM-native: prompt → parse → validate
-│   ├── fraud/                   # Invoice Risk và Contract Risk rules
-│   ├── explainability/          # Evidence/explanation scaffold
-│   ├── evaluation/              # Research metrics và comparison
-│   ├── api/                     # FastAPI backend
-│   └── dashboard/               # Plotly Dash frontend
-├── scripts/                     # CLI entry points gọi package logic
-├── tests/                       # Unit và integration tests
-├── data/
-│   ├── raw/                     # Dataset gốc; chưa tải trong task này
-│   ├── interim/                 # Dữ liệu trung gian
-│   └── processed/               # Dữ liệu chuẩn hoá
-├── docs/
-│   ├── architecture/           # System overview, structure, data dictionary
-│   ├── concepts/               # Kỹ thuật gắn với product và research
-│   ├── guides/                 # Hướng dẫn chạy và protocol
-│   ├── reports/                # Report scaffold và kết quả khi có thực nghiệm
-│   └── specs/                  # Roadmap và task split
-├── notebooks/                  # Khám phá/EDA, không chứa business logic độc lập
-├── modal_app/                  # Modal infrastructure scaffold
-├── log/                        # Progress và review logs
-├── docker-compose.yml
-├── requirements.txt
-├── pyproject.toml
+│   ├── api/                        # FastAPI backend
+│   ├── core/                       # Pydantic contracts/configuration
+│   ├── pipelines/                  # Track A and Track B processing
+│   ├── data/                       # Data ingestion/preprocessing
+│   ├── fraud/                      # Domain risk rules
+│   ├── explainability/             # Evidence/explanation scaffold
+│   └── evaluation/                 # Research metrics/comparison
+├── scripts/                        # Python CLI entry points
+├── tests/                          # Unit and integration tests
+├── data/                           # raw/interim/processed directories
+├── docs/                           # Architecture, concepts, guides, reports, specs
+├── notebooks/                      # EDA and exploration
+├── modal_app/                      # Modal infrastructure scaffold
+├── log/                            # Progress/review history
+├── docker-compose.yml              # Local FastAPI container
+├── pyproject.toml                  # Python package definition
 └── README.md
 ```
 
-## Các boundary chính
-
-### `src/docai/api/` là Backend
-
-FastAPI nhận request/upload, validate input, gọi orchestration/pipeline, serialize `UnifiedDocumentOutput` và trả lỗi. Route không được chứa implementation của YOLO, OCR, LayoutLMv3 hay VLM.
-
-Các interface được định hướng:
-
-- `/parse/classic`, `/parse/vlm`: product processing cho Invoice hoặc Contract;
-- `/explain`: product explainability;
-- `/compare`: Research Lab comparison;
-- `/health`: service health.
-
-Hiện parse/compare/explain vẫn là scaffold và trả HTTP 501.
-
-### `src/docai/dashboard/` là Frontend
-
-Plotly Dash là frontend web chính thức. Layout tương lai có Invoice Workspace, Contract Workspace và Research Lab. Dashboard tiêu thụ API/core output; không tự xử lý model và không sao chép logic từ backend. `app.py` hiện mới có layout scaffold, chưa có callbacks/dữ liệu thật.
-
-### `src/docai/core/` là shared contract
-
-`schema.py` định nghĩa `DocumentType`, `ExtractedField`, `RiskFlag`, `BoundingBox` và `UnifiedDocumentOutput`. Đây là envelope chung cho hai domain, không phải danh sách field cố định cho Invoice. Contract được biểu diễn bằng `document_type=contract` và các field/clause phù hợp; taxonomy chi tiết vẫn là scaffold/planned.
-
-### `src/docai/pipelines/` là processing layer
-
-- `track_a/`: Classic modular pipeline. `layout_detection.py`, `ocr_extraction.py` và `kie_layoutlmv3.py` hiện là scaffold.
-- `track_b/`: VLM-native pipeline. `vlm_parser.py` có prompt interface; model invocation và parsing thật hiện là scaffold, model cụ thể chưa chốt.
-
-Cả hai track có thể phục vụ Invoice và Contract ở mức capability thực tế; chúng không phải product riêng.
-
-### `src/docai/fraud/` là domain risk layer
-
-Package name được giữ tương thích, nhưng tài liệu và output phải phân biệt:
-
-- Invoice Risk: arithmetic consistency, missing field và low-confidence amount.
-- Contract Risk: missing important clause, clause inconsistency và clause-risk flagging.
-
-Không dùng `fraud` để đưa ra kết luận gian lận hoặc kết luận pháp lý khi evidence không đủ.
-
-### `src/docai/explainability/` là evidence layer
-
-Invoice hướng tới bounding box/highlighting/confidence. Contract hướng tới text span/clause location/supporting passage. Attention/grounding/Grad-CAM là hướng triển khai; module hiện chưa sinh explanation runtime.
-
-### `src/docai/evaluation/` là Research layer
-
-Metrics và `BenchmarkRunner` nhận output chung để đánh giá accuracy, latency, robustness, explainability và cost trên Invoice/Contract. Evaluation không bắt buộc cho một product parse đơn lẻ và không được chứa số liệu giả.
-
-## Nguyên tắc phụ thuộc
+## The important boundaries
 
 ```text
-Dashboard → FastAPI/API contract → orchestration → pipelines
-                                             ↘ core schema
-Risk và Explainability tiêu thụ output chuẩn hoá.
-Evaluation tiêu thụ output chuẩn hoá + ground truth.
+React UI
+  ↓ HTTP request
+FastAPI
+  ↓ Python function/service call
+DocAI pipelines
+  ↓
+Pydantic UnifiedDocumentOutput
+  ↓ JSON response
+React TypeScript types and components
 ```
 
-Không để consumer phụ thuộc trực tiếp vào output tùy tiện của model. Không thêm React/Vue/Angular/Next.js, Power BI hoặc một hệ thống hạ tầng mới khi chưa có requirement.
+- `frontend/` is the web UI. It does not import Python files, run models or duplicate AI logic.
+- `src/docai/api/` is the only business backend. Node.js is not a second backend.
+- `src/docai/pipelines/` owns AI processing. Track A is the specialist/modular path; Track B is the VLM-native path.
+- `src/docai/core/` owns the shared data contract. Invoice and Contract fields may differ inside the shared envelope.
+- `src/docai/data/` owns data processing, not UI state.
+- `src/docai/evaluation/` owns Research Lab metrics, not normal product parsing.
+
+## Why is there no `frontend/` Python dashboard anymore?
+
+The official frontend has moved from Plotly Dash to React + TypeScript + Vite. The old `src/docai/dashboard/` Dash scaffold was removed so the repository has one unambiguous frontend direction. Plotly.js may be added later for research charts, but it would be a chart library, not the frontend framework.
+
+## Current status
+
+The React structure is a scaffold. FastAPI `/health` is usable; parse/compare/explain handlers, model inference, backend orchestration and real result views are not complete. No dataset or benchmark result is included as part of this change.

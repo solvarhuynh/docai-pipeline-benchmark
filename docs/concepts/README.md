@@ -1,60 +1,56 @@
-# Bản đồ khái niệm kỹ thuật — DocAI
+# Concept map — learn DocAI from the document outward
 
-Khu vực `docs/concepts/` giải thích kỹ thuật theo product flow của DocAI: một nền tảng **Invoice Intelligence + Contract Intelligence** có FastAPI backend, Plotly Dash frontend và hai processing engine. Mỗi kỹ thuật phải được nối về module, output schema, product capability và research metric tương ứng.
+This folder explains why DocAI is built this way. It is written for someone who can program and work with data, but does not work with AI/ML/DL every day.
 
-## Product flow và Research flow
+## The story in one page
 
-Product flow cho cả hai domain:
-
-```text
-User → Plotly Dash → FastAPI
-                   ↓
-        Invoice hoặc Contract
-                   ↓
-        Track A hoặc Track B
-                   ↓
-        UnifiedDocumentOutput
-                   ↓
-        Domain Risk → Explainability → Review
-```
-
-Hai workspace sản phẩm:
-
-- **Invoice Workspace**: fields, confidence, bounding boxes, structured JSON và Invoice Risk.
-- **Contract Workspace**: metadata, clause spans/categories, structured JSON và Contract Risk.
-
-Research Lab là khu vực riêng:
+A document starts as pixels or a PDF. The product must turn it into information a person or another system can use:
 
 ```text
-Track A output ─┐
-                ├→ Evaluation → accuracy / latency / robustness / explainability / cost
-Track B output ─┘
+Invoice or Contract
+  ↓
+Read words, layout and meaning
+  ↓
+Extract fields or clauses
+  ↓
+Validate and attach risk/evidence
+  ↓
+Return JSON through FastAPI
+  ↓
+Show the result in React
 ```
 
-Product và Research hỗ trợ nhau nhưng là hai mục tiêu khác nhau. CUAD giữ vai trò kép cho Contract capability và generalization research; không gọi Contract là dataset phụ.
+Track A and Track B are two ways to do the middle part. The product can use either. The Research Lab compares them only when real outputs and ground truth exist.
 
-## Trạng thái cần đọc đúng
+## Suggested reading path
 
-- `ĐÃ CHỐT`: Pydantic shared envelope, FastAPI backend, Plotly Dash frontend và Track A/B là processing engines.
-- `BASELINE`: schema/risk/metric logic nhỏ đã có code và test tương ứng.
-- `SCAFFOLD`: class/interface/TODO đã dựng nhưng chưa có runtime implementation đầy đủ.
-- `PLANNED`: có trong roadmap nhưng chưa bắt đầu.
-- `CHƯA CHỐT MODEL CỤ THỂ`: hướng model còn là candidate, chưa phải lựa chọn chính thức.
+1. [`01-docai-foundations.md`](./01-docai-foundations.md) — why a document is more than an image, and what structured output means.
+2. [`02-track-a-classic.md`](./02-track-a-classic.md) — why a specialist pipeline separates layout, OCR and understanding.
+3. [`03-track-b-vlm.md`](./03-track-b-vlm.md) — why a VLM can combine visual understanding and response generation.
+4. [`04-fraud-and-explainability.md`](./04-fraud-and-explainability.md) — how risk flags and evidence support review without overclaiming.
+5. [`05-evaluation.md`](./05-evaluation.md) — how to decide whether a pipeline is actually performing well.
 
-Repository hiện chưa có model inference end-to-end, callback Dashboard, benchmark thật hoặc dataset được tải trong task định vị này.
+Read the architecture guide alongside this path: [`docs/architecture/architecture-explained.md`](../architecture/architecture-explained.md).
 
-## Thứ tự đọc khuyến nghị
+## The mental model
 
-1. [`01-docai-foundations.md`](./01-docai-foundations.md): bài toán Document Intelligence, shared schema và hai domain.
-2. [`02-track-a-classic.md`](./02-track-a-classic.md): Layout Detection, OCR, KIE và LayoutLMv3 trong Track A.
-3. [`03-track-b-vlm.md`](./03-track-b-vlm.md): VLM-native parsing, prompt, structured output và failure modes của Track B.
-4. [`04-fraud-and-explainability.md`](./04-fraud-and-explainability.md): Invoice Risk, Contract Risk và evidence/explainability.
-5. [`05-evaluation.md`](./05-evaluation.md): metrics và protocol Research Lab.
+```text
+Product problem
+  → document representation
+  → processing engine
+  → shared schema
+  → API and frontend
+  → risk/evidence
+  → research measurement
+```
 
-Đọc kèm [`docs/architecture/architecture-explained.md`](../architecture/architecture-explained.md), [`docs/specs/task-split.md`](../specs/task-split.md) và [`docs/specs/implementation-guide.md`](../specs/implementation-guide.md) để hiểu boundary và roadmap.
+Every concept should answer four questions: What problem does it solve? What is the everyday intuition? Where is it in this repository? Where does its output go next?
 
-## Theo vai trò
+## Status vocabulary
 
-- AI/ML/DL: đọc foundations → Track A → Track B → evaluation.
-- Data/Integration/Product: đọc foundations → architecture → risk/explainability → how-to-run.
-- Product/BA: đọc foundations → hai workspace → risk/explainability → roadmap.
+- **Implemented/Baseline** means code exists and tests or runtime evidence support the claim.
+- **Scaffold** means an interface or page exists, but the real implementation is not complete.
+- **Planned** means it belongs to the roadmap but has not started.
+- **Not selected** means a model or external technology is still a candidate.
+
+At this stage the React frontend, model inference, API orchestration and Research Lab are scaffolds or planned. No document output or benchmark metric should be treated as real unless it is produced by a real run.

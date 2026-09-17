@@ -1,33 +1,46 @@
-# Bảng thuật ngữ kỹ thuật (Glossary) — DocAI Product & Research
+# DocAI glossary
 
-Tài liệu này tra cứu toàn bộ các thuật ngữ chuyên ngành được sử dụng trong dự án Document AI này. Mỗi thuật ngữ đều có một câu giải thích ngắn gọn, dễ hiểu và chỉ rõ vị trí xuất hiện trong mã nguồn hoặc báo cáo.
+These terms are introduced in the concepts path with examples. The short explanations below are a quick reference, not a substitute for the story in [`docs/concepts/`](../concepts/).
 
----
+| Term | Plain-language meaning | Where it matters |
+| --- | --- | --- |
+| API | Rules that let two software components communicate. | React sends document requests to FastAPI. |
+| REST | A common HTTP style for APIs, using routes and methods such as GET and POST. | Product and research endpoints. |
+| JSON | Text representation of structured objects, lists, strings and numbers. | FastAPI responses and the frontend contract. |
+| Pydantic | Python library that validates data against declared models. | `UnifiedDocumentOutput` validation. |
+| React | UI library for composing browser screens from components. | `frontend/src/`. |
+| TypeScript | JavaScript with declared types that catch many shape errors before runtime. | Mirrors the Python API contract. |
+| Vite | Frontend development server and build tool. | Runs and bundles the React app. |
+| Node.js | Runtime used here for npm, Vite and TypeScript tooling. | It is not DocAI's business backend. |
+| Document AI | Software that turns documents into usable, structured information. | The overall product area. |
+| OCR | Optical Character Recognition: turns image pixels into readable text. | Track A and visual reading. |
+| Layout Detection | Finds and labels regions such as tables or totals. | First Track A stage. |
+| Bounding Box | Rectangle describing an item's location as min/max x and y. | Evidence and layout features. |
+| KIE | Key Information Extraction: assigns business meaning to text. | Invoice fields and contract clauses. |
+| VLM | Vision-Language Model that processes images and language together. | Track B. |
+| Multimodal | Using more than one input type, such as an image plus text. | VLM document parsing. |
+| Transformer | Model architecture that compares input pieces using context. | LayoutLMv3 and VLMs. |
+| Token | Small unit processed by a language model; one word may split into several. | KIE labels and prompts. |
+| Embedding | Numeric representation of an item that a model can compare and process. | Text/image representations. |
+| Attention | Internal weighting of which context influences a prediction. | Useful diagnostic signal, not perfect proof. |
+| Prompt | Instruction sent to a generative model. | Tells Track B what to extract. |
+| Structured Output | Result following a predictable schema instead of free text. | JSON returned to the product. |
+| Schema | Declared shape, types and constraints for data. | Python/TypeScript contract. |
+| Pretrained Model | Model that learned general patterns before this project uses it. | Candidate starting point for Track A/B. |
+| Fine-tuning | Adapting a pretrained model to a narrower task. | Future invoice/contract work. |
+| Checkpoint | Saved model state used to reproduce inference. | Must be recorded with results. |
+| Inference | Using a saved model to process a new document. | Runtime pipeline step. |
+| Hallucination | Plausible model output not supported by the source document. | Main Track B reliability risk. |
+| Precision | Of predicted items, the fraction that is correct. | Accuracy evaluation. |
+| Recall | Of correct items that exist, the fraction the system found. | Measures missed fields/clauses. |
+| F1-score | Combined measure balancing precision and recall. | Field/clause comparison. |
+| Latency | Time taken to process a request. | Product experience and research. |
+| Robustness | Ability to keep working on realistic noisy inputs. | Blur, rotation and contrast tests. |
+| Invoice Risk | Transaction-review signals such as arithmetic mismatch. | Invoice Intelligence. |
+| Contract Risk | Review signals about clauses or metadata. | Contract Intelligence; not legal advice. |
+| Explainability | Evidence that helps a person understand a result. | Boxes, spans and supporting text. |
+| Ground Truth | Trusted reference answer used for evaluation. | Required before claiming metrics. |
 
-## Bảng tra cứu thuật ngữ
+## Status words
 
-| Thuật ngữ | Giải thích ngắn gọn | Xuất hiện ở đâu trong dự án |
-|---|---|---|
-| Layout Detection | Kỹ thuật thị giác máy tính xác định tọa độ và phân loại các khối chức năng trên trang tài liệu (Header, Table, Signature, Paragraph). | `src/docai/pipelines/track_a/layout_detection.py`, Giai đoạn 3 |
-| OCR (Optical Character Recognition) | Công nghệ nhận dạng và chuyển đổi hình ảnh chứa chữ viết thành chuỗi ký tự số mà máy tính có thể đọc và xử lý. | `src/docai/pipelines/track_a/ocr_extraction.py`, Giai đoạn 3 |
-| KIE (Key Information Extraction) | Quá trình trích xuất và gán nhãn các trường thông tin nghiệp vụ có ý nghĩa (tên người bán, ngày, tổng tiền) từ tập hợp các từ rời rạc của OCR. | `src/docai/pipelines/track_a/kie_layoutlmv3.py`, Giai đoạn 4 |
-| VLM-native (Vision-Language Model) | Kiến trúc mô hình học sâu đa phương thức hợp nhất khả năng nhìn ảnh và hiểu văn bản trong một mạng duy nhất, xử lý trực tiếp từ ảnh sang JSON mà không cần qua bước OCR tách rời. | `src/docai/pipelines/track_b/vlm_parser.py`, Giai đoạn 5 |
-| LayoutLMv3 | Mô hình ngôn ngữ đa phương thức tiên tiến của Microsoft, kết hợp đồng thời thông tin văn bản, tọa độ vị trí 2D và đặc trưng hình ảnh để hiểu tài liệu. | `src/docai/pipelines/track_a/kie_layoutlmv3.py`, Giai đoạn 4 |
-| Attention weights | Các trọng số toán học trong cơ chế Transformer thể hiện mức độ chú ý của mô hình vào một từ hoặc một vùng ảnh khi dự đoán một nhãn thực thể. | `src/docai/explainability/explainer.py`, Giai đoạn 8 |
-| Explainability (Khả năng giải thích) | Khả năng giải thích và minh bạch hoá căn cứ mà mô hình AI dựa vào để đưa ra kết quả dự đoán thay vì hoạt động như một hộp đen. | `src/docai/explainability/explainer.py`, `docs/reports/explainability-report.md`, Giai đoạn 8 |
-| Grad-CAM (Gradient-weighted Class Activation Mapping) | Kỹ thuật sử dụng đạo hàm (gradient) của điểm số dự đoán truyền ngược về lớp tích chập cuối cùng để tạo bản đồ nhiệt xác định vùng ảnh quan trọng nhất. | `src/docai/explainability/explainer.py`, Giai đoạn 8 |
-| Robustness Test (Kiểm thử độ bền) | Quy trình chủ động tạo ra các biến thể ảnh bị nhiễu (xoay lệch, làm mờ, thiếu sáng, chèn watermark) để đo lường mức độ suy giảm độ chính xác của hệ thống. | `docs/reports/robustness-report.md`, Giai đoạn 9 |
-| Generalization (Khả năng tổng quát hoá) | Khả năng của một mô hình hoạt động tốt trên các miền dữ liệu mới hoặc loại tài liệu khác biệt hoàn toàn so với dữ liệu đã dùng để huấn luyện (ví dụ từ hóa đơn sang hợp đồng). | `docs/reports/benchmark-results.md`, Giai đoạn 6 |
-| Clause-risk flagging (Cảnh báo rủi ro điều khoản) | Luật logic nghiệp vụ gắn cờ hợp đồng thiếu hoặc cần review clause; không phải kết luận pháp lý. | `src/docai/fraud/rules.py`, Giai đoạn 7 |
-| F1 field-level | Chỉ số đo lường độ chính xác tính bằng trung bình điều hoà giữa Precision và Recall ở mức độ từng trường nghiệp vụ (trường chỉ đúng khi toàn bộ giá trị được trích xuất chính xác). | `docs/reports/benchmark-results.md`, `src/docai/evaluation/metrics.py`, Giai đoạn 4, 5, 6 |
-| Latency (Độ trễ) | Thời gian cần thiết để hệ thống xử lý hoàn tất một trang tài liệu từ lúc nhận ảnh đến khi trả về JSON kết quả, tính bằng giây hoặc mili giây. | `docs/reports/benchmark-results.md`, `src/docai/api/main.py` |
-| GPU-giờ (GPU-hours) | Đơn vị đo lường tổng thời gian tài nguyên bộ xử lý đồ họa (GPU) được sử dụng, làm căn cứ tính chi phí thực tế trên hạ tầng đám mây (như Modal). | `modal_app/deploy.py`, `docs/reports/cost-analysis.md`, Giai đoạn 4 |
-| JSON schema thống nhất | Khung cấu trúc dữ liệu Pydantic chung quy định mọi pipeline đều phải trả về cùng một định dạng trường, kiểu dữ liệu và tọa độ để phục vụ so sánh khách quan. | `src/docai/core/schema.py`, Giai đoạn 1 |
-| Bounding Box | Khung hộp chữ nhật xác định bởi 4 tọa độ [xmin, ymin, xmax, ymax] dùng để khoanh vùng vị trí của chữ hoặc vùng layout trên ảnh tài liệu. | `src/docai/core/schema.py`, `src/docai/pipelines/track_a/layout_detection.py` |
-| BIO Tagging | Quy ước đánh nhãn cho bài toán trích xuất thực thể trong đó B là bắt đầu thực thể (Begin), I là bên trong thực thể (Inside) và O là bên ngoài thực thể (Outside). | `src/docai/pipelines/track_a/kie_layoutlmv3.py`, Giai đoạn 4 |
-| Spatial Join | Thao tác kết hợp hình học không gian giữa các tọa độ bounding box của OCR và tọa độ các vùng layout để biết từ nào thuộc vùng tiêu đề hoặc vùng bảng. | `src/docai/pipelines/track_a/ocr_extraction.py`, Giai đoạn 3 |
-| FastAPI Backend | Tầng REST API nhận upload, kiểm tra request, gọi pipeline, serialize output và xử lý lỗi; không chứa model implementation. | `src/docai/api/main.py`, Giai đoạn 10 |
-| Plotly Dash Frontend | Giao diện web Python cho Invoice Workspace, Contract Workspace và Research Lab; tiêu thụ output chuẩn hoá. | `src/docai/dashboard/app.py`, Giai đoạn 10 |
-| Invoice Risk | Cờ review cho arithmetic inconsistency, missing field hoặc confidence thấp trên tài liệu hóa đơn. | `src/docai/fraud/rules.py`, Giai đoạn 7 |
-| Contract Risk | Cờ review cho missing/important clause hoặc inconsistency; không phải fraud hoặc legal conclusion. | `src/docai/fraud/rules.py`, Giai đoạn 7 |
-| Research Lab | Khu vực đánh giá tách khỏi product workspace để so sánh Track A/B bằng ground truth và metrics thật. | `src/docai/evaluation/`, Giai đoạn 9 |
+`Implemented` means behavior exists and is supported by checks. `Baseline` means a small working foundation exists. `SCAFFOLD` means an interface or placeholder exists without the full runtime. `PLANNED` means the work has not started. `NOT SELECTED` means a model or technology remains a candidate.

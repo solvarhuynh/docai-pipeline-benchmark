@@ -25,7 +25,7 @@ Một task nên tạo ra **một kết quả kỹ thuật rõ ràng**.
 Không nên gộp nhiều việc lớn không liên quan vào cùng một prompt, ví dụ:
 
 ```text
-audit repo + tải dataset + train model + benchmark + làm dashboard + deploy
+audit repo + tải dataset + train model + benchmark + làm product UI + deploy
 ```
 
 Thay vào đó, tách thành các task có đầu ra và điều kiện kiểm tra riêng.
@@ -109,7 +109,7 @@ Ví dụ:
 - explainability;
 - evaluation;
 - FastAPI logic;
-- Plotly Dash logic.
+- React/TypeScript frontend integration and FastAPI boundary.
 
 Không copy cùng một implementation sang nhiều nơi.
 
@@ -368,29 +368,30 @@ thay vì tạo placeholder có vẻ giống kết quả thật.
 
 ---
 
-## 9. Plotly Dash, không Power BI
+## 9. React frontend and FastAPI boundary
 
-Dashboard chính thức của project sử dụng:
+Frontend chính thức của project sử dụng:
 
 ```text
-Python
-→ pandas
-→ Plotly
-→ Dash
+React
+→ TypeScript
+→ Vite
+→ HTML/CSS
 ```
 
-Không sử dụng Power BI trong architecture hiện hành.
+Node.js chỉ chạy npm, Vite và TypeScript tooling. Backend nghiệp vụ duy nhất vẫn là FastAPI/Python.
 
 Không thêm:
 
-- `.pbix`;
-- DAX;
-- Power Query;
-- dependency hoặc hướng dẫn Power BI.
+- Node API backend, Express hoặc NestJS;
+- Next.js, Redux, Zustand, Tailwind hoặc UI kit khi chưa có requirement;
+- Power BI hoặc `.pbix`.
 
-Nếu dashboard chưa tới phase triển khai, chỉ giữ scaffold/architecture cần thiết.
+Frontend gọi backend bằng HTTP/REST/JSON. Không để frontend chứa model logic, đọc trực tiếp Python files hoặc tự đoán schema. `UnifiedDocumentOutput` trong Python và type tương ứng trong `frontend/src/types/` là API boundary.
 
-Không tự tạo dashboard hoàn chỉnh trong một task audit hoặc refactor.
+Nếu frontend chưa tới phase triển khai, chỉ giữ scaffold/architecture cần thiết.
+
+Không tự tạo product UI hoàn chỉnh trong một task audit hoặc refactor. Không tạo fake extraction result hoặc fake research metric.
 
 ---
 
@@ -585,7 +586,7 @@ không biến thành:
 audit
 → refactor toàn repo
 → triển khai model
-→ tạo dashboard
+→ tạo product UI
 → deploy
 ```
 

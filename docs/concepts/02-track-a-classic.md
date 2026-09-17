@@ -1,179 +1,116 @@
-# 02. Track A: Pipeline Đa Chặng Cổ Điển (Classic Multi-stage Pipeline)
+# Why does Track A split document processing into several specialist steps?
 
-Tài liệu này đi sâu vào kiến trúc và nguyên lý hoạt động của Track A — trường phái xử lý tài liệu truyền thống dựa trên sự phối hợp của ba công đoạn độc lập: Phân vùng bố cục (Layout Detection), Nhận dạng chữ (OCR) và Trích xuất thông tin then chốt (Key Information Extraction - KIE) với mô hình đa phương thức LayoutLMv3.
+Track A is the classic, multi-stage processing engine. It is one backend option inside DocAI, not a separate product and not necessarily one model. It can support both Invoice Intelligence and Contract Intelligence, although each domain needs its own labels and field/clause mapping.
 
-**Trạng thái lựa chọn model:** `CHƯA CHỐT CHECKPOINT CỤ THỂ`. YOLOv8-doc và DocLayout-YOLO là các ứng viên cho layout detection; giá trị mặc định `yolov8x-doc.pt` trong scaffold chỉ là interface default, không phải kết quả đã xác nhận.
+## What problem is Track A solving?
 
-Track A là một processing backend bên trong Product, không phải sản phẩm độc lập. Output của track được chuẩn hoá về `UnifiedDocumentOutput` để phục vụ Product flow hoặc Research comparison.
+An invoice is not just a sentence. A contract is not just a long text file. Meaning depends on both the words and where those words appear. On an invoice, `Total` is usually related to a number beside it. In a contract, a clause may be identified by its heading, page location and surrounding text.
 
-Trong product, Track A có thể phục vụ cả Invoice Intelligence và Contract Intelligence. Các ví dụ bên dưới ưu tiên Invoice vì đó là flow layout/OCR dễ quan sát; Contract sẽ cần mapping span/clause, context dài và taxonomy phù hợp. Khả năng Contract end-to-end hiện vẫn là `SCAFFOLD`/`PLANNED`.
-
----
-
-## 1. Triết lý "chia để trị" của Track A là gì và tại sao lại tách thành 3 chặng?
-
-Trong kỹ nghệ phần mềm và xử lý dữ liệu, khi đứng trước một bài toán lớn phức tạp, phương pháp tự nhiên nhất là chia nó thành các bài toán con nhỏ hơn mà mỗi bài toán con đều đã có công cụ giải quyết xuất sắc:
+Track A makes those clues explicit by passing the document through focused steps:
 
 ```text
-[ Ảnh hóa đơn ]
-       ↓
-[ Chặng 1: Layout Detection (YOLOv8-doc) ] → Khoanh vùng Header, Bảng hàng, Tổng tiền
-       ↓
-[ Chặng 2: OCR Extraction (PaddleOCR) ]    → Đọc từng chữ kèm tọa độ trong từng vùng
-       ↓
-[ Chặng 3: KIE (LayoutLMv3 fine-tuned) ]   → Hiểu ngữ nghĩa và gán nhãn thực thể BIO
-       ↓
-[ Hợp đồng dữ liệu JSON (UnifiedDocumentOutput) ]
+Document image or rendered PDF
+        ↓
+Layout Detection: find useful regions
+        ↓
+OCR: read text and its locations
+        ↓
+Document Understanding / KIE: assign business meaning
+        ↓
+Domain mapping: invoice fields or contract clauses
+        ↓
+UnifiedDocumentOutput
 ```
 
-### Tại sao lại chia như vậy?
-1. **Kiểm soát và gỡ lỗi từng bước**: Nếu hệ thống trích xuất sai tên công ty, kỹ sư có thể mở kết quả của Chặng 1 xem vùng header có bị cắt sót không; mở kết quả Chặng 2 xem OCR có đọc đúng ký tự không; hay do Chặng 3 phân loại nhầm nhãn. Mọi mắt xích đều minh bạch.
-2. **Tối ưu tài nguyên tính toán (VRAM)**: Từng mô hình chuyên biệt có kích thước nhỏ gọn (YOLOv8 chỉ vài chục MB, PaddleOCR text recognition chỉ khoảng 10-20 MB, LayoutLMv3 base khoảng 125M tham số), có thể chạy tuần tự trên các GPU phổ thông như NVIDIA T4 (16GB VRAM) mà không lo tràn bộ nhớ.
-3. **Tận dụng các mô hình chuyên biệt tốt nhất**: Bài toán nhận diện vật thể đã có YOLO tối ưu hàng chục năm; bài toán OCR tiếng Việt đã có bộ nhận diện chuyên sâu; bài toán hiểu cấu trúc bảng biểu đã có Transformer đa phương thức.
+The advantage is observability. If `total_amount` is missing, an engineer can ask whether the total region was missed, the text was read incorrectly, or the right text received the wrong business label.
 
----
+The disadvantage is an **error cascade**: a later step cannot recover information that an earlier step discarded. This is why each boundary must be inspectable and why evaluation should measure stages as well as the final result.
 
-## 2. Chặng 1: Phân vùng bố cục (Layout Detection) giải quyết việc gì?
+## Why find the layout before reading every word?
 
-### Trực giác đời thường
-Trước khi đọc một tờ báo giấy, mắt bạn không đọc ngay từng chữ cái từ trên xuống dưới. Bạn liếc nhìn bố cục trang báo: đâu là tiêu đề bài viết lớn nhất, đâu là bức ảnh minh họa, đâu là các cột chữ nội dung, và đâu là khung quảng cáo. 
+**Layout Detection** is the task of locating and classifying page regions. Imagine looking at a newspaper before reading it: you first notice the headline, columns, image and advertisement. A document layout model does something similar with regions such as `header`, `table`, `seller_info`, `signature` or `total`.
 
-> **Layout Detection (Phân vùng bố cục)** là bài toán xác định vị trí và phân loại các khối chức năng trên trang tài liệu thành các hình chữ nhật (bounding boxes) mang nhãn ngữ nghĩa: Tiêu đề (`header`), Bảng danh mục (`table`), Khu vực người bán (`seller_info`), Chữ ký/Con dấu (`signature`), Tổng cộng (`total`).
+The result is a **bounding box**, a rectangle described by `[xmin, ymin, xmax, ymax]`. It tells the next step where a region is, not what the region means in full.
 
-### Công nghệ sử dụng: YOLOv8-doc / DocLayout-YOLO
-Trong dự án này, Chặng 1 áp dụng các mô hình Object Detection hiện đại thuộc họ YOLO đã được huấn luyện sẵn trên tập dữ liệu bố cục tài liệu (Document Layout Analysis):
-- **Cơ chế**: Mô hình chia ảnh thành các lưới (grid cells), đồng thời dự đoán tọa độ bounding box $[x_{\text{min}}, y_{\text{min}}, x_{\text{max}}, y_{\text{max}}]$, xác suất chứa vật thể (objectness score), và phân phối xác suất trên các nhãn vùng.
-- **Kỹ thuật Non-Maximum Suppression (NMS)**: Khi hóa đơn bị nghiêng hoặc chữ quá dày, mô hình có thể tạo ra nhiều khung bao trùng lặp cho cùng một vùng. Thuật toán NMS tính toán chỉ số giao thoa trên hội (Intersection over Union - IoU) giữa các khung:
-  $$\text{IoU}(B_1, B_2) = \frac{\text{Area}(B_1 \cap B_2)}{\text{Area}(B_1 \cup B_2)}$$
-  Nếu $\text{IoU}$ vượt qua một ngưỡng quy định (ví dụ 0.45) và cùng một nhãn, khung có độ tin cậy thấp hơn sẽ bị triệt tiêu để giữ lại duy nhất khung tối ưu.
-
-### Vị trí trong codebase và Trạng thái
-- **Tập tin**: [`src/docai/pipelines/track_a/layout_detection.py`](../../src/docai/pipelines/track_a/layout_detection.py)
-- **Class chính**: `LayoutDetector`
-- **Trạng thái**: `SCAFFOLD` (Dự kiến hoàn thiện nạp weights và suy luận ở Giai đoạn 3).
-
----
-
-## 3. Chặng 2: Nhận dạng chữ (OCR) biến pixel thành ký tự có vị trí như thế nào?
-
-### Trực giác đời thường
-Sau khi đã biết vùng bảng hàng nằm ở đâu, bạn cần "đọc" nội dung bên trong vùng đó. Nhưng với máy tính, "đọc" là quá trình hai bước: trước hết phải tìm xem chữ nằm ở đâu trên ảnh (Text Detection), sau đó mới dịch các nét vẽ thành chữ Unicode (Text Recognition).
-
-> **OCR (Optical Character Recognition - Nhận dạng ký tự quang học)** trong hệ thống hiện đại là một pipeline hai pha:
-> 1. **Text Detector (ví dụ DBNet)**: Tìm đường bao quanh từng từ hoặc dòng chữ (thường trả về đa giác 4 đỉnh).
-> 2. **Text Recognizer (ví dụ CRNN / SVTR)**: Cắt mẩu ảnh dòng chữ đó đưa qua mạng nơ-ron để sinh ra chuỗi ký tự tương ứng.
-
-### Chuyển đổi từ đa giác (Polygon) sang Bounding Box chữ nhật
-PaddleOCR thường trả về tọa độ đa giác 4 đỉnh cho mỗi dòng chữ nhằm ôm sát dòng chữ bị nghiêng:
-$$P = [[x_1, y_1], [x_2, y_2], [x_3, y_3], [x_4, y_4]]$$
-
-Để đưa vào các mô hình hiểu ngôn ngữ như LayoutLMv3, các đa giác này được quy đổi về hình chữ nhật song song trục tọa độ thông qua giá trị cực trị:
-$$x_{\text{min}} = \min(x_1, x_2, x_3, x_4), \quad y_{\text{min}} = \min(y_1, y_2, y_3, y_4)$$
-$$x_{\text{max}} = \max(x_1, x_2, x_3, x_4), \quad y_{\text{max}} = \max(y_1, y_2, y_3, y_4)$$
-
-Hàm [`convert_polygon_to_box`](../../src/docai/pipelines/track_a/ocr_extraction.py) trong repo đảm nhiệm phép chuyển đổi này.
-
-### Ghép nối không gian (Spatial Join) giữa Layout và OCR
-Một bước kỹ thuật quan trọng tại Chặng 2 là ghép nhãn layout cho từng token OCR. Nếu tọa độ của từ "Sữa tươi tiệt trùng" nằm trọn bên trong khung bao của vùng `table` do Chặng 1 tìm thấy, token này sẽ được gán nhãn phụ `layout_tag = "table"`. Điều này cung cấp thêm ngữ cảnh cho chặng KIE tiếp theo.
-
-### Vị trí trong codebase và Trạng thái
-- **Tập tin**: [`src/docai/pipelines/track_a/ocr_extraction.py`](../../src/docai/pipelines/track_a/ocr_extraction.py)
-- **Class chính**: `OCRExtractor`
-- **Trạng thái**: `SCAFFOLD` (Dự kiến tích hợp PaddleOCR tiếng Việt 'vi' và tiếng Anh 'en' ở Giai đoạn 3).
-
----
-
-## 4. Chặng 3: Trích xuất thông tin then chốt (KIE) với LayoutLMv3
-
-### KIE là gì và tại sao OCR xong vẫn chưa đủ?
-Sau khi OCR chạy xong, bạn có một danh sách gồm hàng trăm từ rời rạc kèm tọa độ:
-- Từ "Tổng": box `[100, 800, 150, 820]`
-- Từ "tiền": box `[160, 800, 210, 820]`
-- Từ "1.500.000": box `[500, 800, 620, 820]`
-
-Nhưng phần mềm kế toán không thể biết con số "1.500.000" kia là Tổng tiền thanh toán hay là Tiền thuế VAT hay Số tài khoản ngân hàng.
-
-> **KIE (Key Information Extraction - Trích xuất thông tin then chốt)** là quá trình phân loại ngữ nghĩa cho các từ trong tài liệu, xác định từ nào thuộc về trường thông tin nghiệp vụ nào (Tên người bán, Ngày lập, Tổng tiền, Tiền thuế).
-
-### Mô hình LayoutLMv3: Transformer Đa phương thức (Multimodal Transformer)
-Các mô hình NLP truyền thống (như BERT) chỉ nhận vào văn bản dạng chuỗi 1 chiều ($x_1, x_2, \dots, x_n$). Nhưng trên hóa đơn, mối quan hệ nằm ở **không gian 2 chiều** và **hình ảnh thị giác**. LayoutLMv3 giải quyết bài toán này bằng cách kết hợp 3 luồng thông tin vào chung một kiến trúc Transformer:
+Models in the YOLO family, such as YOLOv8-doc or DocLayout-YOLO, are candidates for this job. **Non-Maximum Suppression (NMS)** removes overlapping duplicate boxes when several predictions point to the same region. **IoU (Intersection over Union)** is the overlap ratio used to compare two boxes:
 
 ```text
-1. Text Tokens      → [ "Tổng", "tiền", "1.500.000" ]
-2. 2D Bounding Boxes → Chuẩn hoá về thang [0, 1000]
-3. Visual Patches   → Các mẩu ảnh cắt nhỏ từ trang hóa đơn
-                            ↓
-             [ Bộ nhúng đa phương thức (Multimodal Embedding) ]
-                            ↓
-             [ Các lớp Self-Attention đa đầu (Self-Attention Layers) ]
-                            ↓
-             [ Dự đoán nhãn BIO cho từng từ (Token Classification) ]
+IoU = area shared by both boxes / area covered by either box
 ```
 
-### Chi tiết các kỹ thuật cốt lõi trong LayoutLMv3:
+The repository interface is [`layout_detection.py`](../../src/docai/pipelines/track_a/layout_detection.py). The implementation is currently `SCAFFOLD`; no checkpoint has been selected.
 
-#### a. Chuẩn hoá tọa độ về dải [0, 1000]
-Không giống như dải $[0, 1]$ của schema chung, họ mô hình LayoutLM (v1, v2, v3) từ Microsoft quy ước chuẩn hoá tọa độ pixel nguyên bản về số nguyên trong khoảng $[0, 1000]$:
-$$x_{\text{1000}} = \text{int}\left(\frac{x}{W} \times 1000\right), \quad y_{\text{1000}} = \text{int}\left(\frac{y}{H} \times 1000\right)$$
-Sau đó, mỗi tọa độ $x_{\text{min}}, y_{\text{min}}, x_{\text{max}}, y_{\text{max}}$, cùng chiều rộng $w = x_{\text{max}} - x_{\text{min}}$ và chiều cao $h = y_{\text{max}} - y_{\text{min}}$ sẽ được đưa qua bảng tra cứu tọa độ (2D Position Embedding Lookup Table) để biến thành một vector không gian.
+## Why does OCR need both text and coordinates?
 
-#### b. Cơ chế chú ý (Self-Attention) nhìn thấy cả chữ lẫn vị trí
-Trong mạng Transformer, cơ chế Self-Attention cho phép từ "1.500.000" tính toán độ tương quan (attention score) với từ "Tổng tiền" không chỉ vì hai từ này đứng gần nhau trong văn bản, mà còn vì tọa độ $y$ của chúng bằng nhau (cùng nằm trên một hàng ngang) và $x$ của "1.500.000" nằm ngay bên phải $x$ của "Tổng tiền".
+**OCR (Optical Character Recognition)** turns pixels into characters. If a phone photo contains `Total: 500.000đ`, the computer initially sees colors and shapes; OCR produces text that later steps can search and classify.
 
-#### c. Gắn nhãn BIO (BIO Tagging Scheme)
-Một thực thể nghiệp vụ thường bao gồm nhiều từ liên tiếp. Ví dụ tên người bán: "Công ty Cổ phần Công nghệ ABC". Nếu chỉ gán nhãn đơn giản là `SELLER`, mô hình sẽ gặp khó khăn khi phân biệt đâu là điểm bắt đầu của một thực thể mới.
+Modern OCR normally has two jobs:
 
-Quy ước BIO giải quyết vấn đề này:
-- **B (Begin)**: Token đầu tiên mở đầu một thực thể mới (ví dụ `B-SELLER`).
-- **I (Inside)**: Các token tiếp theo nằm bên trong thực thể đó (ví dụ `I-SELLER`).
-- **O (Outside)**: Các token không thuộc bất kỳ thực thể nghiệp vụ nào cần trích xuất (ví dụ chữ "Kính chào quý khách", "Ghi chú").
+1. **Text detection** finds each word or line in the image.
+2. **Text recognition** converts each detected crop into Unicode text.
 
-Minh họa phân tách BIO cho hóa đơn:
+OCR therefore returns more than a string. It returns text, a confidence value and a polygon or box showing where that text was found. A polygon can be converted to a rectangle by taking the minimum and maximum x/y coordinates. The helper [`convert_polygon_to_box`](../../src/docai/pipelines/track_a/ocr_extraction.py) represents this boundary conversion.
 
-| Token | Tọa độ chuẩn hoá [0-1000] | Nhãn dự đoán | Diễn giải |
-| :--- | :--- | :--- | :--- |
-| **Công** | `[50, 100, 120, 130]` | `B-SELLER` | Bắt đầu tên người bán |
-| **ty** | `[125, 100, 160, 130]` | `I-SELLER` | Thuộc tên người bán |
-| **Sữa** | `[165, 100, 220, 130]` | `I-SELLER` | Thuộc tên người bán |
-| **Ngày** | `[50, 140, 110, 165]` | `O` | Từ thừa không cần trích |
-| **15/08/2026** | `[120, 140, 250, 165]` | `B-DATE` | Ngày hóa đơn |
-| **Tổng** | `[50, 800, 120, 830]` | `O` | Từ khóa chỉ dẫn |
-| **tiền** | `[125, 800, 180, 830]` | `O` | Từ khóa chỉ dẫn |
-| **1.500.000** | `[500, 800, 650, 830]` | `B-TOTAL` | Tổng tiền thanh toán |
+The pipeline can also perform a spatial join: if an OCR token lies inside the layout box for `table`, it receives that region as context. This helps the understanding step distinguish a table amount from a total amount.
 
-#### d. Gom nhóm thực thể (Entity Aggregation)
-Sau khi LayoutLMv3 gán nhãn cho từng token, Chặng 3 thực hiện thuật toán quét tuyến tính để ghép các token `B-` và các token `I-` đi liền kề thành một chuỗi văn bản hoàn chỉnh, đồng thời tính hộp giới hạn bao quát (Union Bounding Box) cho toàn bộ thực thể.
+The repository interface is [`ocr_extraction.py`](../../src/docai/pipelines/track_a/ocr_extraction.py), currently `SCAFFOLD`.
 
-### Vị trí trong codebase và Trạng thái
-- **Tập tin**: [`src/docai/pipelines/track_a/kie_layoutlmv3.py`](../../src/docai/pipelines/track_a/kie_layoutlmv3.py)
-- **Class chính**: `LayoutLMv3Extractor`
-- **Trạng thái**: `SCAFFOLD` (Dự kiến fine-tune trên tập hóa đơn mcocr2021 và CORD ở Giai đoạn 4).
+## Why is OCR still not enough?
 
----
-
-## 5. Hiện tượng "Lỗi dây chuyền" (Error Cascade) — Gót chân Asin của Track A
-
-Dù có cấu trúc chặt chẽ và dễ kiểm soát, nhược điểm lớn nhất của mô hình đa chặng là **hiện tượng lỗi dây chuyền (Error Cascade)**.
-
-### Cơ chế tích tụ sai số
-Đầu ra của chặng trước là đầu vào của chặng sau. Bất kỳ sự sai lệch nào ở chặng đầu cũng sẽ khuếch đại lên các chặng sau:
+OCR might return these tokens:
 
 ```text
-[ Ảnh chụp bị mờ góc dưới ]
-           ↓
-[ Chặng 1: Layout Detector ] → Cắt sót vùng chân trang (mất số tổng tiền)
-           ↓
-[ Chặng 2: OCR Extractor ]   → Chỉ nhận diện được các dòng chữ ở trên, không thấy số tiền
-           ↓
-[ Chặng 3: LayoutLMv3 ]      → Dù mô hình ngôn ngữ thông minh đến đâu cũng không thể gán nhãn cho một từ không tồn tại
-           ↓
-[ Kết quả: Precision = 0 cho trường Total Amount ]
+"Total"       at [100, 800, 150, 820]
+"amount"      at [160, 800, 210, 820]
+"1,500,000"   at [500, 800, 620, 820]
 ```
 
-Hoặc trong một trường hợp khác: Chặng 1 cắt đúng, nhưng Chặng 2 OCR nhận diện sai một ký tự: đọc số `8` thành chữ `B`. Khi chuyển sang Chặng 3, LayoutLMv3 nhận được token `"B00.000"` thay vì `"800.000"`, khiến khâu chuẩn hoá số tiền của hệ thống Fraud Engine sau này báo lỗi parse.
+The text is readable, but software still needs to know whether the number is a total, tax, subtotal or account number. **KIE (Key Information Extraction)** assigns business meaning to pieces of text. For a contract, the equivalent output may be a termination clause, renewal clause or payment clause rather than a numeric field.
 
-### Làm thế nào để benchmark Track A một cách công bằng?
-Trong repository này, hệ thống benchmark được thiết kế để đo lường độ chính xác độc lập ở từng mắt xích:
-- **Đo Chặng 2 (OCR)**: Sử dụng chỉ số Tỷ lệ lỗi ký tự (Character Error Rate - CER) và Tỷ lệ lỗi từ (Word Error Rate - WER).
-- **Đo Chặng 3 (KIE)**: Tính Field-level Precision, Recall, F1 trên các trường dữ liệu bằng module [`src/docai/evaluation/metrics.py`](../../src/docai/evaluation/metrics.py).
-Điều này giúp xác định chính xác nguyên nhân khi một tài liệu bị trích xuất thất bại là do OCR đọc sai hay do LayoutLMv3 gán nhãn nhầm.
+## Why does LayoutLMv3 use text, layout and image together?
+
+A text-only model reads a sequence. It may know the words `Total amount`, but it does not naturally know that `1,500,000` is positioned to the right on the same row. **LayoutLMv3** is a **Transformer**, a model architecture that lets each input piece compare its context with other pieces. It combines three kinds of input:
+
+```text
+text tokens       → words or subwords from OCR
+2D bounding boxes → where each token appears
+visual patches    → small pieces of the page image
+```
+
+A **token** is a small unit the model processes; one word can become one or several tokens. An **embedding** is a numeric representation of a token or image patch. You can think of it as placing an item on a map of meaning so related items have useful relationships for the model.
+
+**Attention** is the mechanism that decides which other inputs deserve more influence for the current prediction. On an invoice, the amount may attend to the nearby `Total` label and the same-row layout. Attention is an internal signal, not automatically a human-proof explanation.
+
+LayoutLM-style models commonly normalize pixel coordinates to `[0, 1000]` before processing them. That is an internal model convention; the shared DocAI schema can still retain normalized `[0, 1]` boxes or absolute pixel boxes according to its `normalized` flag.
+
+## How does the model represent multi-word fields?
+
+KIE often uses **BIO tagging** so a field with several tokens has a clear start:
+
+- `B-SELLER` begins a seller name.
+- `I-SELLER` continues that same seller name.
+- `O` means the token is outside the fields being extracted.
+
+For example, `ABC Technology Joint Stock Company` can be tagged `B-SELLER I-SELLER I-SELLER I-SELLER`. An aggregation step joins consecutive pieces and computes one union bounding box for the complete field.
+
+The KIE interface is [`kie_layoutlmv3.py`](../../src/docai/pipelines/track_a/kie_layoutlmv3.py), currently `SCAFFOLD`. A **pretrained model** is a model that has already learned general patterns from earlier data. **Fine-tuning** adapts it to a narrower task, such as invoice fields or contract clauses. A **checkpoint** is the saved model state used for inference. **Inference** means using that saved state on a new document. LayoutLMv3/Hugging Face are integration candidates; the project has not fine-tuned or selected a production checkpoint in this task.
+
+## Why can Invoice and Contract use different specialists?
+
+A Track is like a hospital, not one doctor:
+
+```text
+Track A
+├─ layout specialist
+├─ OCR specialist
+├─ invoice KIE specialist
+└─ contract/clause specialist
+```
+
+An invoice specialist learns fields such as seller, date, tax and total. A contract specialist needs clause spans, headings, page context and a legal-domain taxonomy. One model may eventually serve both, but the architecture does not assume that it must.
+
+## Where does Track A output go?
+
+The final output is mapped to [`UnifiedDocumentOutput`](../../src/docai/core/schema.py), then passed to FastAPI, risk rules and the React UI. The shared output contains fields, confidence, evidence boxes, risk flags, timing and metadata. This contract lets Product Engineering consume either Track A or Track B without copying model logic into TypeScript.
+
+Track A is currently a pipeline interface and scaffold. Claims about accuracy require real inference, ground truth and an evaluation run.

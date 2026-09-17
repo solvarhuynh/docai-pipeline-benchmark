@@ -1,72 +1,58 @@
-# Data dictionary — DocAI Product + Research
+# Data dictionary: what does a DocAI result mean?
 
-Tài liệu này mô tả các dataset mục tiêu và nguyên tắc mapping vào shared envelope [`src/docai/core/schema.py`](../../src/docai/core/schema.py). Đây là data plan, không phải bằng chứng dữ liệu đã được tải. Hiện `data/raw/`, `data/interim/` và `data/processed/` chưa chứa dataset thật trong task này.
+The data dictionary describes the contract shared by Track A, Track B, FastAPI and the React frontend. It is implemented as Pydantic models in [`src/docai/core/schema.py`](../../src/docai/core/schema.py) and mirrored as TypeScript interfaces in [`frontend/src/types/document.ts`](../../frontend/src/types/document.ts).
 
-## Dataset và vai trò
+## The shared envelope
 
-- **mcocr2021** — hóa đơn/biên lai Việt Nam chụp bằng camera; polygon + transcription; phục vụ Invoice extraction, OCR/layout và robustness.
-- **CORD** — retail receipts; hierarchical JSON có `menu`, `sub_total`, `total`; phục vụ Invoice KIE và đối chiếu.
-- **SROIE** — scanned receipts; OCR text boxes và entities `company`, `date`, `address`, `total`; phục vụ Invoice OCR/KIE đối chiếu.
-- **CUAD** — hợp đồng pháp lý với SQuAD-style `context`, `qas`, `answers` span; phục vụ Contract Information Extraction, Clause Classification/Detection, Contract Risk Analysis và generalization research.
+Both engines return `UnifiedDocumentOutput`. Think of it as a shipping box with a stable label: the contents differ between an invoice and a contract, but every consumer knows where to find the document type, extracted items, confidence and review flags.
 
-Quy mô và phân bố cụ thể chỉ được ghi sau EDA trên dữ liệu thật. Các con số danh nghĩa trong nguồn dataset không phải số liệu benchmark của repository.
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `document_type` | `invoice \| receipt \| contract \| unknown` | The kind of document being processed. |
+| `fields` | array of `ExtractedField` | Extracted invoice fields or contract metadata/clause items. |
+| `overall_confidence` | number from `0` to `1` | A pipeline-level confidence estimate. It is not proof of correctness. |
+| `risk_flags` | array of `RiskFlag` | Domain-specific signals that deserve human review. |
+| `execution_time_ms` | number or `null` | Measured processing time when available. |
+| `pipeline_track` | string or `null` | The engine that produced the result. |
+| `metadata` | JSON object | Additional trace information such as image size or checkpoint. |
 
-## Mapping theo domain
+An **API contract** is the agreement about this shape between software components. If it changes, backend and frontend consumers must be reviewed together.
 
-### Invoice/Receipt
+## What is an extracted field?
 
-Các field có thể dùng khi dataset/schema hỗ trợ:
+`ExtractedField` represents one answer found in the source document. For an invoice, `field_name` might be `seller_name` or `total_amount`. For a contract, it might identify a clause or metadata value such as `termination_clause`.
 
-- `seller_name`: mcocr2021 seller; CORD store/name; SROIE `company`.
-- `invoice_date`: timestamp/date tương ứng.
-- `subtotal_amount`: subtotal khi có dữ liệu phù hợp.
-- `tax_amount`: VAT/tax khi có dữ liệu phù hợp.
-- `total_amount`: total/total price.
-- `line_items`: CORD `menu` hoặc item annotations tương ứng.
-- `seller_address`: SROIE `address` khi product schema cần và mapping được chốt.
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `field_name` | string | Stable business name, not a display sentence. |
+| `field_value` | string | The normalized value shown to consumers. |
+| `confidence` | number from `0` to `1` | Confidence for this item. |
+| `bounding_box` | `BoundingBox` or `null` | Image location when available. |
+| `page_number` | integer, at least `1` | Page containing the item. |
+| `raw_text` | string or `null` | Original text before normalization. |
 
-Tên field trong `fields[]` là dữ liệu domain-specific, không phải các thuộc tính bắt buộc cố định của Pydantic envelope. Không thêm field chỉ vì một dataset khác có field đó.
+An invoice field can use a box around the printed number. A contract clause may instead need a page and supporting text; a box is optional because a text span is not always naturally represented by one image rectangle.
 
-### Contract
+## How are locations represented?
 
-CUAD giữ semantics span/clause, không map vào `seller_name`, `invoice_date`, `total_amount` hay `line_items` chỉ để làm cho hai domain giống nhau. Mapping dự kiến là:
+`BoundingBox` stores `xmin`, `ymin`, `xmax` and `ymax`. The order is always top-left minimum coordinates followed by bottom-right maximum coordinates. `normalized: true` means each coordinate is in `[0, 1]`; `false` means absolute coordinates such as pixels.
 
-- `document_type = contract`;
-- `field_name` là clause category đã được chốt trong taxonomy;
-- `field_value` là supporting text span;
-- `raw_text` giữ text gốc khi cần;
-- `page_number`/`bounding_box` được điền khi có document-to-page alignment;
-- metadata contract như parties/effective date được thêm chỉ khi annotation/schema thực tế hỗ trợ.
+LayoutLM-style model inputs may use a separate `[0, 1000]` convention. That internal representation must be converted at the boundary; consumers should follow the schema's `normalized` flag rather than guessing.
 
-Các category có thể nghiên cứu gồm governing law, termination, confidentiality, liability, indemnification và dispute resolution. Đây là taxonomy candidate/scaffold, không phải tuyên bố CUAD extraction đã hoàn thành.
+## What is a risk flag?
 
-## Shared output contract
+`RiskFlag` is a review signal, not a verdict. It contains a stable `rule_id`, a readable `rule_name`, a `severity`, a `description` and an optional `target_field`.
 
-Hai track đều phải trả `UnifiedDocumentOutput` với:
+Invoice Risk can flag arithmetic inconsistency or low confidence. Contract Risk can flag a missing or unusual clause. The envelope uses one list so the UI can display flags consistently, while the rule implementation remains domain-specific. It does not mean Invoice and Contract fields must have the same taxonomy.
 
-- `document_type`: `invoice`, `receipt`, `contract` hoặc `unknown`;
-- `fields[]`: `field_name`, `field_value`, confidence và optional evidence location;
-- `risk_flags[]`: domain risk flags;
-- execution/pipeline metadata khi đo được.
-
-Envelope chung giúp FastAPI, Dash và Evaluation không phụ thuộc output tùy tiện của model. Nó không có nghĩa field Invoice và Contract phải giống nhau.
-
-## Data quality và EDA
-
-EDA cần kiểm tra:
-
-- Invoice: ảnh mờ/nghiêng, độ phân giải, polygon, OCR text và phân bố field/line item.
-- Contract: độ dài context, span offset, số trang nếu có, overlap/thiếu clause và phân bố taxonomy.
-- Mapping: giữ provenance từ annotation gốc đến `field_name`, `field_value`, `raw_text` và evidence.
-
-Thực hiện bằng `notebooks/01-eda.ipynb` hoặc `scripts/run_eda.py` sau khi phase dữ liệu được phê duyệt. Không tạo số liệu giả để điền báo cáo.
-
-## Lưu trữ
+## How does data move through the system?
 
 ```text
-data/raw/<dataset>/        # dữ liệu gốc, không sửa trực tiếp
-data/interim/              # chuyển đổi/trung gian
-data/processed/            # chuẩn hoá cho product/research
+model/pipeline output
+  → Pydantic validation in Python
+  → JSON response from FastAPI
+  → matching TypeScript type
+  → React rendering
 ```
 
-Dataset license, provenance, split và ground truth phải được ghi kèm trước khi dùng cho Research milestone.
+The frontend must not read Python files or duplicate extraction logic. Empty lists, `null` values and scaffold responses must remain visible as such. The current parse endpoints return `501 Not Implemented`, so no real extraction result should be invented in the UI.

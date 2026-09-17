@@ -1,129 +1,73 @@
-# Quy ước giải thích kỹ thuật và khái niệm — DocAI
+# Explanation style — how technical concepts should be taught
 
-Tài liệu này xác lập quy chuẩn bắt buộc cho toàn bộ các bài viết giải thích kiến trúc, thuật toán và mô hình machine learning trong thư mục `docs/concepts/`.
+These rules keep the technical documentation accurate without assuming that the reader already knows AI/ML/DL.
 
-Mục tiêu cao nhất: giúp một người có nền tảng lập trình cơ bản nhưng chưa từng tiếp xúc với Machine Learning, Computer Vision hay Document AI có thể hiểu bản chất từng kỹ thuật, lý do vì sao sản phẩm Invoice/Contract cần nó và nó đóng góp gì cho cả Product flow lẫn Research Lab.
+## Tell the story before listing terms
 
----
-
-## 1. Nguyên tắc cốt lõi: Kể chuyện theo dòng tư duy, không liệt kê định nghĩa khô khan
-
-Không bắt đầu bài viết bằng một chuỗi định nghĩa từ điển rời rạc kiểu:
-- OCR là...
-- KIE là...
-- VLM là...
-
-Mọi bài viết phải dẫn dắt người đọc theo một chuỗi câu hỏi tự nhiên:
+Use this order:
 
 ```text
-Bức tranh lớn là gì?
-        ↓
-Khó khăn / Vấn đề thực tế gì xuất hiện?
-        ↓
-Tại sao cách làm thông thường thất bại?
-        ↓
-Kỹ thuật mới giải quyết vấn đề bằng cách nào?
-        ↓
-Ví dụ đời thường cụ thể là gì?
-        ↓
-Nó nằm ở module nào trong repository DocAI?
-        ↓
-Ý nghĩa của nó đối với pipeline là gì? ("Vậy thì sao?")
+What is the product trying to do?
+  ↓
+What practical problem gets in the way?
+  ↓
+Why is the simple approach insufficient?
+  ↓
+What technique addresses that problem?
+  ↓
+What is the everyday intuition?
+  ↓
+Where is it in DocAI?
+  ↓
+Where does the output go next?
 ```
 
-Mỗi đoạn văn phải giải quyết thỏa đáng câu hỏi: **"Biết điều này thì giúp ích gì cho việc hiểu và vận hành hệ thống DocAI?"** trước khi chuyển sang nội dung tiếp theo.
+Before moving on, answer “so what?” for the reader.
 
----
+## Explain the first occurrence of a technical term
 
-## 2. Giữ nguyên thuật ngữ tiếng Anh và giải thích ngay bằng ngôn ngữ đời thường
+Keep the English term, then give a plain-language explanation and a document example. For example:
 
-Trong ngành Trí tuệ nhân tạo, các thuật ngữ tiếng Anh đã trở thành chuẩn mực giao tiếp quốc tế. Khi một thuật ngữ xuất hiện lần đầu:
-- Bắt buộc giữ nguyên tên tiếng Anh chuẩn (kèm chữ viết tắt nếu có).
-- Cung cấp ngay một câu giải thích bằng ngôn ngữ đời thường, ngắn gọn, súc tích.
-- Tuyệt đối không dùng một thuật ngữ hàn lâm khác để định nghĩa cho thuật ngữ đang xét.
+> **OCR (Optical Character Recognition)** is the step that turns letters in an image into text. When a phone camera sees “Total: 500,000”, OCR gives later software a string to work with. OCR does not, by itself, know that the number is the invoice total.
 
-Cách viết chuẩn mực:
-> **OCR (Optical Character Recognition - Nhận dạng ký tự quang học)**, nôm na là công nghệ giúp máy tính "đọc chữ từ ảnh". Nếu con người nhìn một tờ hóa đơn và đọc được dòng "Tổng tiền: 350.000 VND", thì OCR đang cố làm công việc tương tự nhưng bằng thuật toán máy tính.
+Apply the same treatment to KIE, VLM, Transformer, token, embedding, attention, bounding box, pretrained model, fine-tuning, inference, schema, Pydantic, API, REST, JSON, Precision, Recall, F1-score, latency and structured output when they first appear.
 
----
+Do not define a difficult term with another unexplained difficult term. Start with a familiar analogy, then add the formal definition.
 
-## 3. Luôn sử dụng ví dụ đời thường và phép so sánh trực quan
+## Use both product domains
 
-Ưu tiên liên hệ các cơ chế máy học phức tạp với những tình huống thực tế mà ai cũng từng gặp:
-- Đọc hóa đơn khi đi siêu thị.
-- Giáo viên chấm bài thi trắc nghiệm hoặc bài luận.
-- Nhân viên kiểm toán đối chiếu chứng từ kế toán.
-- Bác bảo vệ kiểm tra danh sách khách ra vào tòa nhà.
-- Người phân loại thư từ tại bưu điện.
+Use concrete Invoice and Contract examples. Explain when a concept is shared and when it is domain-specific:
 
-Ví dụ khi giải thích chỉ số **Recall (Độ phủ)**:
-- *Không viết*: "Recall = TP / (TP + FN)."
-- *Hãy viết*: "Hãy tưởng tượng doanh nghiệp nhận được 100 hóa đơn bị làm giả số tiền. Nếu hệ thống quét qua và chỉ phát hiện được 27 hóa đơn sai, thì Recall chỉ đạt 27%. Điều nguy hiểm ở đây không phải con số toán học, mà là 73 trường hợp gian lận đã lọt lưới kiểm soát và đi thẳng vào hệ thống thanh toán."
+- Invoice: fields such as vendor, date, tax and total; numbers and tables matter.
+- Contract: metadata and clause spans such as termination or governing law; long context and meaning matter.
 
-Chỉ đưa công thức toán học sau khi người đọc đã thấu suốt ý nghĩa thực tế.
+Do not pretend that one field list or one model must fit both domains.
 
----
+## Explain code and flow, not only theory
 
-## 4. Tiêu đề phải là câu hỏi dẫn dắt người đọc
+Every technical section should identify:
 
-Thay vì đặt tiêu đề danh từ chung chung, hãy sử dụng các câu hỏi gợi mở tò mò:
-- Tránh: `## OCR` -> Ưu tiên: `## OCR là gì và tại sao hệ thống Document AI bắt buộc phải có nó?`
-- Tránh: `## LayoutLMv3` -> Ưu tiên: `## Tại sao chỉ đọc được chữ vẫn chưa đủ, và LayoutLMv3 nhìn trang giấy khác OCR ở điểm nào?`
-- Tránh: `## Precision và Recall` -> Ưu tiên: `## Precision thấp và Recall thấp: Đâu là rủi ro nghiêm trọng hơn cho doanh nghiệp?`
+- the relevant file under `src/docai/` or `frontend/`;
+- the input and output;
+- whether it belongs to Track A, Track B, Product Engineering or Research;
+- how the output reaches `UnifiedDocumentOutput`, FastAPI and React;
+- what metric or test would validate the claim.
 
----
+## Put intuition before formulas
 
-## 5. Luôn neo kỹ thuật trở lại mã nguồn của repository
+For a metric such as Recall, first explain the practical question: “Of all the real clauses that should have been found, how many did the system find?” Then define TP and FN with an example, and only then show the formula.
 
-Tài liệu trong `docs/concepts/` không phải là bách khoa toàn thư lý thuyết chung chung. Sau khi giải thích cơ chế, mỗi phần bắt buộc phải trả lời:
-- Kỹ thuật này nằm ở file hoặc module cụ thể nào trong `src/docai/`?
-- Ai gọi nó trong luồng chạy của hệ thống?
-- Input của nó là gì và Output của nó đổ về đâu?
-- Thuộc Track A (Classic) hay Track B (VLM-native)?
-- Kết quả của nó ảnh hưởng thế nào đến JSON schema thống nhất (`docai.core.schema`)?
-- Chỉ số nào trong `docai.evaluation.metrics` sẽ được dùng để đo lường nó?
+Never call a metric good or bad without naming the dataset, domain, field, track and measurement conditions.
 
----
+## Be honest about status
 
-## 6. Phân định minh bạch trạng thái thực tế của công nghệ trong repository
+- **Implemented/Baseline**: code and tests/runtime evidence support the claim.
+- **Scaffold**: interface or page exists, but the real behavior is incomplete.
+- **Planned**: on the roadmap, not yet started.
+- **Not selected**: a model or tool is still a candidate.
 
-Tài liệu kỹ thuật phải trung thực tuyệt đối với hiện trạng mã nguồn. Phải phân biệt rõ 5 mức độ:
-1. **ĐÃ CHỐT**: Công nghệ hoặc quyết định kiến trúc đã được lựa chọn chính thức (ví dụ: JSON schema Pydantic, Plotly Dash, cấm Power BI).
-2. **ĐANG SỬ DỤNG**: Mã nguồn đã được hiện thực hoá hoàn chỉnh và có kiểm thử tự động xác nhận hoạt động; khi gắn nhãn trạng thái cho module cụ thể phải đối chiếu cả implementation và test hiện có.
-3. **SCAFFOLD**: Khung module, class, interface, tham số đã được dựng sẵn kèm TODO và ngoại lệ `NotImplementedError`, sẵn sàng tiếp nhận mô hình thật (ví dụ: `LayoutDetector`, `OCRExtractor`, `LayoutLMv3Extractor`, `VLMDocumentParser`, `DocumentExplainer`).
-4. **DỰ KIẾN Ở GIAI ĐOẠN X**: Kỹ thuật đã có lộ trình rõ ràng trong `docs/specs/implementation-guide.md` nhưng chưa đến giai đoạn thực hiện (ví dụ: fine-tune LayoutLMv3 ở Giai đoạn 4, kiểm thử độ bền ở Giai đoạn 9).
-5. **CHƯA CHỐT CỤ THỂ**: Kỹ thuật nằm trong định hướng nhưng chưa cố định phiên bản hoặc checkpoint cụ thể (ví dụ: mô hình VLM chính xác cho Track B khi mở rộng hợp đồng CUAD).
+Attention maps are not automatically explanations. Risk flags are not legal conclusions. A mock result is not a benchmark.
 
-Tuyệt đối không biến kế hoạch tương lai thành chức năng đã chạy thật.
+## Keep the structure readable
 
----
-
-## 7. Quy trình đưa công thức toán học: Trực giác trước, Công thức sau
-
-Nếu cần trình bày công thức toán học, bắt buộc tuân theo thứ tự 6 bước:
-1. **Vấn đề đời thường**: Tình huống phát sinh nhu cầu đo đạc.
-2. **Ý nghĩa trực giác**: Ý nghĩa thực chất của con số muốn đo.
-3. **Ví dụ số học nhỏ**: Tính nhẩm thử trên 2-3 mẫu cụ thể.
-4. **Công thức toán học**: Sử dụng định dạng KaTeX rõ ràng.
-5. **Giải thích từng ký hiệu**: Từng biến số trong công thức đại diện cho cái gì.
-6. **Quay lại hệ thống DocAI**: Con số này được tính ở module nào (`docai.evaluation.metrics`).
-
----
-
-## 8. Phân biệt rõ các tầng khái niệm kỹ thuật
-
-Không để người đọc nhầm lẫn giữa các cấp độ:
-- **Bài toán / Nhiệm vụ (Task / Problem)**: OCR, Layout Detection, Key Information Extraction (KIE).
-- **Mô hình / Kiến trúc (Model / Architecture)**: YOLOv8-doc, LayoutLMv3, PaddleOCR-VL, Transformer.
-- **Thư viện / Công cụ (Library / Tool)**: PaddleOCR, PyTorch, Ultralytics, OpenCV.
-- **Framework hạ tầng và ứng dụng (Infrastructure Framework)**: FastAPI, Modal, Plotly Dash, Docker.
-- **Hợp đồng dữ liệu (Data Contract)**: Pydantic models trong `docai.core.schema`.
-
----
-
-## 9. Giọng văn và Quy chuẩn định dạng
-
-- **Giọng văn**: Đóng vai trò như một người kỹ sư cố vấn giàu kinh nghiệm, giải thích mạch lạc, gần gũi, tôn trọng tư duy logic của người học.
-- **Ngôn ngữ**: Sử dụng tiếng Việt chuẩn có dấu UTF-8.
-- **Tuyệt đối không dùng emoji hoặc icon**: Không dùng bất kỳ biểu tượng cảm xúc nào để đảm bảo tính trang trọng và độ tin cậy của tài liệu kỹ thuật chuẩn công nghiệp.
-- **Liên kết chéo**: Trỏ link markdown trực tiếp đến các file mã nguồn và tài liệu liên quan để người đọc dễ dàng đối chiếu.
+Use question-shaped headings where they help the reader understand the purpose, such as “Why can OCR read words but not identify the total?” Avoid a page that is only a glossary. Do not add a file for every keyword.

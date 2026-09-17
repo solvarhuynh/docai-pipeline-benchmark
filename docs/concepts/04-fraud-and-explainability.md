@@ -1,79 +1,60 @@
-# 04. Vì sao Document Intelligence cần Risk và Explainability?
+# What should DocAI flag, and how can a reviewer understand why?
 
-AI có thể đọc ra một field nhưng người dùng vẫn cần biết field đó đến từ đâu và có dấu hiệu bất thường nào không. DocAI vì vậy có hai lớp hỗ trợ review: domain risk rules và explainability evidence. Hai lớp này phục vụ cả Invoice Intelligence và Contract Intelligence.
+Extraction answers “what did the document say?” Risk and explainability answer two follow-up questions: “what deserves attention?” and “where did this result come from?” They are decision-support layers around both Track A and Track B.
 
-## Model prediction khác rule-based risk ở điểm nào?
+## Why is an extracted value not automatically trustworthy?
 
-Model prediction là kết quả xác suất, thường đi kèm confidence. Rule engine là logic nghiệp vụ minh bạch, dùng output đã trích xuất để gắn cờ khi có điều kiện cụ thể. Risk flag là tín hiệu để người dùng xem xét, không phải phán quyết cuối cùng.
+Suppose an invoice says subtotal `100`, tax `10` and total `150`. All three values may have been read successfully, but the arithmetic does not agree. Or suppose OCR read a blurry `8` as `B`. A system should expose the inconsistency for review instead of silently treating the output as truth.
 
-```text
-Document → Track A/B → UnifiedDocumentOutput
-                     ↙                 ↘
-             Domain Risk           Evidence / Explanation
-                     ↘                 ↙
-                    Human review / decision support
-```
+The shared output carries `confidence`, `bounding_box`, `raw_text` and `risk_flags`. Confidence is the model's or pipeline's estimate of certainty; it is not a guarantee of correctness. A low-confidence result deserves attention, but a high-confidence hallucination or systematic error can still be wrong.
 
-## Invoice Risk: kiểm tra điều gì?
+## Why must Invoice Risk and Contract Risk stay separate?
 
-`src/docai/fraud/rules.py` hiện có baseline cho Invoice/Receipt:
+**Invoice Risk** concerns signals such as arithmetic mismatch, missing important fields, inconsistent amounts or unusually low extraction confidence. These are clues for checking a transaction; they are not proof of fraud.
 
-- `subtotal_amount + tax_amount` so với `total_amount`, trong `arithmetic_tolerance`;
-- thiếu `total_amount`;
-- confidence thấp ở field liên quan đến amount/total.
+**Contract Risk** concerns review-worthy language or missing information, such as an absent termination clause, an unusual renewal condition or inconsistent metadata. A missing clause is not fraud. Contract Risk supports a reviewer and does not decide whether an agreement is legal, enforceable or appropriate. It does not replace a lawyer.
 
-Rule `RULE_INVOICE_ARITHMETIC_MISMATCH` phát hiện inconsistency số học. Rule confidence chỉ phát hiện tín hiệu cần review; confidence thấp không tự chứng minh tài liệu bị chỉnh sửa hay gian lận. Chuẩn hoá tiền tệ nâng cao, missing-field taxonomy rộng hơn và kiểm tra forensic chưa triển khai.
+The rule layer lives in [`src/docai/fraud/`](../../src/docai/fraud/). Its name is historical; the behavior is domain-specific risk checking.
 
-## Contract Risk: khác Invoice Risk như thế nào?
+## How does a rule-based risk flag work?
 
-Contract không nên bị gắn nhãn “fraud” chỉ vì phát hiện một vấn đề về clause. Contract Risk tập trung vào:
-
-- missing important/required clause;
-- clause category cần người review;
-- metadata hoặc clause inconsistency khi có evidence;
-- supporting passage để người dùng kiểm tra lại.
-
-`check_contract_clauses` hiện kiểm tra một nhóm clause bắt buộc (`governing_law`, `termination_clause`, `dispute_resolution`) và tạo `RiskFlag`. Đây là baseline, không phải taxonomy CUAD đầy đủ. CUAD giữ vai trò kép: hỗ trợ Contract Information Extraction/Clause Detection/Risk Analysis trong product và cung cấp ground truth cho research.
-
-Hệ thống hỗ trợ document review, information extraction và decision support. Nó không thay luật sư, không đưa ra tư vấn pháp lý chắc chắn và không kết luận hợp đồng hợp pháp/bất hợp pháp.
-
-## Explainability cần trả lời câu hỏi gì?
-
-Người dùng cần biết:
-
-1. Thông tin này được lấy từ đâu?
-2. Tại sao hệ thống đưa ra risk flag này?
-
-Định hướng evidence theo domain:
-
-- Invoice: field bounding box, field highlighting, confidence và rule inputs.
-- Contract: text span, page/clause location, clause category và supporting passage.
-
-Attention, heatmap, visual grounding và Grad-CAM có thể hỗ trợ phân tích model, nhưng attention không đồng nghĩa với explanation hoàn hảo. Cần validation riêng trước khi dùng như bằng chứng cho người dùng.
-
-## Hai track cung cấp evidence ra sao?
+A **rule-based** check is an explicit test that a person can read. For example:
 
 ```text
-Track A: Layout/OCR/KIE
-  → token và bounding box
-  → field evidence (khi pipeline thực tế hỗ trợ)
-
-Track B: VLM structured response
-  → model-provided grounding hoặc supporting span (nếu có)
-  → evidence sau schema validation
+if subtotal + tax does not equal total:
+    create an invoice arithmetic risk flag
 ```
 
-`src/docai/explainability/explainer.py` hiện định nghĩa interface cho LayoutLMv3 attention, VLM grounding và overlay heatmap nhưng các method còn `NotImplementedError`. Trạng thái là `SCAFFOLD`, không phải runtime explanation.
+The result identifies a rule, severity, description and optional target field. A flag asks someone to investigate. It does not claim that the document is fraudulent or that a contract is invalid.
 
-## Vị trí trong product và research
+## What counts as useful evidence?
 
-- Product sử dụng risk flags/evidence để người dùng review Invoice hoặc Contract.
-- Research đánh giá xem evidence có location/supporting passage hay không, mức ổn định trên clean/noisy input và trade-off giữa hai track.
-- API `/explain` là product interface; `/compare` và các báo cáo evaluation là Research Lab.
+For an invoice, a **bounding box** can highlight the source area for `total_amount`; the reviewer can compare the highlighted number with the printed label. For a contract, evidence is usually a text span, page number, clause heading or supporting passage. Evidence should answer “which part of the document supports this field or flag?”
 
-Các module liên quan:
+The product UI may eventually show:
 
-- [`src/docai/fraud/rules.py`](../../src/docai/fraud/rules.py)
-- [`src/docai/explainability/explainer.py`](../../src/docai/explainability/explainer.py)
-- [`src/docai/core/schema.py`](../../src/docai/core/schema.py)
-- [`tests/unit/test_fraud_rules.py`](../../tests/unit/test_fraud_rules.py)
+```text
+field/clause → value → confidence → source location → risk flag
+```
+
+If the pipeline cannot provide evidence, the UI should say so. It must not draw a convincing highlight that was not produced by the model or a verified post-processing step.
+
+## Is attention a perfect explanation?
+
+**Attention** is an internal mechanism that weights context while a Transformer makes a prediction. An attention map or **heatmap** can be useful for investigation: brighter areas may show which tokens or image regions received more weight. But attention is not automatically causal evidence, and a pretty heatmap does not prove that the model relied on the correct text.
+
+Other methods such as visual grounding or gradient-based overlays may also be evaluated. In this repository, [`src/docai/explainability/`](../../src/docai/explainability/) is a scaffold. Explainability is complete only when a real model produces evidence and that evidence is checked against suitable annotations or supporting text.
+
+## Where does this layer fit?
+
+```text
+Track A or Track B
+        ↓
+UnifiedDocumentOutput
+        ├─ fields/clauses + confidence + evidence
+        └─ domain risk rules
+                    ↓
+            reviewer-facing result
+```
+
+This separation keeps extraction, risk policy and user explanation understandable and testable. It also prevents the frontend from inventing model logic.
