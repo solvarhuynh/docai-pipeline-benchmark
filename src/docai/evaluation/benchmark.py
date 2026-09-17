@@ -2,7 +2,7 @@
 Module điều phối chạy benchmark và so sánh đối đầu (Benchmark Runner).
 
 Thuộc: Giai đoạn 9 và 10 (Benchmark tổng hợp và API so sánh).
-Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md.
+Tham chiếu: docs/specs/implementation-guide.md và docs/tasks/task-split.md.
 
 Mục đích:
 Cung cấp class BenchmarkRunner nhận đầu vào là tài liệu, thực thi song song hai track,

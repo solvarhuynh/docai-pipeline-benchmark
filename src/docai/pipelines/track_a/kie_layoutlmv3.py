@@ -2,7 +2,7 @@
 Module Key Information Extraction (KIE) với LayoutLMv3 cho Track A - Classic Pipeline.
 
 Thuộc: Giai đoạn 4 (Track A: Fine-tune LayoutLMv3 cho Invoice/Contract theo schema thực tế).
-Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 4.
+Tham chiếu: docs/specs/implementation-guide.md và docs/tasks/task-split.md, Giai đoạn 4.
 
 Mục đích:
 Fine-tune mô hình LayoutLMv3 trên tập dữ liệu được phê duyệt (Invoice hoặc Contract, theo phase)

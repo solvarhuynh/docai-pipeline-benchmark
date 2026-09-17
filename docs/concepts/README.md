@@ -1,56 +1,45 @@
-# Concept map — learn DocAI from the document outward
+# Lộ trình khái niệm — học DocAI từ tài liệu đi ra
 
-This folder explains why DocAI is built this way. It is written for someone who can program and work with data, but does not work with AI/ML/DL every day.
+Thư mục này giải thích vì sao DocAI được thiết kế như hiện tại, dành cho người biết lập trình/data nhưng chưa làm AI/ML/DL hằng ngày.
 
-## The story in one page
-
-A document starts as pixels or a PDF. The product must turn it into information a person or another system can use:
+## Câu chuyện trong một trang
 
 ```text
-Invoice or Contract
-  ↓
-Read words, layout and meaning
-  ↓
-Extract fields or clauses
-  ↓
-Validate and attach risk/evidence
-  ↓
-Return JSON through FastAPI
-  ↓
-Show the result in React
+Invoice hoặc Contract
+  ↓ đọc chữ, layout và meaning
+  ↓ trích xuất field hoặc clause
+  ↓ validate, gắn risk/evidence
+  ↓ trả JSON qua FastAPI
+  ↓ hiển thị trên React
 ```
 
-Track A and Track B are two ways to do the middle part. The product can use either. The Research Lab compares them only when real outputs and ground truth exist.
+Track A và Track B là hai cách xử lý phần giữa. Product có thể dùng một trong hai; Research chỉ so sánh khi có output thật và ground truth.
 
-## Suggested reading path
+## Thứ tự nên đọc
 
-1. [`01-docai-foundations.md`](./01-docai-foundations.md) — why a document is more than an image, and what structured output means.
-2. [`02-track-a-classic.md`](./02-track-a-classic.md) — why a specialist pipeline separates layout, OCR and understanding.
-3. [`03-track-b-vlm.md`](./03-track-b-vlm.md) — why a VLM can combine visual understanding and response generation.
-4. [`04-fraud-and-explainability.md`](./04-fraud-and-explainability.md) — how risk flags and evidence support review without overclaiming.
-5. [`05-evaluation.md`](./05-evaluation.md) — how to decide whether a pipeline is actually performing well.
+1. [`01-docai-foundations.md`](./01-docai-foundations.md) — document khác image thế nào và structured output là gì.
+2. [`02-track-a-classic.md`](./02-track-a-classic.md) — vì sao pipeline specialist tách layout, OCR và understanding.
+3. [`03-track-b-vlm.md`](./03-track-b-vlm.md) — vì sao VLM có thể kết hợp visual understanding và response generation.
+4. [`04-fraud-and-explainability.md`](./04-fraud-and-explainability.md) — risk flag/evidence hỗ trợ review ra sao.
+5. [`05-evaluation.md`](./05-evaluation.md) — cách biết pipeline hoạt động tốt đến đâu.
 
-Read the architecture guide alongside this path: [`docs/architecture/architecture-explained.md`](../architecture/architecture-explained.md).
+Đọc song song [`docs/architecture/architecture-explained.md`](../architecture/architecture-explained.md) để nối khái niệm với code.
 
-## The mental model
+## Mental model
 
 ```text
-Product problem
-  → document representation
-  → processing engine
-  → shared schema
-  → API and frontend
-  → risk/evidence
-  → research measurement
+product problem → document representation → processing engine
+                → shared schema → API/frontend → risk/evidence
+                → research measurement
 ```
 
-Every concept should answer four questions: What problem does it solve? What is the everyday intuition? Where is it in this repository? Where does its output go next?
+Mỗi khái niệm cần trả lời: giải quyết vấn đề gì, trực giác đời thường là gì, nằm ở file nào, và output đi đâu tiếp.
 
-## Status vocabulary
+## Từ chỉ trạng thái
 
-- **Implemented/Baseline** means code exists and tests or runtime evidence support the claim.
-- **Scaffold** means an interface or page exists, but the real implementation is not complete.
-- **Planned** means it belongs to the roadmap but has not started.
-- **Not selected** means a model or external technology is still a candidate.
+- **Implemented/Baseline:** code có và có test/runtime evidence.
+- **Scaffold:** interface/page có nhưng hành vi thật chưa hoàn chỉnh.
+- **Planned:** có trong roadmap nhưng chưa bắt đầu.
+- **Not selected:** model/tool còn là candidate.
 
-At this stage the React frontend, model inference, API orchestration and Research Lab are scaffolds or planned. No document output or benchmark metric should be treated as real unless it is produced by a real run.
+Hiện React frontend, model inference, API orchestration và Research Lab chủ yếu là scaffold/planned. Không coi output hoặc metric là thật nếu chưa có run thật.

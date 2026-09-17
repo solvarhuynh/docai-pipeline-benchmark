@@ -1,36 +1,15 @@
-# Benchmark results — DocAI Research Lab
+# Kết quả benchmark — DocAI Research Lab
 
-**Trạng thái: PLANNED / REPORT SCAFFOLD.** Repository chưa tải dataset, chưa có output inference thật và chưa có benchmark result. Không điền số liệu giả vào tài liệu này.
+**Trạng thái: PLANNED / REPORT SCAFFOLD.** Repository chưa tải dataset, chưa có inference output thật và chưa có benchmark result. Không điền metric giả.
 
-## Research scope
+## Phạm vi nghiên cứu
 
-Benchmark sẽ so sánh Track A Classic và Track B VLM-native khi cả hai trả cùng `UnifiedDocumentOutput`, theo từng domain:
+So sánh Track A Classic và Track B VLM-native khi cả hai trả cùng `UnifiedDocumentOutput`, tách riêng Invoice và Contract. Invoice là tài liệu ngắn, nhiều số/bảng; Contract là tài liệu dài, clause và quan hệ ngữ nghĩa phức tạp. CUAD phục vụ cả Contract capability và research.
 
-- **Invoice**: tài liệu ngắn, nhiều số, bảng biểu và field tương đối rõ.
-- **Contract**: tài liệu dài, ngôn ngữ pháp lý, clause và quan hệ ngữ nghĩa phức tạp; CUAD phục vụ cả Contract capability và generalization research.
+## Metrics dự kiến
 
-## Metrics sẽ ghi nhận
+Field/clause Precision, Recall, F1; OCR/layout metrics khi phù hợp; latency theo page/document; robustness clean/noisy; chất lượng evidence; cost measurement/estimate có assumption; agreement/disagreement giữa hai track.
 
-- field-level Precision, Recall, F1 trên ground truth;
-- OCR/layout metrics khi phù hợp;
-- latency theo page/document;
-- robustness trên clean/noisy variants;
-- explainability evidence quality và localization khi có ground truth phù hợp;
-- cost measurement hoặc estimate có nêu rõ assumptions;
-- agreement/disagreement giữa hai track.
+## Milestone
 
-## Milestones
-
-1. Track A layout/OCR baseline — `PLANNED`.
-2. Track A KIE/LayoutLMv3 — `PLANNED`.
-3. Track B VLM parsing — `PLANNED`; model cụ thể chưa chốt.
-4. Invoice comparison — `PLANNED`.
-5. Contract/CUAD extraction và clause analysis — `PLANNED`.
-6. Clean/noisy robustness — `PLANNED`.
-7. Cost analysis và tổng hợp — `PLANNED`.
-
-Không kết luận track nào thắng trước khi có output thật, ground truth và số liệu được tái lập. Research Complete là milestone riêng, không suy ra từ Product MVP.
-
-## Định hướng mở rộng
-
-Ý tưởng ngoài roadmap 10 phase được ghi ở đây, không tự động triển khai trong task định vị.
+Layout/OCR, KIE, VLM parsing, Invoice comparison, Contract/CUAD, robustness và cost đều đang `PLANNED`. Chỉ kết luận track nào tốt hơn sau khi có output thật, ground truth và số liệu tái lập.

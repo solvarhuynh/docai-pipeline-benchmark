@@ -1,72 +1,31 @@
-# Why can Track B return a document result in one model call?
+# 03. Vì sao Track B có thể trả kết quả trong một model call?
 
-Track B is DocAI's VLM-native processing engine. **VLM (Vision-Language Model)** means a model that can work with both visual input and language. Instead of exposing layout, OCR and KIE as separate product stages, Track B presents a document image and an instruction to one multimodal model and asks for a structured response.
+**VLM (Vision-Language Model)** là model làm việc với cả hình ảnh và ngôn ngữ. Track B đưa ảnh tài liệu cùng structured prompt vào model, rồi parse và validate kết quả.
 
 ```text
-Invoice or contract image
-        +
-Structured prompt: what to extract and how to format it
-        ↓
-VLM inference
-        ↓
-Candidate structured response
-        ↓
-Schema validation and domain risk checks
-        ↓
-UnifiedDocumentOutput
+Invoice/Contract image + instruction
+  → VLM inference → candidate response
+  → parse + schema validation → UnifiedDocumentOutput
 ```
 
-The word “single-pass” describes the product-facing model flow. It does not mean the system has no validation, parsing or error handling around the model.
+Single-pass chỉ mô tả cách model nhìn bài toán; preparation, validation, retry và logging vẫn là các bước bao quanh.
 
-## Why is this useful?
+## VLM bên trong làm gì?
 
-Consider a legal reviewer reading a contract. They can look at the page, connect a heading to its paragraph and fill in a report without separately drawing every region and transcribing every word. A VLM attempts to learn a similar combined visual-and-language task.
+Vision encoder biến các patch ảnh thành biểu diễn số; language model xử lý instruction/token; connector giúp hai loại thông tin ảnh và chữ ảnh hưởng lẫn nhau. **Multimodal** nghĩa là dùng nhiều loại input. **Embedding** là dãy số giúp model liên hệ số tiền với nhãn `Total`.
 
-This can reduce hand-built stage boundaries and may handle unusual layouts more flexibly. It can also be more expensive, slower or less predictable. Track B is therefore an alternative engine, not an automatic replacement for Track A.
+## Prompt và structured output có tác dụng gì?
 
-The repository currently contains a prompt/parser interface in [`vlm_parser.py`](../../src/docai/pipelines/track_b/vlm_parser.py). PaddleOCR-VL and dots.ocr are candidates, not selected production models, and real inference is not enabled in this architecture task.
+**Prompt** là instruction gửi cho model. **Structured prompt** nói rõ document type, field/clause cần lấy, cách biểu diễn missing value, evidence và JSON shape. Invoice có thể yêu cầu seller/date/tax/total; Contract có thể yêu cầu termination/renewal/payment clause và page evidence.
 
-## What happens inside a VLM?
+**Structured Output** là response có hình dạng ổn định thay vì đoạn văn. Pydantic validate key, type, confidence và box. Validation bắt lỗi hình dạng, không chứng minh value có thật trong tài liệu.
 
-A VLM usually combines:
+## Hallucination nguy hiểm thế nào?
 
-1. A **vision encoder**, which turns image patches into numeric visual representations.
-2. A language model, which processes instructions and text-like tokens.
-3. A connector or shared representation that allows visual information to influence the generated answer.
+**Hallucination** là khi model sinh ra nội dung nghe hợp lý nhưng không có trong tài liệu. Ví dụ invoice không có tax number nhưng model tự điền một số; hợp đồng không có renewal clause nhưng model tự viết clause. Prompt yêu cầu trả “không tìm thấy”, schema validation và evidence giúp giảm rủi ro, nhưng không đảm bảo đúng tuyệt đối.
 
-A **multimodal** input contains more than one kind of information, here an image and language. A **token** is a small unit of text or model input. An **embedding** is a list of numbers representing an item in a form the model can compare and process. These representations let the model relate a number near `Total` to the meaning requested by the prompt.
+## Track B khác Track A ra sao?
 
-The exact internal architecture depends on the selected checkpoint. The project should document that exact model only after it is chosen and tested.
+Track A giống nhiều specialist; Track B giống một generalist có thể đổi task nhờ prompt. Một VLM không tự động giỏi mọi domain: vẫn cần prompt, taxonomy, validation và evaluation riêng cho Invoice/Contract. Response đã validate mới được backend map sang `UnifiedDocumentOutput`, không trả thẳng cho browser.
 
-## Why does the prompt matter?
-
-A **prompt** is the instruction sent to the model. A useful prompt states the document type, requested fields or clauses, missing-value behavior and output format. A **structured prompt** makes those requirements explicit rather than asking vaguely, “What is in this document?”
-
-For example, an invoice instruction might request `seller_name`, `invoice_date`, `tax_amount` and `total_amount`. A contract instruction might request renewal, termination and payment clauses with page or text evidence. The domain changes the questions; the API contract remains shared.
-
-## Why ask for structured output?
-
-**Structured Output** means the response follows a predictable shape such as JSON instead of a paragraph. **JSON** is a text format for objects, arrays, strings and numbers that software can exchange. In DocAI, the candidate JSON is parsed and checked against the Pydantic representation of `UnifiedDocumentOutput`.
-
-**Schema validation** checks whether required keys have the right types and allowed ranges. For example, confidence must be between `0.0` and `1.0`, and a bounding box must not have its minimum coordinate larger than its maximum. Validation catches malformed responses; it cannot prove that the model extracted the correct value.
-
-## What is hallucination and why is it dangerous here?
-
-**Hallucination** is when a generative model produces a plausible-looking statement that is not supported by the document. If an invoice does not show a tax number, the model might still invent one. If a contract has no renewal clause, it might write a likely-sounding clause.
-
-DocAI must treat generated values as candidates for verification. Prompts can require “not found” values, schema validation can reject malformed data, and evidence fields can let a reviewer inspect the source. None of those controls guarantees factual correctness. Product UI must make missing evidence and uncertainty visible.
-
-## Is Track B a generalist while Track A is a specialist?
-
-This is a useful research contrast:
-
-- A **specialist** is like a person trained for one profession. Track A can combine several focused models and domain-specific mappings.
-- A **generalist** has broader capabilities and can switch tasks when given clear instructions. Track B can use different prompts and schemas for invoices and contracts.
-
-“One VLM” does not mean “one universal capability.” It still needs appropriate prompts, examples, output validation and domain evaluation. Conversely, “Track A” does not mean “one model”; it is a pipeline boundary.
-
-## How does Track B connect to the rest of DocAI?
-
-The VLM response is not returned directly to the browser. The backend parses it, validates it, applies the correct invoice or contract risk rules and converts it to `UnifiedDocumentOutput`. FastAPI serializes that output as JSON, and the React frontend renders it using TypeScript interfaces.
-
-Research compares Track A and Track B only with the same workload and suitable ground truth. A convenient one-pass flow is not evidence that Track B is more accurate, cheaper or more robust. Those claims belong in the evaluation protocol.
+Model cụ thể như PaddleOCR-VL hoặc dots.ocr chưa được chọn; parser hiện là `SCAFFOLD`. Không kết luận Track B tốt hơn nếu chưa có ground truth và benchmark công bằng.

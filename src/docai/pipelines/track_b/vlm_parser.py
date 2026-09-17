@@ -2,7 +2,7 @@
 Module VLM-native parser (Track B - Single pass) cho Product và Research layer của DocAI.
 
 Thuộc: Giai đoạn 5 (Track B: VLM-native parsing - hóa đơn) và Giai đoạn 6 (Mở rộng Hợp đồng).
-Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 5.
+Tham chiếu: docs/specs/implementation-guide.md và docs/tasks/task-split.md, Giai đoạn 5.
 
 Mục đích:
 Sử dụng Vision-Language Model mã nguồn mở (PaddleOCR-VL hoặc dots.ocr) để đọc và trích xuất

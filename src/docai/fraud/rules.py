@@ -2,7 +2,7 @@
 Module domain validation và cảnh báo rủi ro (Risk Engine; package name giữ tương thích).
 
 Thuộc: Giai đoạn 7 (Fraud/Risk Engine).
-Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 7.
+Tham chiếu: docs/specs/implementation-guide.md và docs/tasks/task-split.md, Giai đoạn 7.
 
 Mục đích:
 Kết hợp AI trích xuất với luật logic nghiệp vụ để gắn cờ rủi ro cần review:

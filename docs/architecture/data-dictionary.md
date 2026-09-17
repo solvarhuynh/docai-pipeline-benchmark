@@ -1,58 +1,52 @@
-# Data dictionary: what does a DocAI result mean?
+# Từ điển dữ liệu — kết quả DocAI có nghĩa gì?
 
-The data dictionary describes the contract shared by Track A, Track B, FastAPI and the React frontend. It is implemented as Pydantic models in [`src/docai/core/schema.py`](../../src/docai/core/schema.py) and mirrored as TypeScript interfaces in [`frontend/src/types/document.ts`](../../frontend/src/types/document.ts).
+Tài liệu này mô tả contract chung của Track A, Track B, FastAPI và React. Contract được implement bằng Pydantic trong [`schema.py`](../../src/docai/core/schema.py) và mirror bằng TypeScript trong [`document.ts`](../../frontend/src/types/document.ts).
 
-## The shared envelope
+## Envelope chung
 
-Both engines return `UnifiedDocumentOutput`. Think of it as a shipping box with a stable label: the contents differ between an invoice and a contract, but every consumer knows where to find the document type, extracted items, confidence and review flags.
+Hai engine đều trả `UnifiedDocumentOutput`. Có thể hình dung đây là một chiếc hộp có nhãn cố định: nội dung Invoice và Contract khác nhau nhưng consumer biết vị trí của document type, item, confidence và flag.
 
-| Field | Type | Meaning |
+| Field | Kiểu | Ý nghĩa |
 | --- | --- | --- |
-| `document_type` | `invoice \| receipt \| contract \| unknown` | The kind of document being processed. |
-| `fields` | array of `ExtractedField` | Extracted invoice fields or contract metadata/clause items. |
-| `overall_confidence` | number from `0` to `1` | A pipeline-level confidence estimate. It is not proof of correctness. |
-| `risk_flags` | array of `RiskFlag` | Domain-specific signals that deserve human review. |
-| `execution_time_ms` | number or `null` | Measured processing time when available. |
-| `pipeline_track` | string or `null` | The engine that produced the result. |
-| `metadata` | JSON object | Additional trace information such as image size or checkpoint. |
+| `document_type` | `invoice \| receipt \| contract \| unknown` | Loại tài liệu. |
+| `fields` | mảng `ExtractedField` | Field Invoice hoặc metadata/clause Contract. |
+| `overall_confidence` | số `0`–`1` | Confidence tổng thể, không phải bằng chứng đúng tuyệt đối. |
+| `risk_flags` | mảng `RiskFlag` | Tín hiệu cần người dùng review. |
+| `execution_time_ms` | số hoặc `null` | Thời gian xử lý nếu đo được. |
+| `pipeline_track` | chuỗi hoặc `null` | Engine tạo ra output. |
+| `metadata` | object JSON | Thông tin trace như kích thước ảnh/checkpoint. |
 
-An **API contract** is the agreement about this shape between software components. If it changes, backend and frontend consumers must be reviewed together.
+API contract là thỏa thuận về hình dạng này giữa các phần mềm. Khi đổi schema phải review cả backend và frontend.
 
-## What is an extracted field?
+## `ExtractedField` là gì?
 
-`ExtractedField` represents one answer found in the source document. For an invoice, `field_name` might be `seller_name` or `total_amount`. For a contract, it might identify a clause or metadata value such as `termination_clause`.
+Đây là một câu trả lời lấy từ tài liệu. Invoice có thể dùng `seller_name`, `total_amount`; Contract có thể dùng `termination_clause`.
 
-| Field | Type | Meaning |
+| Field | Kiểu | Ý nghĩa |
 | --- | --- | --- |
-| `field_name` | string | Stable business name, not a display sentence. |
-| `field_value` | string | The normalized value shown to consumers. |
-| `confidence` | number from `0` to `1` | Confidence for this item. |
-| `bounding_box` | `BoundingBox` or `null` | Image location when available. |
-| `page_number` | integer, at least `1` | Page containing the item. |
-| `raw_text` | string or `null` | Original text before normalization. |
+| `field_name` | string | Tên business ổn định. |
+| `field_value` | string | Giá trị đã normalize để consumer dùng. |
+| `confidence` | số `0`–`1` | Confidence của item. |
+| `bounding_box` | `BoundingBox` hoặc `null` | Vị trí trên ảnh nếu có. |
+| `page_number` | integer ≥ `1` | Trang chứa item. |
+| `raw_text` | string hoặc `null` | Text gốc trước normalize. |
 
-An invoice field can use a box around the printed number. A contract clause may instead need a page and supporting text; a box is optional because a text span is not always naturally represented by one image rectangle.
+Invoice thường có box quanh số in trên ảnh. Contract có thể cần page và supporting text hơn là một hình chữ nhật.
 
-## How are locations represented?
+## Vị trí được lưu thế nào?
 
-`BoundingBox` stores `xmin`, `ymin`, `xmax` and `ymax`. The order is always top-left minimum coordinates followed by bottom-right maximum coordinates. `normalized: true` means each coordinate is in `[0, 1]`; `false` means absolute coordinates such as pixels.
+`BoundingBox` có `xmin`, `ymin`, `xmax`, `ymax`. `normalized: true` nghĩa tọa độ nằm trong `[0, 1]`; `false` nghĩa tọa độ tuyệt đối như pixel. LayoutLM có thể dùng quy ước nội bộ `[0, 1000]`; phải chuyển đổi ở boundary và không đoán theo phía consumer.
 
-LayoutLM-style model inputs may use a separate `[0, 1000]` convention. That internal representation must be converted at the boundary; consumers should follow the schema's `normalized` flag rather than guessing.
+## Risk flag và đường đi dữ liệu
 
-## What is a risk flag?
-
-`RiskFlag` is a review signal, not a verdict. It contains a stable `rule_id`, a readable `rule_name`, a `severity`, a `description` and an optional `target_field`.
-
-Invoice Risk can flag arithmetic inconsistency or low confidence. Contract Risk can flag a missing or unusual clause. The envelope uses one list so the UI can display flags consistently, while the rule implementation remains domain-specific. It does not mean Invoice and Contract fields must have the same taxonomy.
-
-## How does data move through the system?
+`RiskFlag` là tín hiệu review, gồm `rule_id`, `rule_name`, `severity`, `description` và `target_field` tùy chọn. Invoice Risk có thể phát hiện arithmetic mismatch; Contract Risk có thể đánh dấu clause thiếu/bất thường. Hai domain dùng chung list nhưng rule vẫn tách biệt.
 
 ```text
-model/pipeline output
-  → Pydantic validation in Python
-  → JSON response from FastAPI
-  → matching TypeScript type
+pipeline/model output
+  → Pydantic validation
+  → JSON từ FastAPI
+  → TypeScript type
   → React rendering
 ```
 
-The frontend must not read Python files or duplicate extraction logic. Empty lists, `null` values and scaffold responses must remain visible as such. The current parse endpoints return `501 Not Implemented`, so no real extraction result should be invented in the UI.
+Frontend không đọc Python file hoặc duplicate extraction logic. List rỗng, `null` và scaffold response phải được giữ nguyên. Parse endpoint hiện trả `501`, nên UI không được bịa kết quả.

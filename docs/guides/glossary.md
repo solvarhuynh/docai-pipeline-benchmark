@@ -1,46 +1,45 @@
-# DocAI glossary
+# Glossary DocAI
 
-These terms are introduced in the concepts path with examples. The short explanations below are a quick reference, not a substitute for the story in [`docs/concepts/`](../concepts/).
+Đây là mục tra cứu nhanh. Phần giải thích theo mạch câu chuyện nằm trong [`docs/concepts/`](../concepts/).
 
-| Term | Plain-language meaning | Where it matters |
+| Thuật ngữ | Nghĩa dễ hiểu | Vị trí sử dụng |
 | --- | --- | --- |
-| API | Rules that let two software components communicate. | React sends document requests to FastAPI. |
-| REST | A common HTTP style for APIs, using routes and methods such as GET and POST. | Product and research endpoints. |
-| JSON | Text representation of structured objects, lists, strings and numbers. | FastAPI responses and the frontend contract. |
-| Pydantic | Python library that validates data against declared models. | `UnifiedDocumentOutput` validation. |
-| React | UI library for composing browser screens from components. | `frontend/src/`. |
-| TypeScript | JavaScript with declared types that catch many shape errors before runtime. | Mirrors the Python API contract. |
-| Vite | Frontend development server and build tool. | Runs and bundles the React app. |
-| Node.js | Runtime used here for npm, Vite and TypeScript tooling. | It is not DocAI's business backend. |
-| Document AI | Software that turns documents into usable, structured information. | The overall product area. |
-| OCR | Optical Character Recognition: turns image pixels into readable text. | Track A and visual reading. |
-| Layout Detection | Finds and labels regions such as tables or totals. | First Track A stage. |
-| Bounding Box | Rectangle describing an item's location as min/max x and y. | Evidence and layout features. |
-| KIE | Key Information Extraction: assigns business meaning to text. | Invoice fields and contract clauses. |
-| VLM | Vision-Language Model that processes images and language together. | Track B. |
-| Multimodal | Using more than one input type, such as an image plus text. | VLM document parsing. |
-| Transformer | Model architecture that compares input pieces using context. | LayoutLMv3 and VLMs. |
-| Token | Small unit processed by a language model; one word may split into several. | KIE labels and prompts. |
-| Embedding | Numeric representation of an item that a model can compare and process. | Text/image representations. |
-| Attention | Internal weighting of which context influences a prediction. | Useful diagnostic signal, not perfect proof. |
-| Prompt | Instruction sent to a generative model. | Tells Track B what to extract. |
-| Structured Output | Result following a predictable schema instead of free text. | JSON returned to the product. |
-| Schema | Declared shape, types and constraints for data. | Python/TypeScript contract. |
-| Pretrained Model | Model that learned general patterns before this project uses it. | Candidate starting point for Track A/B. |
-| Fine-tuning | Adapting a pretrained model to a narrower task. | Future invoice/contract work. |
-| Checkpoint | Saved model state used to reproduce inference. | Must be recorded with results. |
-| Inference | Using a saved model to process a new document. | Runtime pipeline step. |
-| Hallucination | Plausible model output not supported by the source document. | Main Track B reliability risk. |
-| Precision | Of predicted items, the fraction that is correct. | Accuracy evaluation. |
-| Recall | Of correct items that exist, the fraction the system found. | Measures missed fields/clauses. |
-| F1-score | Combined measure balancing precision and recall. | Field/clause comparison. |
-| Latency | Time taken to process a request. | Product experience and research. |
-| Robustness | Ability to keep working on realistic noisy inputs. | Blur, rotation and contrast tests. |
-| Invoice Risk | Transaction-review signals such as arithmetic mismatch. | Invoice Intelligence. |
-| Contract Risk | Review signals about clauses or metadata. | Contract Intelligence; not legal advice. |
-| Explainability | Evidence that helps a person understand a result. | Boxes, spans and supporting text. |
-| Ground Truth | Trusted reference answer used for evaluation. | Required before claiming metrics. |
+| API | Bộ quy tắc để hai phần mềm giao tiếp. | React gửi request cho FastAPI. |
+| REST | Cách tổ chức API qua HTTP method và route. | Endpoint product/research. |
+| JSON | Dạng text biểu diễn object, list, string và number. | Response FastAPI/frontend. |
+| Pydantic | Thư viện Python kiểm tra dữ liệu theo model/schema. | Validate `UnifiedDocumentOutput`. |
+| React | Thư viện ghép giao diện browser từ component. | `frontend/src/`. |
+| TypeScript | JavaScript có type để bắt nhiều lỗi trước runtime. | Mirror API contract. |
+| Vite | Dev server và build tool cho frontend. | Chạy/đóng gói React. |
+| Node.js | Runtime chạy npm, Vite và TypeScript ở project này. | Không phải business backend. |
+| Document AI | Phần mềm biến tài liệu thành thông tin có cấu trúc. | Phạm vi sản phẩm. |
+| OCR | Đổi chữ trong pixel ảnh thành text. | Track A và visual reading. |
+| Layout Detection | Tìm và gán nhãn vùng như table/total. | Stage đầu của Track A. |
+| Bounding Box | Hình chữ nhật chỉ vị trí của item. | Layout và evidence. |
+| KIE | Gán business meaning cho text. | Field Invoice/clause Contract. |
+| VLM | Model xử lý hình ảnh và ngôn ngữ cùng nhau. | Track B. |
+| Transformer | Kiến trúc dùng context để so sánh các phần input. | LayoutLMv3/VLM. |
+| Token | Đơn vị nhỏ model xử lý; một từ có thể tách nhiều token. | KIE và prompt. |
+| Embedding | Biểu diễn số của item để model so sánh/xử lý. | Text/image representation. |
+| Attention | Trọng số context ảnh hưởng đến dự đoán. | Diagnostic, không phải proof. |
+| Prompt | Instruction gửi cho model sinh output. | Track B. |
+| Schema | Hình dạng, type và constraint của dữ liệu. | Python/TypeScript contract. |
+| Structured Output | Kết quả theo schema ổn định thay vì đoạn văn tự do. | JSON cho product. |
+| Pretrained Model | Model đã học pattern tổng quát từ dữ liệu trước đó. | Điểm bắt đầu của pipeline. |
+| Fine-tuning | Điều chỉnh pretrained model cho task hẹp hơn. | Phase tương lai. |
+| Checkpoint | Trạng thái model được lưu để inference. | Cần ghi khi benchmark. |
+| Inference | Dùng model đã lưu để xử lý tài liệu mới. | Runtime pipeline. |
+| Hallucination | Model sinh nội dung nghe hợp lý nhưng không có trong tài liệu. | Rủi ro Track B. |
+| Precision | Trong các item dự đoán, tỷ lệ item đúng. | Evaluation. |
+| Recall | Trong các item thật, tỷ lệ item tìm được. | Đo bỏ sót. |
+| F1-score | Số cân bằng Precision và Recall. | So sánh field/clause. |
+| Latency | Thời gian xử lý request. | Product/research. |
+| Robustness | Khả năng giữ chất lượng khi input nhiễu. | Blur, xoay, contrast. |
+| Invoice Risk | Tín hiệu review như arithmetic mismatch. | Invoice Intelligence. |
+| Contract Risk | Tín hiệu review về clause/metadata. | Contract Intelligence, không phải legal advice. |
+| Explainability | Evidence giúp người dùng hiểu kết quả. | Box, span, supporting text. |
+| Ground Truth | Đáp án tham chiếu dùng để đo accuracy. | Bắt buộc trước khi claim metric. |
 
-## Status words
+## Từ chỉ trạng thái
 
-`Implemented` means behavior exists and is supported by checks. `Baseline` means a small working foundation exists. `SCAFFOLD` means an interface or placeholder exists without the full runtime. `PLANNED` means the work has not started. `NOT SELECTED` means a model or technology remains a candidate.
+`Implemented` là hành vi đã có evidence. `Baseline` là nền tảng nhỏ đã chạy/test. `SCAFFOLD` là interface/placeholder chưa đủ runtime. `PLANNED` là việc trong roadmap chưa bắt đầu. `NOT SELECTED` là model/tool còn ở mức candidate.

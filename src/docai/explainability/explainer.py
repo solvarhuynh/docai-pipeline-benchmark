@@ -2,7 +2,7 @@
 Module giải thích mô hình (Explainability Layer) cho DocAI Document Intelligence Platform.
 
 Thuộc: Giai đoạn 8 (Explainability Layer).
-Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 8.
+Tham chiếu: docs/specs/implementation-guide.md và docs/tasks/task-split.md, Giai đoạn 8.
 
 Mục đích:
 Trang bị khả năng giải thích cho cả hai pipeline thay vì trả về JSON như hộp đen:

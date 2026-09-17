@@ -1,27 +1,13 @@
-# Robustness report — DocAI Research Lab
+# Báo cáo robustness — DocAI Research Lab
 
-**Trạng thái: PLANNED / REPORT SCAFFOLD.** Chưa có perturbation run hoặc F1 degradation curve. Không có kết luận về production readiness.
+**Trạng thái: PLANNED / REPORT SCAFFOLD.** Chưa có perturbation run hay đường cong suy giảm F1; chưa có kết luận production readiness.
 
-## Phạm vi
+## Phạm vi và phép thử
 
-Đánh giá Track A và Track B trên cả Invoice và Contract khi có dataset, ground truth và pipeline runtime thật. So sánh clean input với noisy variants tương ứng.
-
-## Perturbation suite dự kiến
-
-- rotation ở nhiều mức;
-- Gaussian blur;
-- low illumination/low contrast;
-- watermark hoặc che khuất nhẹ;
-- các biến dạng khác chỉ thêm khi protocol và ground truth vẫn hợp lệ.
+Đánh giá Track A/B trên Invoice và Contract bằng clean input và noisy variants có ground truth. Perturbation dự kiến gồm rotation, Gaussian blur, low light/contrast, watermark hoặc che khuất nhẹ.
 
 ## Metrics
 
-- F1/Precision/Recall theo domain và field/clause;
-- `ΔF1 = F1_clean - F1_noisy`;
-- latency/cost thay đổi dưới nhiễu;
-- lỗi OCR/layout/KIE hoặc VLM parsing theo nguyên nhân;
-- evidence/explainability stability khi có measurement phù hợp.
+Đo Precision/Recall/F1 theo domain và field/clause, `ΔF1 = F1_clean - F1_noisy`, thay đổi latency/cost và nguyên nhân lỗi OCR/layout/KIE/VLM khi chẩn đoán được.
 
-## Tiêu chí kết luận
-
-Chỉ mô tả track nào robust hơn khi dùng cùng protocol, cùng workload và số liệu tái lập. Không suy ra khả năng chống nhiễu hoặc production readiness từ kiến trúc lý thuyết.
+Chỉ nói track nào robust hơn khi protocol, workload và số liệu được tái lập giống nhau. Không suy ra robustness từ kiến trúc lý thuyết.

@@ -1,80 +1,55 @@
-# System overview — how DocAI is put together
+# Tổng quan hệ thống — DocAI được ghép như thế nào?
 
-This is the beginner-friendly architecture guide. DocAI is a product for **Invoice Intelligence** and **Contract Intelligence**, with a separate research area for comparing two processing approaches.
+DocAI là sản phẩm Document Intelligence cho Invoice Intelligence và Contract Intelligence. Research Lab là khu vực riêng để so sánh hai cách xử lý.
 
-## Start with the user journey
-
-```text
-User opens the React web app
-  ↓
-Uploads an invoice or contract
-  ↓
-React sends HTTP/REST/JSON to FastAPI
-  ↓
-FastAPI calls a DocAI processing pipeline
-  ↓
-The pipeline returns UnifiedDocumentOutput
-  ↓
-React displays fields, clauses, risk flags and evidence
-```
-
-Think of the frontend as the restaurant counter and the backend as the kitchen. The counter collects the order and shows the result. The kitchen does the work. React never runs a model, and FastAPI is the only business backend.
-
-## What each part means
-
-### Frontend: `frontend/`
-
-The **frontend** is the part a user sees and clicks. In this project it is a standalone **React + TypeScript + Vite** web application.
-
-- **React** builds the screen from small reusable components.
-- **TypeScript** describes the shape of data before the application runs.
-- **Vite** runs the development server and builds the browser application.
-- **HTML/CSS** provide the page structure and visual styling.
-- **Node.js** runs `npm`, Vite and the TypeScript compiler. It is not a second API backend.
-
-The scaffold has `/`, `/invoice`, `/contract` and `/research` routes without adding a routing framework. Pages do not show fake extraction results or fake metrics.
-
-### Backend: `src/docai/api/`
-
-The **backend** is the part the user does not see. FastAPI receives the upload, checks the request, invokes a pipeline and returns JSON. It is like the kitchen: the frontend should not enter it or reimplement its recipes.
-
-An **API (Application Programming Interface)** is a set of rules for two pieces of software to communicate. **REST** is the HTTP style used by these rules. The planned product endpoints are `/parse/classic`, `/parse/vlm` and `/explain`; `/compare` belongs to Research Lab. Parsing endpoints are currently scaffold and return `501 Not Implemented`.
-
-### Core contract: `src/docai/core/`
-
-**JSON** is a text format for exchanging structured values. **Pydantic** validates Python data against a declared shape. `UnifiedDocumentOutput` is the shared contract between pipelines, FastAPI and the frontend.
-
-The frontend mirrors that contract in [`frontend/src/types/document.ts`](../../frontend/src/types/document.ts). This prevents the frontend from guessing whether a confidence value is a number or whether a risk flag has a description.
-
-### AI processing: `src/docai/pipelines/`
-
-The processing layer has two alternatives:
+## Luồng người dùng
 
 ```text
-Track A: Layout Detection → OCR → KIE → structured output
-Track B: Document → VLM → structured response → validation
+Người dùng mở React
+  ↓ upload Invoice hoặc Contract
+React gửi HTTP/REST/JSON tới FastAPI
+  ↓
+FastAPI gọi pipeline DocAI
+  ↓
+Pipeline trả UnifiedDocumentOutput
+  ↓
+React hiển thị field, clause, risk flag và evidence
 ```
 
-An **Inference** is a model using what it has learned to process a new document. Both tracks currently have interfaces/scaffolds; real inference is not enabled in this phase.
+Có thể hình dung frontend là quầy tiếp nhận, còn backend là căn bếp. Frontend nhận thao tác và hiển thị kết quả; backend mới thực hiện xử lý. React không chạy model và FastAPI là business backend duy nhất.
 
-### Data: `src/docai/data/`
+## Vai trò của từng phần
 
-The data layer loads, cleans and describes source data. It does not belong in React. Dataset downloads and benchmark preparation are outside this architecture-refinement task.
+### Frontend — `frontend/`
 
-### Risk: `src/docai/fraud/`
+Frontend là phần người dùng nhìn thấy và bấm vào, được xây bằng React + TypeScript + Vite. React ghép giao diện từ component; TypeScript mô tả hình dạng dữ liệu; Vite chạy dev server/build; HTML/CSS tạo cấu trúc và kiểu dáng. Node.js chỉ chạy npm, Vite và TypeScript compiler, không phải backend thứ hai.
 
-The package name is historical. Its meaning is domain-specific:
+Scaffold hiện có các route `/`, `/invoice`, `/contract`, `/research` và không hiển thị extraction result/metric giả.
 
-- **Invoice Risk** checks arithmetic consistency, missing important values and low confidence.
-- **Contract Risk** flags missing or review-worthy clauses.
+### Backend — `src/docai/api/`
 
-A flag asks a person to review something. It is not proof of fraud and is not legal advice.
+Backend nhận upload, kiểm tra request, gọi pipeline và trả JSON. **API** là bộ quy tắc để hai phần mềm giao tiếp; **REST** là cách dùng HTTP để tổ chức các request đó. Route dự kiến gồm `/parse/classic`, `/parse/vlm`, `/compare` và `/explain`; parse/compare/explain hiện còn scaffold và trả `501 Not Implemented`.
 
-### Research: `src/docai/evaluation/`
+### Core contract — `src/docai/core/`
 
-Research compares Track A and Track B using real ground truth. It may measure Precision, Recall, F1, latency, cost, robustness and agreement. Research is separate from a single document's product flow.
+JSON là định dạng text để trao đổi dữ liệu có cấu trúc. Pydantic kiểm tra dữ liệu Python theo schema đã khai báo. `UnifiedDocumentOutput` là contract chung giữa pipeline, FastAPI và frontend; TypeScript mirror nằm ở `frontend/src/types/document.ts`.
 
-## Architecture diagram
+### AI processing — `src/docai/pipelines/`
+
+```text
+Track A: Layout Detection → OCR → KIE → output có cấu trúc
+Track B: Document → VLM → response có cấu trúc → validation
+```
+
+Inference là việc dùng model đã học để xử lý tài liệu mới. Hai track hiện mới có interface/scaffold, chưa bật inference thật.
+
+### Data, risk và research
+
+`src/docai/data/` nạp/làm sạch dữ liệu, không thuộc React. `src/docai/fraud/` chứa rule risk theo domain: Invoice Risk kiểm tra arithmetic/missing field/low confidence; Contract Risk đánh dấu clause cần review. Risk flag không phải bằng chứng fraud hay tư vấn pháp lý.
+
+`src/docai/evaluation/` phục vụ Research, dùng ground truth thật để đo Precision, Recall, F1, latency, cost, robustness và agreement. Research tách khỏi luồng xử lý một tài liệu của product.
+
+## Sơ đồ kiến trúc
 
 ```text
                     USER
@@ -82,51 +57,37 @@ Research compares Track A and Track B using real ground truth. It may measure Pr
                       ▼
               React Frontend
          TypeScript + HTML + CSS
-                      │
-                  REST/JSON
-                      │
+                      │ REST/JSON
                       ▼
                   FastAPI
-                   Backend
                       │
                       ▼
                DocAI Core
+                 /      \
+             Track A   Track B
+              Classic    VLM
+                 \      /
+              UnifiedDocumentOutput
                       │
-          ┌───────────┴───────────┐
-          │                       │
-       Track A                 Track B
-      Specialist              VLM-native
-       Pipeline                 Pipeline
-          │                       │
-          └───────────┬───────────┘
-                      │
-          UnifiedDocumentOutput
-                      │
-              Risk / Explainability
+               Risk / Evidence
 ```
 
-Research runs alongside this flow:
+Research chạy song song:
 
 ```text
 Track A output ─┐
-                ├→ Evaluation → accuracy / latency / robustness / cost
+                ├→ Evaluation → accuracy/latency/robustness/cost
 Track B output ─┘
 ```
 
-## Product domains
+## Hai domain sản phẩm
 
-### Invoice Intelligence
+Invoice Workspace sẽ hướng tới upload invoice/receipt, chọn engine, xem field, confidence, box, risk flag và JSON. Contract Workspace sẽ xem metadata, clause span, supporting text và Contract Risk. CUAD phục vụ cả Contract product và research, không phải use case phụ.
 
-An Invoice Workspace will eventually upload an invoice or receipt, select an engine, show extracted fields, confidence, bounding boxes, risk flags and structured JSON.
+## Trạng thái
 
-### Contract Intelligence
+- **Baseline:** Pydantic schema, config, risk rules và một số metric helper.
+- **Scaffold:** React pages, FastAPI routes, Track A/B interfaces và explainability interface.
+- **Planned:** model inference thật, orchestration, result view, taxonomy Contract đầy đủ và evaluation thật.
 
-A Contract Workspace will eventually upload a contract, show metadata and clause spans, provide supporting text and surface Contract Risk. CUAD supports both this product capability and research; it is not merely a secondary experiment.
-
-## What is implemented now?
-
-- **Baseline**: Pydantic schema, configuration, basic risk rules and some metric helpers.
-- **Scaffold**: React pages, FastAPI parse routes, Track A/B interfaces and explainability interfaces.
-- **Planned**: real model inference, API orchestration, result views, full contract taxonomy, real evaluation and production deployment.
-
-The repository deliberately does not add Express, NestJS, Redux, a database, authentication or microservices in this task.
+Task này không thêm Express/NestJS, Redux, database, authentication hay microservices.

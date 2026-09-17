@@ -1,73 +1,47 @@
-# Explanation style — how technical concepts should be taught
+# Cách giải thích — viết tài liệu kỹ thuật dễ hiểu
 
-These rules keep the technical documentation accurate without assuming that the reader already knows AI/ML/DL.
+Các quy tắc này giữ độ chính xác kỹ thuật mà không giả định người đọc đã biết AI/ML/DL.
 
-## Tell the story before listing terms
+## Kể câu chuyện trước khi liệt kê thuật ngữ
 
-Use this order:
+Đi theo thứ tự:
 
 ```text
-What is the product trying to do?
-  ↓
-What practical problem gets in the way?
-  ↓
-Why is the simple approach insufficient?
-  ↓
-What technique addresses that problem?
-  ↓
-What is the everyday intuition?
-  ↓
-Where is it in DocAI?
-  ↓
-Where does the output go next?
+Sản phẩm muốn làm gì?
+  ↓ vấn đề thực tế là gì?
+  ↓ cách đơn giản thiếu ở đâu?
+  ↓ kỹ thuật nào giải quyết phần đó?
+  ↓ trực giác đời thường là gì?
+  ↓ nó nằm ở đâu trong DocAI?
+  ↓ output đi đâu tiếp?
 ```
 
-Before moving on, answer “so what?” for the reader.
+Trước khi chuyển ý, phải trả lời được “vậy thì sao?”.
 
-## Explain the first occurrence of a technical term
+## Giải thích lần xuất hiện đầu tiên
 
-Keep the English term, then give a plain-language explanation and a document example. For example:
+Giữ English term, sau đó giải nghĩa dễ hiểu và đưa ví dụ Invoice/Contract. Ví dụ: **OCR (Optical Character Recognition)** là bước biến chữ trong ảnh thành text; OCR giúp máy có chuỗi để xử lý nhưng chưa biết con số là total hay tax.
 
-> **OCR (Optical Character Recognition)** is the step that turns letters in an image into text. When a phone camera sees “Total: 500,000”, OCR gives later software a string to work with. OCR does not, by itself, know that the number is the invoice total.
+Áp dụng cách này cho KIE, VLM, Transformer, token, embedding, attention, bounding box, pretrained model, fine-tuning, inference, schema, Pydantic, API, REST, JSON, Precision, Recall, F1-score, latency và structured output.
 
-Apply the same treatment to KIE, VLM, Transformer, token, embedding, attention, bounding box, pretrained model, fine-tuning, inference, schema, Pydantic, API, REST, JSON, Precision, Recall, F1-score, latency and structured output when they first appear.
+Không dùng một thuật ngữ khó khác để giải thích thuật ngữ khó. Dùng ví dụ đời thường trước rồi mới thêm định nghĩa formal.
 
-Do not define a difficult term with another unexplained difficult term. Start with a familiar analogy, then add the formal definition.
+## Dùng cả hai domain
 
-## Use both product domains
+Dùng ví dụ Invoice (vendor, date, tax, total, số và bảng) và Contract (metadata, termination clause, governing law, văn bản dài). Không giả định một field list hoặc model phải phù hợp cho cả hai.
 
-Use concrete Invoice and Contract examples. Explain when a concept is shared and when it is domain-specific:
+## Giải thích code và luồng, không chỉ lý thuyết
 
-- Invoice: fields such as vendor, date, tax and total; numbers and tables matter.
-- Contract: metadata and clause spans such as termination or governing law; long context and meaning matter.
+Mỗi phần kỹ thuật cần nêu file liên quan dưới `src/docai/` hoặc `frontend/`, input/output, owner là Track A/B/Product/Research, cách đi tới `UnifiedDocumentOutput`/FastAPI/React và test/metric dùng để kiểm chứng.
 
-Do not pretend that one field list or one model must fit both domains.
+## Trực giác trước công thức
 
-## Explain code and flow, not only theory
+Với Recall, trước hết hỏi: trong mọi clause thật sự cần tìm, hệ thống tìm được bao nhiêu? Sau đó mới định nghĩa TP/FN và đưa công thức. Không gọi metric tốt/xấu nếu thiếu dataset, domain, field/track và điều kiện đo.
 
-Every technical section should identify:
+## Trung thực về trạng thái
 
-- the relevant file under `src/docai/` or `frontend/`;
-- the input and output;
-- whether it belongs to Track A, Track B, Product Engineering or Research;
-- how the output reaches `UnifiedDocumentOutput`, FastAPI and React;
-- what metric or test would validate the claim.
+`Implemented/Baseline` cần evidence; `Scaffold` là interface chưa đủ runtime; `Planned` chưa bắt đầu; `Not selected` là candidate. Attention map không tự động là explanation; risk flag không phải kết luận pháp lý; mock result không phải benchmark.
 
-## Put intuition before formulas
+## Giữ cấu trúc dễ đọc
 
-For a metric such as Recall, first explain the practical question: “Of all the real clauses that should have been found, how many did the system find?” Then define TP and FN with an example, and only then show the formula.
-
-Never call a metric good or bad without naming the dataset, domain, field, track and measurement conditions.
-
-## Be honest about status
-
-- **Implemented/Baseline**: code and tests/runtime evidence support the claim.
-- **Scaffold**: interface or page exists, but the real behavior is incomplete.
-- **Planned**: on the roadmap, not yet started.
-- **Not selected**: a model or tool is still a candidate.
-
-Attention maps are not automatically explanations. Risk flags are not legal conclusions. A mock result is not a benchmark.
-
-## Keep the structure readable
-
-Use question-shaped headings where they help the reader understand the purpose, such as “Why can OCR read words but not identify the total?” Avoid a page that is only a glossary. Do not add a file for every keyword.
+Ưu tiên tiêu đề dạng câu hỏi như “Vì sao OCR đọc được chữ nhưng chưa biết đâu là total?”. Không biến tài liệu thành glossary thuần túy và không tạo một file cho mỗi keyword.

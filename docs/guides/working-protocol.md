@@ -61,7 +61,7 @@ Repository phải luôn cố gắng có **một nguồn sự thật chính** cho
 
 Ví dụ:
 
-- Phân công Nhánh A/B: `docs/specs/task-split.md`
+- Phân công Nhánh A/B: `docs/tasks/task-split.md`
 - Nhật ký tiến độ chung: `log/progress-log.md`
 - Schema output chung: package schema canonical trong `src/docai/`
 - Mã nguồn chính: `src/docai/`

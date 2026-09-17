@@ -1,92 +1,49 @@
-# Implementation guide and roadmap — DocAI
+# Hướng dẫn triển khai và lộ trình — DocAI
 
-DocAI is a Document Intelligence product for two equal domains: Invoice Intelligence and Contract Intelligence. It accepts a document, extracts useful fields or clauses, validates the result, adds domain risk signals and presents evidence for human review.
-
-The official architecture is:
+DocAI là sản phẩm Document Intelligence cho hai domain ngang hàng: Invoice Intelligence và Contract Intelligence. Sản phẩm nhận tài liệu, trích xuất field/clause, validate kết quả, thêm tín hiệu risk và cung cấp evidence để người dùng review.
 
 ```text
 React + TypeScript + Vite
         ↓ HTTP/REST/JSON
 FastAPI / Python
         ↓
-DocAI core → Track A or Track B
+DocAI core → Track A hoặc Track B
         ↓
-UnifiedDocumentOutput → risk/evidence → review UI
+UnifiedDocumentOutput → risk/evidence → giao diện review
 ```
 
-Node.js runs frontend tooling (`npm`, Vite and the TypeScript compiler). It is not a second business backend.
+Node.js chỉ chạy `npm`, Vite và TypeScript compiler; không phải business backend thứ hai.
 
-## What is Product MVP?
+## Product MVP là gì?
 
-Product MVP requires at least one real path through the product:
+MVP cần ít nhất một luồng thật: user mở giao diện, upload Invoice/Contract, FastAPI nhận request, một engine thật xử lý, Pydantic validate `UnifiedDocumentOutput`, risk/evidence được gắn vào và React hiển thị kết quả. Hiện parse handler và model inference chưa kết nối nên MVP chưa hoàn thành.
 
-```text
-user opens React UI
-  → uploads Invoice or Contract
-  → FastAPI validates and accepts the request
-  → a real processing engine runs
-  → Pydantic validates UnifiedDocumentOutput
-  → risk/evidence is attached
-  → React displays the result and JSON
-```
+## Research Complete là gì?
 
-The current repository has the page scaffold and API contracts, but the parse handlers and pipeline inference are not connected. Product MVP is therefore not complete.
-
-## What is Research Complete?
-
-Research is a separate milestone. It requires real Track A and Track B outputs, ground truth, field/clause accuracy, measured latency, clean/noisy robustness, evidence analysis and a cost measurement or clearly qualified estimate. Product MVP does not automatically imply Research Complete, and no number should be invented to fill a report.
+Research là milestone riêng, cần output thật của Track A/B, ground truth, accuracy field/clause, latency đo được, robustness clean/noisy, evidence analysis và cost measurement hoặc estimate có giả định rõ. Không điền số giả vào report.
 
 ## Roadmap
 
-### Phase 1 — Input and data foundation
+1. **Input/data foundation:** quy định ảnh/PDF, preprocessing, raw/interim/processed và mapping dataset cho Invoice/Contract; giữ đúng semantics clause của CUAD.
+2. **Shared core contract:** duy trì package `src/docai`, config và Pydantic schema; không ép taxonomy Contract thành taxonomy Invoice.
+3. **Track A layout/OCR:** tích hợp layout model và OCR được duyệt, trả token/text/box qua interface. Hiện là `SCAFFOLD`.
+4. **Track A KIE:** triển khai document understanding, LayoutLMv3 hoặc lựa chọn tương đương, BIO, aggregation và checkpoint/inference test. Fine-tune là phase sau.
+5. **Track B VLM:** chọn model sau khi rõ requirement/deployment; làm input preparation, structured prompt, parser, schema validation, retry và latency logging.
+6. **Contract Intelligence/CUAD:** map metadata, clause category, text span và page evidence; ghi rõ taxonomy/context limit.
+7. **Risk/validation:** Invoice Risk kiểm tra arithmetic, missing field và confidence; Contract Risk đánh dấu clause thiếu/bất thường. Risk flag không phải kết luận fraud hay pháp lý.
+8. **Evidence/explainability:** Invoice dùng box/highlight/confidence; Contract dùng span/page/supporting passage. Attention/heatmap chỉ là diagnostic evidence.
+9. **Research evaluation:** dùng cùng workload/protocol, report riêng Invoice và Contract với Precision, Recall, F1, latency, robustness, evidence, cost và agreement.
+10. **Product integration:** nối FastAPI upload/orchestration/serialization/error handling với React pages và integration tests; hoàn thành một đường end-to-end trước khi mở rộng Research Lab.
 
-Define accepted image/PDF inputs, preprocessing, `raw/interim/processed` boundaries and approved dataset mappings for Invoice and Contract. Preserve CUAD clause/span meaning when it is used. Do not claim data is available when directories contain only placeholders.
+## Trạng thái repository
 
-### Phase 2 — Shared core contract
+- `src/docai/core/`: Pydantic contract và configuration baseline.
+- `src/docai/fraud/`: domain risk rules baseline có test.
+- `src/docai/api/main.py`: `/health` dùng được; parse/compare/explain trả `501` scaffold.
+- `src/docai/pipelines/`: interface Track A/B, chưa có production inference.
+- `src/docai/explainability/`: evidence scaffold.
+- `src/docai/evaluation/`: metric/comparison helper, chưa có benchmark thật.
+- `frontend/`: React/TypeScript/Vite scaffold, không có kết quả giả.
+- `data/`: task này chưa tải dataset.
 
-Maintain package layout under `src/docai/`, configuration and Pydantic schemas. Keep `UnifiedDocumentOutput` small and shared: document type, fields, confidence, evidence/location, risk flags, timing and metadata. Domain-specific taxonomies can live within fields rather than forcing Contract into Invoice names.
-
-### Phase 3 — Track A layout and OCR
-
-Integrate an approved pretrained layout model and OCR implementation. Return tokens/text/boxes through internal interfaces and map them toward the shared contract. The current layout and OCR modules are `SCAFFOLD`.
-
-### Phase 4 — Track A KIE
-
-Add document understanding with LayoutLMv3 or the selected alternative, BIO tagging, field/clause aggregation, checkpoint recording and inference tests. Fine-tuning is future work and is outside the current architecture refinement.
-
-### Phase 5 — Track B VLM parsing
-
-Select a VLM only after requirements and deployment constraints are understood. Implement input preparation, domain-specific structured prompts, response parsing, schema validation, retry behavior and latency logging. The current VLM parser is an interface scaffold.
-
-### Phase 6 — Contract Intelligence and CUAD
-
-Map contract metadata, clause categories, text spans and page evidence. CUAD can support both the Contract product capability and research, but its taxonomy and context limits must be documented. Mark incomplete generalization as `SCAFFOLD` or `PLANNED`.
-
-### Phase 7 — Domain risk and validation
-
-For Invoice Risk, implement and test arithmetic consistency, missing important values and low confidence. For Contract Risk, implement review signals for missing, unusual or inconsistent clauses/metadata. A risk flag is decision support, not proof of fraud or a legal conclusion.
-
-### Phase 8 — Evidence and explainability
-
-Invoice evidence may include field boxes, highlighting and confidence. Contract evidence may include text spans, page/clause locations and supporting passages. Attention or heatmaps are diagnostic evidence only; they are not automatically a perfect explanation. The current explainer is `SCAFFOLD`.
-
-### Phase 9 — Research evaluation
-
-Use the same suitable workload and protocol for both engines. Report Invoice and Contract separately, with Precision, Recall, F1, latency, robustness, evidence quality, cost assumptions and agreement/disagreement. The current metrics and report templates do not constitute a benchmark.
-
-### Phase 10 — Product integration
-
-Connect FastAPI upload routes to pipeline orchestration, Pydantic serialization, error handling and integration tests. Connect the React Invoice, Contract and Research pages to real responses. Keep the frontend independent from Python implementation details. Build one verified end-to-end path before expanding the Research Lab.
-
-## Repository status
-
-- `src/docai/core/`: baseline Pydantic contract and configuration.
-- `src/docai/fraud/`: baseline domain risk rules with tests.
-- `src/docai/api/main.py`: `/health` works; parse/compare/explain routes are scaffold and return `501`.
-- `src/docai/pipelines/`: Track A/B interfaces; no production model inference.
-- `src/docai/explainability/`: evidence interface scaffold.
-- `src/docai/evaluation/`: metric/comparison helpers; no real benchmark.
-- `frontend/`: React/TypeScript/Vite page and API scaffold; no fake results.
-- `data/`: no dataset was downloaded for this task.
-
-Status vocabulary and responsibility details are maintained in [`docs/concepts/README.md`](../concepts/README.md), [`docs/guides/glossary.md`](../guides/glossary.md) and [`docs/specs/task-split.md`](./task-split.md).
+Từ điển trạng thái và phân công chi tiết nằm ở [`docs/concepts/README.md`](../concepts/README.md), [`docs/guides/glossary.md`](../guides/glossary.md) và [`docs/tasks/task-split.md`](../tasks/task-split.md).
