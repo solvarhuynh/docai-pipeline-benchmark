@@ -128,6 +128,7 @@ docai-dual-pipeline-benchmark/
 │
 └── docs/                              # Tài liệu kỹ thuật chi tiết
     ├── architecture/                  # Kiến trúc hệ thống, từ điển dữ liệu, cấu trúc repo
+    ├── concepts/                      # Bản đồ tri thức, giải thích thuật toán & mô hình chuyên sâu
     ├── guides/                        # Hướng dẫn vận hành và bảng thuật ngữ
     ├── reports/                       # Báo cáo thực nghiệm chuyên đề
     └── specs/                         # Đặc tả yêu cầu gốc của dự án
@@ -165,5 +166,17 @@ Các cách khởi chạy nhanh:
 Theo dõi nhật ký tiến độ thực hiện theo thời gian thực tại:
 `log/progress-log.md`
 
-Hiện tại dự án đã hoàn thành tái cấu trúc sang kiến trúc chuẩn `src/ layout` (`src/docai/`), tích hợp `pyproject.toml`, chuẩn bị bộ `scripts/`, `tests/`, `data/interim/`, và hoàn thiện toàn bộ tài liệu kỹ thuật bằng tiếng Việt có dấu. Repository sẵn sàng 100% bước vào Giai đoạn 1 (Khảo sát & chuẩn bị dữ liệu thật).
+Hiện tại dự án đã hoàn thành tái cấu trúc sang kiến trúc chuẩn `src/ layout` (`src/docai/`), tích hợp `pyproject.toml`, chuẩn bị bộ `scripts/`, `tests/`, `data/interim/`, hoàn thiện toàn bộ tài liệu kỹ thuật và bộ tài liệu học tập chuyên sâu bằng tiếng Việt có dấu. Repository sẵn sàng 100% bước vào Giai đoạn 1 (Khảo sát & chuẩn bị dữ liệu thật).
+
+## 10. Bản đồ tri thức & Tài liệu học tập
+
+Để hiểu cặn kẽ bản chất bài toán Document AI, sự khác biệt giữa hai trường phái Track A và Track B, cũng như nguyên lý hoạt động của từng mô hình và thuật toán được triển khai trong repository, xem chi tiết bộ tài liệu tại:
+`docs/concepts/README.md`
+
+Các chuyên đề kỹ thuật chính:
+- `docs/concepts/01-docai-foundations.md`: Nền tảng Document AI, 7 tầng thông tin và chuẩn hoá tọa độ Bounding Box.
+- `docs/concepts/02-track-a-classic.md`: Pipeline cổ điển đa chặng (YOLOv8, PaddleOCR, LayoutLMv3, BIO tagging).
+- `docs/concepts/03-track-b-vlm.md`: Pipeline VLM-native đơn lượt (PaddleOCR-VL, dots.ocr, structured prompting, rủi ro ảo giác).
+- `docs/concepts/04-fraud-and-explainability.md`: Động cơ kiểm tra gian lận số học & rủi ro hợp đồng CUAD; lớp giải thích trực quan bằng bản đồ nhiệt JET overlay.
+- `docs/concepts/05-evaluation.md`: Phương pháp đo lường khoa học (Field F1, Agreement ratio, Latency phân vị, chi phí GPU Modal vs API thương mại, Robustness suite).
 
