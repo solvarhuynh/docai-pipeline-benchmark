@@ -1,11 +1,11 @@
 """
 Module trích xuất chữ kèm bounding box (OCR Extraction) cho Track A - Classic Pipeline.
 
-Thuộc: Giai đoạn 3 (Track A: Layout Detection & OCR - hóa đơn).
+Thuộc: Giai đoạn 3 (Track A: Layout Detection & OCR cho Invoice/Contract theo capability).
 Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 3.
 
 Mục đích:
-Sử dụng PaddleOCR để đọc toàn bộ văn bản trên ảnh hóa đơn hoặc trên từng vùng layout đã được phân vùng,
+Sử dụng PaddleOCR để đọc toàn bộ văn bản trên ảnh Invoice/Contract hoặc trên từng vùng layout đã được phân vùng,
 trích xuất chữ kèm bounding box 4 điểm tọa độ. Kết hợp layout + OCR tạo thành JSON trung gian trước khi đưa vào KIE.
 
 Input mong đợi:

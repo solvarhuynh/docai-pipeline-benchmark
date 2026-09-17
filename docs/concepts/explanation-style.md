@@ -1,8 +1,8 @@
-# Quy ước giải thích kỹ thuật và khái niệm — DocAI Benchmark
+# Quy ước giải thích kỹ thuật và khái niệm — DocAI
 
 Tài liệu này xác lập quy chuẩn bắt buộc cho toàn bộ các bài viết giải thích kiến trúc, thuật toán và mô hình machine learning trong thư mục `docs/concepts/`.
 
-Mục tiêu cao nhất: giúp một người có nền tảng lập trình cơ bản nhưng chưa từng tiếp xúc với Machine Learning, Computer Vision hay Document AI có thể hiểu tường tận bản chất từng kỹ thuật, lý do vì sao dự án cần nó và nó đóng góp gì vào bức tranh tổng thể.
+Mục tiêu cao nhất: giúp một người có nền tảng lập trình cơ bản nhưng chưa từng tiếp xúc với Machine Learning, Computer Vision hay Document AI có thể hiểu bản chất từng kỹ thuật, lý do vì sao sản phẩm Invoice/Contract cần nó và nó đóng góp gì cho cả Product flow lẫn Research Lab.
 
 ---
 

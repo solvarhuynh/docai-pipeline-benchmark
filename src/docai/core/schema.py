@@ -11,7 +11,7 @@ Các thành phần bắt buộc:
 - fields: danh sách các trường trích xuất (tên, giá trị, confidence, bounding box)
 - confidence: độ tin cậy tổng thể hoặc theo trường
 - bounding_box: tọa độ hộp giới hạn [xmin, ymin, xmax, ymax]
-- risk_flags: danh sách cảnh báo gian lận hoặc rủi ro điều khoản từ Giai đoạn 7
+- risk_flags: danh sách domain risk flags để người dùng review (Invoice Risk hoặc Contract Risk)
 """
 
 from enum import Enum
@@ -72,7 +72,7 @@ class ExtractedField(BaseModel):
 
 class RiskFlag(BaseModel):
     """
-    Cảnh báo rủi ro gian lận số liệu hoặc điều khoản bất thường (Giai đoạn 7).
+    Cảnh báo domain risk cho người dùng review (Invoice Risk hoặc Contract Risk).
     """
     rule_id: str = Field(..., description="Mã định danh luật kiểm tra (ví dụ: RULE_MATH_TOTAL_MISMATCH)")
     rule_name: str = Field(..., description="Tên mô tả luật kiểm tra")

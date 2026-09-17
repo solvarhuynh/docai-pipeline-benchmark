@@ -1,5 +1,5 @@
 """
-Track B: Pipeline hiện đại đơn nhất (VLM-native Single-pass Pipeline).
+Track B: Processing engine hiện đại đơn nhất (VLM-native Single-pass Pipeline) cho Invoice/Contract.
 
 Sử dụng Vision-Language Model đa phương thức (PaddleOCR-VL / dots.ocr) để đọc chữ
 và hiểu cấu trúc trong một lượt suy luận duy nhất thông qua schema prompt định sẵn.

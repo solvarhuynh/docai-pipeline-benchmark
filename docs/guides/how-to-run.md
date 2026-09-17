@@ -1,6 +1,6 @@
 # Hướng dẫn vận hành DocAI Product và Research Lab (How-to-Run Guide)
 
-Tài liệu này hướng dẫn cài đặt và vận hành DocAI Document Intelligence Platform theo chuẩn kiến trúc `src/ layout`. Product flow ưu tiên Invoice/Receipt; các lệnh compare/benchmark và báo cáo thực nghiệm thuộc Research Lab.
+Tài liệu này hướng dẫn cài đặt và vận hành DocAI Document Intelligence Platform theo chuẩn kiến trúc `src/ layout`. Product gồm hai workspace ngang hàng: Invoice Intelligence và Contract Intelligence. Các lệnh compare/benchmark và báo cáo thực nghiệm thuộc Research Lab.
 
 ---
 
@@ -70,7 +70,7 @@ Người dùng có thể thực thi các tác vụ chính trực tiếp từ dò
 
 ### 4.1. Khảo sát dữ liệu thô (EDA)
 ```bash
-# Khảo sát toàn bộ 4 bộ dữ liệu:
+# Khảo sát các bộ dữ liệu đã được tải và cấu hình:
 python scripts/run_eda.py --dataset all
 
 # Khảo sát một bộ dữ liệu cụ thể:
@@ -106,7 +106,7 @@ jupyter notebook notebooks/01-eda.ipynb
 ```
 
 Ghi chú về dữ liệu:
-- Ở Giai đoạn 1, 4 bộ dữ liệu mcocr2021, CORD, SROIE, CUAD sẽ được tải về các thư mục con tương ứng trong `data/raw/`:
+- Khi Giai đoạn 1 được phê duyệt và thực thi, các bộ dữ liệu mcocr2021, CORD, SROIE, CUAD sẽ được tải về các thư mục con tương ứng trong `data/raw/`:
   - `data/raw/mcocr2021/`
   - `data/raw/cord/`
   - `data/raw/sroie/`
@@ -118,7 +118,7 @@ Ghi chú về dữ liệu:
 
 ## 6. Bước 5: Chạy FastAPI Server cục bộ (Local Dev Server)
 
-FastAPI là giao diện sản phẩm. Các endpoint Product hiện được định hướng gồm `/parse/classic`, `/parse/vlm` và `/explain`; `/compare` là endpoint Research/Analysis để đối chiếu hai engine.
+FastAPI là backend/API của sản phẩm. Các endpoint Product hiện được định hướng gồm `/parse/classic`, `/parse/vlm` và `/explain`; `/compare` là endpoint Research/Analysis để đối chiếu hai engine trên Invoice hoặc Contract.
 
 Hiện tại các route Product parsing/explain và route Research compare là `SCAFFOLD` và trả HTTP 501; chỉ `/health` có hành vi runtime hoàn chỉnh.
 
@@ -155,7 +155,7 @@ Dự án sử dụng Plotly Dash làm framework trực quan hoá mặc định (
 python -m docai.dashboard.app
 ```
 
-Giao diện dashboard sẽ mở tại `http://localhost:8050`. Về định hướng, Dashboard có khu vực **Product** (Document Parser, Risk Review, Document Details) và **Research Lab** (Track Comparison, Benchmark, Robustness, Cost Analysis). Hiện tại lệnh chỉ khởi tạo scaffold layout; callbacks và dữ liệu thật sẽ bổ sung ở phase sau.
+Giao diện dashboard sẽ mở tại `http://localhost:8050`. Về định hướng, Dashboard có **Invoice Workspace**, **Contract Workspace** và **Research Lab** (Track Comparison, Benchmark, Robustness, Cost Analysis). Hiện tại lệnh chỉ khởi tạo scaffold layout; callbacks và dữ liệu thật sẽ bổ sung ở phase sau.
 
 ---
 

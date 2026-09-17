@@ -7,10 +7,10 @@ Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, G
 Mục đích:
 Cung cấp các REST API endpoint để đưa vào sử dụng thực tế hoặc kiểm thử local:
 - GET  /health: Kiểm tra tình trạng sức khỏe dịch vụ
-- POST /parse/classic: Xử lý tài liệu bằng Track A (YOLO + PaddleOCR + LayoutLMv3)
-- POST /parse/vlm: Xử lý tài liệu bằng Track B (VLM-native: PaddleOCR-VL / dots.ocr)
-- POST /compare: Chạy đối chiếu song song 2 track và so sánh kết quả
-- POST /explain: Trả về bản đồ nhiệt chú ý (heatmap overlay) giải thích trường trích xuất
+- POST /parse/classic: Xử lý Invoice hoặc Contract bằng Track A
+- POST /parse/vlm: Xử lý Invoice hoặc Contract bằng Track B
+- POST /compare: Research comparison song song giữa hai track
+- POST /explain: Product evidence/explainability cho field hoặc clause
 
 Nguyên tắc kiến trúc:
 API chỉ là tầng giao tiếp HTTP, toàn bộ logic nghiệp vụ được điều phối qua
@@ -26,7 +26,7 @@ from docai.core.schema import DocumentType, UnifiedDocumentOutput
 app = FastAPI(
     title=settings.api_title,
     version=settings.api_version,
-    description="Product API xử lý Invoice/Receipt bằng hai engine Document AI; endpoint compare phục vụ Research Lab."
+    description="Product API cho Invoice Intelligence và Contract Intelligence; endpoint compare phục vụ Research Lab."
 )
 
 
@@ -49,7 +49,7 @@ async def health_check():
     """
     return {
         "status": "ok",
-        "service": "docai-dual-pipeline-benchmark",
+        "service": "docai-document-intelligence",
         "version": settings.api_version
     }
 
@@ -61,7 +61,7 @@ async def health_check():
     summary="Phân tích tài liệu sử dụng Track A (Classic Multi-stage Pipeline)"
 )
 async def parse_classic(
-    file: UploadFile = File(..., description="File ảnh hóa đơn hoặc hợp đồng"),
+    file: UploadFile = File(..., description="File ảnh Invoice/Receipt hoặc Contract"),
     document_type: DocumentType = Form(default=DocumentType.INVOICE)
 ):
     """
@@ -81,7 +81,7 @@ async def parse_classic(
     summary="Phân tích tài liệu sử dụng Track B (VLM-native Single-pass Pipeline)"
 )
 async def parse_vlm(
-    file: UploadFile = File(..., description="File ảnh hóa đơn hoặc hợp đồng"),
+    file: UploadFile = File(..., description="File ảnh Invoice/Receipt hoặc Contract"),
     document_type: DocumentType = Form(default=DocumentType.INVOICE)
 ):
     """
@@ -101,7 +101,7 @@ async def parse_vlm(
     summary="Chạy song song Track A và Track B và trả về kết quả đối chiếu"
 )
 async def compare_pipelines(
-    file: UploadFile = File(..., description="File ảnh tài liệu cần đối chiếu"),
+    file: UploadFile = File(..., description="File Invoice/Receipt hoặc Contract cần đối chiếu"),
     document_type: DocumentType = Form(default=DocumentType.INVOICE)
 ):
     """

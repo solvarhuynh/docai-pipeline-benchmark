@@ -138,11 +138,11 @@ Ngược lại, đa số các VLM thế hệ đầu chỉ sinh ra văn bản thu
 
 ---
 
-## 6. Tại sao dự án cần thử nghiệm Zero-shot trên Hợp đồng CUAD ở Giai đoạn 6?
+## 6. Track B phục vụ Contract Workspace và CUAD research như thế nào?
 
 Hóa đơn có đặc thù là tài liệu bán cấu trúc ngắn (thường 1-2 trang), mật độ thông tin tập trung vào các ô số liệu rõ ràng. 
 
-Ngược lại, hợp đồng pháp lý trong bộ dữ liệu **CUAD (Contract Understanding Atticus Dataset)** là tài liệu văn bản dài dày đặc (thường từ 10 đến 50 trang), chứa ngôn từ pháp lý phức tạp và các điều khoản phụ thuộc lẫn nhau.
+Ngược lại, hợp đồng pháp lý trong bộ dữ liệu **CUAD (Contract Understanding Atticus Dataset)** là tài liệu văn bản dài dày đặc (thường từ 10 đến 50 trang), chứa ngôn từ pháp lý phức tạp và các điều khoản phụ thuộc lẫn nhau. Đây là input quan trọng cho Contract Workspace; đồng thời tạo điều kiện cho research so sánh khả năng tổng quát hoá.
 
 Trong Giai đoạn 6 của dự án:
 - Track A (LayoutLMv3) sẽ gặp rào cản lớn vì độ dài chuỗi tối đa của Transformer cổ điển thường bị giới hạn ở 512 tokens.

@@ -1,259 +1,166 @@
-# Implementation Guide — DocAI Document Intelligence Platform
+# Implementation guide và roadmap — DocAI
 
-> Đọc kèm file `docai-benchmark-overview.pdf` (trong `docs/specs/`) để hiểu bức tranh tổng thể trước khi đi vào chi tiết từng giai đoạn.
+## Mục tiêu
 
-## Mục tiêu dự án
-Xây dựng một sản phẩm Document Intelligence ưu tiên Invoice/Receipt: nhận tài liệu thật, trích xuất structured output, kiểm tra validation/risk và phục vụ qua API/Dashboard. Hai processing engine Track A và Track B được giữ độc lập để sản phẩm có thể lựa chọn engine, đồng thời cung cấp nền tảng cho nghiên cứu so sánh nghiêm túc.
+DocAI là sản phẩm Document Intelligence cho hai domain ngang hàng: **Invoice Intelligence** và **Contract Intelligence**. Sản phẩm nhận tài liệu, trích xuất structured output, kiểm tra validation/risk, cung cấp FastAPI backend và hiển thị qua Plotly Dash frontend.
 
-Trạng thái lựa chọn: Layout model và VLM checkpoint cụ thể chưa chốt. Các tên YOLOv8-doc/DocLayout-YOLO và PaddleOCR-VL/dots.ocr trong tài liệu là các ứng viên để đánh giá ở phase tương ứng, không phải kết quả đã chạy.
+Track A Classic và Track B VLM-native là hai processing engine bên trong product. Research/Evaluation chạy song song để trả lời cách hai engine đánh đổi accuracy, latency, robustness, explainability và cost trên Invoice và Contract.
 
-## Product MVP và Research Complete
+Model/checkpoint cụ thể của Track A và Track B chưa chốt. Task định vị này không train model, tải dataset, chạy benchmark hoặc triển khai feature lớn.
+
+## Product MVP và Research milestone
 
 ### Product MVP
 
-Product MVP là luồng Invoice/Receipt tối thiểu:
+Product MVP được xem là đạt khi ít nhất một đường chạy thực tế thực hiện được:
 
 ```text
-Input document → processing engine → UnifiedDocumentOutput
-→ validation/risk cơ bản → FastAPI → Plotly Dash
+User mở Plotly Dash
+  → upload Invoice hoặc Contract
+  → FastAPI nhận request
+  → chọn/chạy một processing engine
+  → UnifiedDocumentOutput
+  → domain risk cơ bản
+  → hiển thị fields/clauses, evidence và JSON
 ```
 
-MVP chỉ được đánh dấu hoàn thành khi ít nhất một processing engine chạy end-to-end thật trên tài liệu, trả output chuẩn hoá, có validation/risk cơ bản và được truy cập qua API/UI. Hiện tại MVP chưa hoàn thành; các engine, API orchestration và Dash callbacks vẫn là scaffold.
+MVP không cần toàn bộ benchmark/research capability hoàn thành. Hiện Product MVP chưa đạt: API parse, pipeline inference, orchestration và Dash callbacks còn scaffold.
 
 ### Research Complete
 
-Research Complete là milestone độc lập với Product MVP. Chỉ xác nhận khi Track A và Track B đều có output thật trên tập test có ground truth, cùng các phép đo accuracy, latency, cost, robustness và explainability tương ứng. Không dùng scaffold hoặc số liệu kế hoạch để đánh dấu hoàn thành.
+Research milestone độc lập với Product MVP. Chỉ đánh dấu đạt khi có:
 
-## Roadmap ưu tiên Product-first
+- output thật của Track A và Track B;
+- ground truth cho Invoice và/hoặc Contract;
+- accuracy/Precision/Recall/F1;
+- latency đo được;
+- robustness test trên clean/noisy input;
+- explainability evidence và cost measurement/estimate có căn cứ.
 
-Giữ nguyên số phase hiện tại để không phá các reference, nhưng đọc roadmap theo thứ tự trách nhiệm sau:
+Không dùng mock result hoặc Product MVP để tự động suy ra Research PASS.
 
-1. **Giai đoạn 1–2**: Data ingestion/normalization, unified schema và nền tảng package.
-2. **Giai đoạn 3–5**: Xây dựng hai processing backend Track A và Track B.
-3. **Giai đoạn 7–8**: Bổ sung Product Risk/Fraud baseline và Explainability cho người dùng.
-4. **Giai đoạn 10**: Tích hợp Product API, Dashboard và deployment workflow.
-5. **Giai đoạn 6 và 9**: Các research extension gồm Contract/CUAD, evaluation, benchmark và robustness/cost analysis.
+## Roadmap product-first
 
-Roadmap này không biến Contract thành product MVP thứ hai và không yêu cầu triển khai model lớn trong giai đoạn định vị.
+### Giai đoạn 1 — Data và input foundation
 
-## Nguồn dữ liệu
+- Tổ chức ingestion, preprocessing và normalization cho dữ liệu Invoice và Contract.
+- Map nhãn/field của các dataset được phê duyệt; CUAD phải giữ span/clause semantics.
+- Hoàn thiện data dictionary và ghi số liệu chỉ sau khi dữ liệu thật được tải/khảo sát.
 
-| Bộ dữ liệu | Loại tài liệu | Quy mô | Vai trò |
-|---|---|---|---|
-| mcocr2021 | Hóa đơn/biên lai Việt Nam | Ảnh chụp thật, có nhãn | Nguồn chính |
-| CORD | Biên lai | Chuẩn quốc tế, field-level ground truth | Đối chiếu benchmark |
-| SROIE (ICDAR2019) | Hóa đơn scan | 626 train / 347 test | Đối chiếu benchmark OCR + IE |
-| CUAD | Hợp đồng pháp lý thật | 510 hợp đồng, hơn 13.000 điều khoản gán nhãn bởi luật sư | Kiểm tra tổng quát hoá sang loại tài liệu khác |
+Definition of Done: input layer và mapping có evidence; không tuyên bố dataset đã tải nếu thư mục chỉ có placeholder.
 
----
+### Giai đoạn 2 — Core contract và package foundation
 
-## Giai đoạn 1 — Khảo sát & chuẩn bị dữ liệu thật
+- Duy trì `src/docai/` layout, Pydantic schema và config.
+- Giữ shared envelope đủ nhỏ cho common metadata, field values, confidence, evidence và risk flags.
+- Chỉ mở rộng domain-specific schema khi Invoice/Contract mapping đã rõ.
 
-**Việc cần làm:**
-1. Tải 4 bộ dữ liệu về `data/raw/` (mỗi bộ một thư mục con: `data/raw/mcocr2021/`, `data/raw/cord/`, `data/raw/sroie/`, `data/raw/cuad/`).
-2. Khảo sát nhanh bằng pandas/PIL: số lượng mẫu, độ phân giải ảnh (với 3 bộ hóa đơn), độ dài văn bản (với CUAD), phân bố nhãn.
-3. Ghi data dictionary riêng cho từng bộ vào `docs/architecture/data-dictionary.md`.
-4. Xác định vấn đề chất lượng dữ liệu: ảnh mờ/nghiêng trong mcocr2021, format nhãn khác nhau giữa các bộ hóa đơn, định dạng CUAD (JSON theo SQuAD-style span extraction) khác hẳn 3 bộ còn lại.
-5. Thiết kế 1 JSON schema thống nhất để cả 2 track trả về cùng định dạng, cho cả 2 loại tài liệu (field khác nhau giữa hóa đơn và hợp đồng nhưng cấu trúc bao ngoài giống nhau: `document_type`, `fields[]`, `confidence`, `bounding_box`).
+Definition of Done: Track A/B và consumer có boundary rõ quanh `UnifiedDocumentOutput`.
 
-**Definition of Done:**
-- [ ] 4 bộ dữ liệu đã tải về đúng thư mục.
-- [ ] `docs/architecture/data-dictionary.md` mô tả đủ 4 bộ.
-- [ ] `notebooks/01-eda.ipynb` chứa khảo sát cơ bản từng bộ.
-- [ ] File `src/docai/core/schema.py` định nghĩa JSON schema thống nhất (dùng Pydantic).
+### Giai đoạn 3 — Track A: Layout Detection và OCR
 
----
+- Tích hợp candidate pretrained layout model và OCR cho tài liệu phù hợp.
+- Trả token/text/bounding box qua interface nội bộ.
+- Chuẩn bị đường map output về shared schema.
 
-## Giai đoạn 2 — Hạ tầng
+Đây là AI/ML/DL work; code hiện tại là `SCAFFOLD`.
 
-**Việc cần làm:**
-1. Đăng ký Modal, xác nhận free credit hàng tháng đang hoạt động.
-2. Viết `modal_app/deploy.py` khung — một function GPU rỗng để test billing (chạy `nvidia-smi` trong container Modal, xác nhận có GPU, dừng ngay, kiểm tra log chi phí trên Modal dashboard).
-3. Viết `docker-compose.yml` cho môi trường dev local (không cần GPU) — chạy FastAPI dev server, mount code, để test nhanh mà không tốn GPU-giờ trên Modal.
-4. Viết `requirements.txt` liệt kê đầy đủ thư viện cần cho cả 2 track.
-5. Tạo file `log/progress-log.md` theo định dạng đã thống nhất (xem mục Log bên dưới).
+### Giai đoạn 4 — Track A: KIE/LayoutLMv3
 
-**Definition of Done:**
-- [ ] Modal function test chạy thành công, xác nhận GPU khả dụng, chi phí hiển thị đúng trên dashboard.
-- [ ] `docker-compose.yml` chạy được FastAPI dev server local.
-- [ ] `log/progress-log.md` khởi tạo, có dòng đầu tiên ghi nhận hoàn thành hạ tầng.
+- Chuẩn bị BIO tagging, fine-tuning/inference và field aggregation.
+- Đánh giá trên ground truth riêng khi có data thật.
+- Ghi checkpoint, runtime và cost có căn cứ.
 
----
+Không fine-tune trong task định vị hiện tại; checkpoint cụ thể chưa chốt.
 
-## Giai đoạn 3 — Track A: Layout Detection & OCR (hóa đơn)
+### Giai đoạn 5 — Track B: VLM-native parsing
 
-**Việc cần làm:**
-1. Load YOLOv8-doc/DocLayout-YOLO pretrained (không train từ đầu), chạy trên tập mcocr2021/CORD/SROIE để phân vùng Header, Table, Signature.
-2. Chạy PaddleOCR trên từng vùng đã phân, trích văn bản kèm bounding box.
-3. Ghép kết quả layout + OCR vào 1 JSON trung gian (chưa qua KIE) theo schema đã định nghĩa ở Giai đoạn 1.
-4. Đánh giá sơ bộ chất lượng: tỷ lệ vùng bảng phát hiện đúng, tỷ lệ ký tự đọc đúng so với ground truth có sẵn.
+- Chốt model sau khi có requirement và kiểm tra khả năng triển khai.
+- Xây input preparation, structured prompt, structured response, parser và Pydantic validation.
+- Bổ sung retry/error handling, batch processing và latency logging.
 
-**Definition of Done:**
-- [ ] `src/docai/pipelines/track_a/layout_detection.py` chạy được trên toàn bộ 3 bộ hóa đơn.
-- [ ] `src/docai/pipelines/track_a/ocr_extraction.py` sinh ra JSON trung gian có bounding box.
-- [ ] Ghi số liệu đánh giá sơ bộ vào `docs/reports/benchmark-results.md` (mục "Track A — Layout & OCR baseline").
+Code hiện tại mới là prompt/interface scaffold; không coi candidate model là model đã chọn.
 
----
+### Giai đoạn 6 — Contract Intelligence với CUAD
 
-## Giai đoạn 4 — Track A: Fine-tune LayoutLMv3 (hóa đơn)
+Contract là product domain ngang hàng, đồng thời CUAD phục vụ research. Work cần làm:
 
-**Việc cần làm:**
-1. Chuẩn bị tập fine-tune nhỏ (vài trăm mẫu) từ mcocr2021/CORD theo format LayoutLMv3 yêu cầu (token + bbox + label BIO).
-2. Fine-tune LayoutLMv3 trên Modal GPU, log rõ thời gian và chi phí GPU-giờ vào `log/progress-log.md`.
-3. Đánh giá F1 field-level trên tập test riêng (không overlap với tập fine-tune).
-4. Lưu model checkpoint (không commit trực tiếp vào git nếu file lớn — dùng Modal Volume hoặc HuggingFace Hub cá nhân, ghi rõ cách tải lại trong `docs/guides/how-to-run.md`).
+- map CUAD SQuAD-style spans thành clause fields/evidence;
+- xác định taxonomy được hỗ trợ trong từng phase;
+- phục vụ metadata, important clauses, clause categories và structured output;
+- chạy Track A/B trên Contract khi input/context/schema đã đáp ứng;
+- tách capability product khỏi generalization comparison trong report.
 
-**Definition of Done:**
-- [ ] `src/docai/pipelines/track_a/kie_layoutlmv3.py` chạy fine-tune và inference.
-- [ ] F1 field-level trên tập test ghi vào `docs/reports/benchmark-results.md`.
-- [ ] Chi phí GPU-giờ của bước fine-tune ghi vào `docs/reports/cost-analysis.md`.
+Nếu taxonomy chưa đủ hoặc chưa có inference thật, ghi `SCAFFOLD`/`PLANNED`, không ghi như capability hoàn thành.
 
----
+### Giai đoạn 7 — Domain Risk và validation
 
-## Giai đoạn 5 — Track B: VLM-native parsing (hóa đơn)
+- **Invoice Risk**: subtotal/tax/total arithmetic consistency, missing important field, low confidence và amount inconsistency.
+- **Contract Risk**: missing important/required clause, unusual/inconsistent clause và metadata inconsistency khi có cơ sở.
+- Expose `risk_flags` qua shared output.
 
-**Việc cần làm:**
-1. Thiết kế prompt/schema để PaddleOCR-VL hoặc dots.ocr trả trực tiếp các field cần thiết (không cần train).
-2. Chạy trên cùng tập test đã dùng ở Giai đoạn 4 để so sánh công bằng với Track A.
-3. Đánh giá F1 field-level, latency, chi phí GPU-giờ (nếu chạy trên Modal) hoặc chi phí API (nếu dùng dịch vụ ngoài).
+Không gọi Contract Risk là fraud nếu evidence chỉ cho thấy thiếu clause. Không đưa ra kết luận hợp đồng hợp pháp/bất hợp pháp.
 
-**Definition of Done:**
-- [ ] `src/docai/pipelines/track_b/vlm_parser.py` chạy được, trả JSON đúng schema thống nhất.
-- [ ] F1, latency, chi phí ghi vào `docs/reports/benchmark-results.md` và `docs/reports/cost-analysis.md`, đặt cạnh số liệu Track A để so sánh trực tiếp.
+Baseline invoice/contract rules hiện có trong `src/docai/fraud/rules.py`; mở rộng taxonomy và currency handling thuộc phase sau.
 
----
+### Giai đoạn 8 — Explainability cho cả hai domain
 
-## Giai đoạn 6 — Research extension: Mở rộng sang hợp đồng (CUAD)
+- Invoice: field bounding box, highlighting và confidence.
+- Contract: text span, page/clause location và supporting passage.
+- Attention/visual grounding/Grad-CAM chỉ được xem là explanation khi implementation và validation chứng minh được; không đồng nhất attention với explanation hoàn hảo.
 
-**Việc cần làm:**
-1. Chuẩn bị subset CUAD (vài chục đến vài trăm hợp đồng), chuyển định dạng SQuAD-style span extraction sang JSON schema thống nhất.
-2. Chạy cả Track A (fine-tune thêm một lượt nhỏ trên CUAD hoặc dùng zero-shot để xem mức độ tổng quát hoá) và Track B (chỉ cần đổi prompt/schema, không cần train lại) trên tập CUAD.
-3. So sánh mức độ giảm hiệu năng của từng track khi chuyển từ hóa đơn sang hợp đồng — đây là số liệu quan trọng nhất của phần mở rộng này.
-4. Ghi nhận định: track nào tổng quát hoá tốt hơn, và tại sao (dựa trên kiến trúc — VLM-native thường tổng quát hoá tốt hơn vì không phụ thuộc fine-tune riêng biệt).
+`src/docai/explainability/explainer.py` hiện là scaffold.
 
-**Definition of Done:**
-- [ ] Cả 2 track chạy được trên subset CUAD.
-- [ ] `docs/reports/benchmark-results.md` có riêng một mục so sánh hiệu năng hóa đơn vs hợp đồng cho từng track.
-- [ ] Nhận định bằng văn bản về khả năng tổng quát hoá, có số liệu dẫn chứng.
+### Giai đoạn 9 — Research evaluation
 
----
+- Đánh giá hai track trên cùng protocol/ground truth khi có thể.
+- Báo cáo riêng Invoice và Contract; clean/noisy robustness; agreement/disagreement.
+- Đo accuracy, Precision/Recall/F1, latency, robustness, explainability evidence và cost.
+- Chỉ kết luận trade-off theo số liệu thật, không dự đoán winner từ kiến trúc.
 
-## Giai đoạn 7 — Product Risk/Fraud baseline và contract extension
+`src/docai/evaluation/` hiện có metric helpers; benchmark execution và reports vẫn là scaffold/template.
 
-**Việc cần làm:**
-1. Với hóa đơn: viết rule kiểm tra tổng tiền trước thuế + VAT = tổng tiền, phát hiện dấu hiệu vùng số bị chỉnh sửa (dựa vào độ tin cậy OCR bất thường ở vùng số).
-2. Với hợp đồng extension: dùng một subset taxonomy điều khoản có sẵn trong CUAD (loại điều khoản như Termination, Governing Law, Indemnification...) để viết rule baseline; không coi đây là phạm vi Product MVP.
-3. Đóng gói cả hai thành `src/docai/fraud/rules.py`, expose qua field `risk_flags` trong JSON output.
+### Giai đoạn 10 — Product integration
 
-**Definition of Done:**
-- [ ] `src/docai/fraud/rules.py` chạy được cho cả hóa đơn và hợp đồng.
-- [ ] Test thử với 1 hóa đơn cố tình sai số liệu và 1 hợp đồng cố tình thiếu điều khoản, xác nhận rule phát hiện đúng.
+- FastAPI: request validation, upload, pipeline invocation, serialization và error handling.
+- Plotly Dash: Invoice Workspace, Contract Workspace và Research Lab.
+- Docker/CLI/logging và integration tests.
+- Kết nối một end-to-end Product MVP trước khi mở rộng toàn bộ Research Lab.
 
----
+Không thêm React/Vue/Angular/Next.js, Power BI hay hạ tầng phân tán mới nếu chưa có requirement.
 
-## Giai đoạn 8 — Product Explainability Layer
+## Trạng thái repository hiện tại
 
-**Việc cần làm:**
-1. Với Track A: trích attention weights từ LayoutLMv3 cho từng field đã dự đoán, ánh xạ về bounding box tương ứng trên ảnh gốc.
-2. Với Track B: nếu model VLM hỗ trợ visual grounding/attention map, trích tương tự; nếu không hỗ trợ trực tiếp, dùng kỹ thuật gradient-based (Grad-CAM) trên input image.
-3. Vẽ overlay heatmap lên ảnh gốc, đóng gói thành hàm dùng chung trong `src/docai/explainability/explainer.py`.
-4. Expose qua endpoint `/explain` trả về ảnh overlay hoặc tọa độ heatmap.
+- `src/docai/core/schema.py`: shared Pydantic envelope; có `DocumentType.CONTRACT`, nhưng chưa phải Contract taxonomy đầy đủ.
+- `src/docai/fraud/rules.py`: baseline rules có code và test cho invoice risk và một nhóm contract missing-clause flags.
+- `src/docai/api/main.py`: route scaffold; `/health` hoạt động, parse/compare/explain trả 501.
+- `src/docai/dashboard/app.py`: Plotly Dash layout scaffold; chưa có callback/dữ liệu thật.
+- `src/docai/pipelines/`: Track A/B scaffold; chưa có model inference thật.
+- `src/docai/explainability/`: scaffold; chưa có heatmap runtime.
+- `src/docai/evaluation/`: metric helpers và comparison scaffold; chưa có benchmark thật.
+- `data/`: chưa tải dataset trong task này.
 
-**Definition of Done:**
-- [ ] `src/docai/explainability/explainer.py` sinh được overlay heatmap cho ít nhất 3 field mẫu từ mỗi track.
-- [ ] Ảnh minh hoạ lưu vào `docs/reports/explainability-report.md`.
+## Quy tắc Definition of Done
 
----
+Mỗi phase phải ghi rõ code, test/runtime evidence và giới hạn. `Implemented` chỉ dùng khi hành vi thật đã được kiểm thử; `Baseline` dùng cho logic nhỏ đã có code/test; `SCAFFOLD` dùng cho interface/TODO; `PLANNED` dùng cho việc chưa bắt đầu; model chưa chọn phải ghi `CHƯA CHỐT MODEL CỤ THỂ`.
 
-## Giai đoạn 9 — Research: Robustness Test & Benchmark tổng hợp
+## Thứ tự delivery logic
 
-**Việc cần làm:**
-1. Từ tập test thật (hóa đơn + hợp đồng), sinh biến thể: xoay 5-15 độ, làm mờ Gaussian, thêm watermark mờ, giảm độ sáng.
-2. Chạy cả 2 track trên từng mức độ biến dạng, đo F1 giảm bao nhiêu so với ảnh gốc — vẽ đường cong độ giảm hiệu năng theo mức nhiễu.
-3. Tổng hợp toàn bộ số liệu từ Giai đoạn 3 đến 9 (F1, latency, chi phí GPU-giờ, độ bền trước nhiễu) thành báo cáo benchmark cuối cùng.
-4. Viết `docs/reports/cost-analysis.md` đối chiếu chi phí tự vận hành trên Modal với chi phí ước tính của API thương mại phổ biến (dựa trên giá công khai của các nhà cung cấp) cho cùng khối lượng trang xử lý.
+Số phase 1–10 được giữ để không làm vỡ các reference cũ, nhưng dependency của Product MVP được đọc theo thứ tự:
 
-**Definition of Done:**
-- [ ] `docs/reports/robustness-report.md` có đường cong độ giảm F1 theo từng loại nhiễu, cho cả 2 track.
-- [ ] `docs/reports/benchmark-results.md` là bản tổng hợp đầy đủ, có bảng so sánh cuối cùng giữa Track A và Track B trên mọi tiêu chí.
-- [ ] `docs/reports/cost-analysis.md` hoàn chỉnh với số liệu đối chiếu chi phí.
-
----
-
-## Giai đoạn 10 — Product integration: FastAPI, Dashboard & Tài liệu hoá
-
-**Việc cần làm:**
-1. Tích hợp `src/docai/api/main.py` cho Product endpoints `/parse/classic`, `/parse/vlm`, `/explain`; giữ `/compare` là endpoint Research để đối chiếu hai track khi có output thật.
-2. Deploy service lên Modal (`modal deploy`), xác nhận endpoint hoạt động qua request thật.
-3. Đóng gói `docker-compose.yml` hoàn chỉnh cho người khác chạy local (không cần tài khoản Modal, dùng model nhỏ hơn hoặc mock cho mục đích demo).
-4. Hoàn thiện toàn bộ `docs/` (xem cấu trúc bên dưới), README.md ở root.
-
-**Definition of Done:**
-- [ ] Ít nhất một Product parsing flow Invoice/Receipt chạy end-to-end thật và trả `UnifiedDocumentOutput`.
-- [ ] Product endpoints và Dashboard hiển thị được output/risk khi có implementation tương ứng; `/compare` vẫn được đánh giá theo Research milestone riêng.
-- [ ] Deployment và Docker chỉ được đánh dấu hoàn thành sau khi có validation runtime; scaffold không được ghi là production-ready.
-
----
-
-## Cấu trúc thư mục
-
-```
-docai-dual-pipeline-benchmark/
-├── .cursor/
-│   └── rules/
-├── .gitignore
-├── pyproject.toml
-├── data/
-│   ├── raw/
-│   │   └── .gitkeep
-│   ├── interim/
-│   │   └── .gitkeep
-│   └── processed/
-│       └── .gitkeep
-├── docs/
-│   ├── architecture/
-│   │   ├── architecture-explained.md
-│   │   ├── data-dictionary.md
-│   │   └── repository-structure.md
-│   ├── guides/
-│   │   ├── glossary.md
-│   │   └── how-to-run.md
-│   ├── reports/
-│   │   ├── benchmark-results.md
-│   │   ├── cost-analysis.md
-│   │   ├── explainability-report.md
-│   │   └── robustness-report.md
-│   └── specs/
-│       ├── implementation-guide.md
-│       └── docai-benchmark-overview.pdf
-├── notebooks/
-│   └── 01-eda.ipynb
-├── src/
-│   └── docai/
-│       ├── core/
-│       ├── data/
-│       ├── pipelines/
-│       │   ├── track_a/
-│       │   └── track_b/
-│       ├── fraud/
-│       ├── explainability/
-│       ├── evaluation/
-│       ├── api/
-│       └── dashboard/
-├── scripts/
-├── tests/
-├── modal_app/
-│   └── deploy.py
-├── log/
-│   └── progress-log.md
-├── docker-compose.yml
-├── requirements.txt
-└── README.md
+```text
+Data/input
+  → Core schema
+  → Track A / Track B
+  → Invoice capability + Contract capability
+  → FastAPI integration
+  → Plotly Dash MVP
+  → Domain Risk / Explainability
+  → End-to-end Product MVP
+  → Research benchmark
+  → Robustness / Cost research
 ```
 
-## Ghi chú chung cho AI hỗ trợ code
-- Không train model từ đầu — luôn dùng pretrained, chỉ fine-tune LayoutLMv3 trên subset nhỏ để tiết kiệm GPU-giờ trên Modal.
-- Mọi lần chạy tốn GPU trên Modal phải ghi log chi phí vào `log/progress-log.md` và tổng hợp vào `docs/reports/cost-analysis.md`.
-- Track A và Track B luôn phải trả về cùng JSON schema (`src/docai/core/schema.py`) để so sánh công bằng.
-- Không tự ý mở rộng phạm vi ngoài 10 giai đoạn đã định nghĩa — nếu phát hiện ý tưởng hay ngoài kế hoạch, ghi vào `docs/reports/benchmark-results.md` mục "Định hướng mở rộng" thay vì tự triển khai.
-- Mỗi giai đoạn hoàn thành nên commit riêng, cập nhật `log/progress-log.md` ngay sau khi hoàn thành, không dồn lại.
+Vì vậy một phase có thể chuẩn bị code trước khi phase tích hợp được thực thi; chỉ đường chạy đã tích hợp và kiểm thử mới được gọi là Product MVP. Research vẫn là milestone riêng.
+
+Các reference cũ vẫn giữ số phase 1–10 để link không bị vỡ. `docs/specs/docai-benchmark-overview.pdf` là tài liệu lịch sử/tham chiếu; các tài liệu Markdown hiện hành là source of truth cho product-first direction.

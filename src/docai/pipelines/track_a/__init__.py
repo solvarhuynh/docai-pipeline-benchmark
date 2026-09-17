@@ -1,5 +1,5 @@
 """
-Track A: Pipeline cổ điển đa tầng (Classic Multi-stage Pipeline).
+Track A: Processing engine cổ điển đa tầng (Classic Multi-stage Pipeline) cho Invoice/Contract.
 
 Bao gồm 3 bước độc lập:
 1. Layout Detection (YOLOv8-doc / DocLayout-YOLO)

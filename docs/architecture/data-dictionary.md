@@ -1,117 +1,72 @@
-# Từ điển dữ liệu (Data Dictionary) — DocAI Product & Research
+# Data dictionary — DocAI Product + Research
 
-Tài liệu này mô tả chi tiết 4 bộ dữ liệu thực tế dự kiến sử dụng trong dự án, quy định cấu trúc nhãn gốc và phương pháp ánh xạ (mapping) sang JSON schema thống nhất (`src/docai/core/schema.py`).
+Tài liệu này mô tả các dataset mục tiêu và nguyên tắc mapping vào shared envelope [`src/docai/core/schema.py`](../../src/docai/core/schema.py). Đây là data plan, không phải bằng chứng dữ liệu đã được tải. Hiện `data/raw/`, `data/interim/` và `data/processed/` chưa chứa dataset thật trong task này.
 
-Ghi chú về trạng thái: Theo đối chiếu với `log/progress-log.md`, dự án hiện ở bước hoàn thành dựng khung (Scaffold). Các số liệu thống kê chi tiết về dung lượng file, phân bố chiều cao/chiều rộng ảnh sẽ được điền đầy đủ khi Giai đoạn 1 (Tải và tiền xử lý dữ liệu thật) được thực thi.
+## Dataset và vai trò
 
----
+- **mcocr2021** — hóa đơn/biên lai Việt Nam chụp bằng camera; polygon + transcription; phục vụ Invoice extraction, OCR/layout và robustness.
+- **CORD** — retail receipts; hierarchical JSON có `menu`, `sub_total`, `total`; phục vụ Invoice KIE và đối chiếu.
+- **SROIE** — scanned receipts; OCR text boxes và entities `company`, `date`, `address`, `total`; phục vụ Invoice OCR/KIE đối chiếu.
+- **CUAD** — hợp đồng pháp lý với SQuAD-style `context`, `qas`, `answers` span; phục vụ Contract Information Extraction, Clause Classification/Detection, Contract Risk Analysis và generalization research.
 
-## 1. Bảng tổng hợp 4 bộ dữ liệu
+Quy mô và phân bố cụ thể chỉ được ghi sau EDA trên dữ liệu thật. Các con số danh nghĩa trong nguồn dataset không phải số liệu benchmark của repository.
 
-| Bộ dữ liệu | Loại tài liệu | Quy mô danh nghĩa | Định dạng nhãn gốc | Vai trò trong dự án | Trạng thái dữ liệu |
-|---|---|---|---|---|---|
-| mcocr2021 | Hóa đơn / biên lai Việt Nam | Ảnh chụp camera thực tế | JSON/CSV (polygon tọa độ và chữ tiếng Việt) | Nguồn đánh giá chính cho bối cảnh Việt Nam | Đã lên kế hoạch, chờ tải thật ở Giai đoạn 1 |
-| CORD | Biên lai bán lẻ quốc tế | 1.000 mẫu (800 train, 100 val, 100 test) | JSON phân cấp (hierarchical labels kèm box) | Đối chiếu benchmark chuẩn quốc tế | Đã lên kế hoạch, chờ tải thật ở Giai đoạn 1 |
-| SROIE (ICDAR 2019) | Hóa đơn scan | 626 train, 347 test | Cặp file .txt (box + text) và .json (entities) | Đối chiếu benchmark cho bước OCR và KIE | Đã lên kế hoạch, chờ tải thật ở Giai đoạn 1 |
-| CUAD | Hợp đồng pháp lý | 510 hợp đồng, hơn 13.000 điều khoản gán nhãn | JSON phong cách SQuAD (text context + span offsets) | Đánh giá khả năng tổng quát hoá sang văn bản dài | Đã lên kế hoạch, chờ tải thật ở Giai đoạn 1 |
+## Mapping theo domain
 
----
+### Invoice/Receipt
 
-## 2. Mô tả chi tiết từng bộ dữ liệu
+Các field có thể dùng khi dataset/schema hỗ trợ:
 
-### 2.1. mcocr2021 (Mobile Captured OCR 2021)
+- `seller_name`: mcocr2021 seller; CORD store/name; SROIE `company`.
+- `invoice_date`: timestamp/date tương ứng.
+- `subtotal_amount`: subtotal khi có dữ liệu phù hợp.
+- `tax_amount`: VAT/tax khi có dữ liệu phù hợp.
+- `total_amount`: total/total price.
+- `line_items`: CORD `menu` hoặc item annotations tương ứng.
+- `seller_address`: SROIE `address` khi product schema cần và mapping được chốt.
 
-- **Nguồn gốc**: Cuộc thi RIVF 2021 dành cho bài toán OCR và bóc tách thông tin biên lai tiếng Việt.
-- **Loại tài liệu**: Hóa đơn bán lẻ, phiếu thanh toán, hóa đơn ăn uống tại Việt Nam chụp bằng điện thoại di động.
-- **Đặc điểm chất lượng**:
-  - Ảnh chụp camera thực tế có nhiều góc nghiêng, nếp gấp, bị bóng mờ hoặc thiếu sáng.
-  - Chứa các ký tự có dấu tiếng Việt phức tạp mà các bộ OCR chuẩn quốc tế thường đọc sai nếu không được tinh chỉnh.
-- **Cấu trúc nhãn gốc**:
-  - Mỗi ảnh đi kèm danh sách các vùng chữ được xác định bởi polygon 4 điểm: `[[x1, y1], [x2, y2], [x3, y3], [x4, y4]]`.
-  - Nhãn văn bản (transcription) tiếng Việt đi kèm.
-- **Phương pháp ánh xạ sang Schema thống nhất**:
-  - Tọa độ polygon được bao ngoài bằng bounding box hình chữ nhật 2 điểm `[xmin, ymin, xmax, ymax]`.
-  - Các thực thể được gán nhãn vào các trường: `seller_name`, `invoice_date`, `total_amount`, `vat_amount`, `line_items`.
-- **Số liệu khảo sát thực nghiệm**:
-  - Chờ Giai đoạn 1 thực thi: Thống kê số lượng mẫu, độ phân giải ảnh trung bình sẽ được cập nhật vào đây sau khi chạy `notebooks/01-eda.ipynb`.
+Tên field trong `fields[]` là dữ liệu domain-specific, không phải các thuộc tính bắt buộc cố định của Pydantic envelope. Không thêm field chỉ vì một dataset khác có field đó.
 
-### 2.2. CORD (Consolidated Receipt One-stop Dataset)
+### Contract
 
-- **Nguồn gốc**: Bộ dữ liệu biên lai chuẩn hoá do NAVER Clova AI công bố dành cho bài toán Document Visual Question Answering và Key Information Extraction.
-- **Loại tài liệu**: Biên lai bán lẻ, cửa hàng tiện lợi quốc tế.
-- **Cấu trúc nhãn gốc**:
-  - Sử dụng cấu trúc cây phân cấp (hierarchical structure) gồm các nhóm lớn: `menu` (danh sách mặt hàng), `sub_total`, `total`, `void_menu`.
-  - Trong mỗi nhóm có các trường con: `cnt` (số lượng), `nm` (tên mặt hàng), `price` (đơn giá), `discountprice` (tiền giảm giá).
-  - Tọa độ được biểu diễn dưới dạng polygon 4 đỉnh cho từng từ (word-level).
-- **Phương pháp ánh xạ sang Schema thống nhất**:
-  - Chuyển đổi nhãn phân cấp thành các phần tử trong danh sách `fields` của `UnifiedDocumentOutput`.
-  - Nhóm `menu` được ánh xạ thành `line_items`, `total.total_price` được ánh xạ thành `total_amount`.
-- **Số liệu khảo sát thực nghiệm**:
-  - Chờ Giai đoạn 1 thực thi: Tỷ lệ phân bổ các loại biên lai và thống kê chiều dài/chiều rộng ảnh.
+CUAD giữ semantics span/clause, không map vào `seller_name`, `invoice_date`, `total_amount` hay `line_items` chỉ để làm cho hai domain giống nhau. Mapping dự kiến là:
 
-### 2.3. SROIE (Scanned Receipts OCR and Information Extraction — ICDAR 2019)
+- `document_type = contract`;
+- `field_name` là clause category đã được chốt trong taxonomy;
+- `field_value` là supporting text span;
+- `raw_text` giữ text gốc khi cần;
+- `page_number`/`bounding_box` được điền khi có document-to-page alignment;
+- metadata contract như parties/effective date được thêm chỉ khi annotation/schema thực tế hỗ trợ.
 
-- **Nguồn gốc**: Cuộc thi ICDAR 2019 Robust Reading Challenge on Scanned Receipts.
-- **Loại tài liệu**: Hóa đơn được quét (scan) từ các cửa hàng bán lẻ, hóa đơn tiếp xúc trực tiếp với máy scan phẳng.
-- **Cấu trúc nhãn gốc**:
-  - Task 1 & 2 (OCR): File `.txt` chứa mỗi dòng là 8 tọa độ `x1,y1,x2,y2,x3,y3,x4,y4` theo sau bởi văn bản nhận dạng.
-  - Task 3 (Information Extraction): File `.json` chứa 4 thực thể chính:
-    - `company`: Tên công ty hoặc đơn vị bán hàng.
-    - `date`: Ngày phát hành hóa đơn.
-    - `address`: Địa chỉ đơn vị bán hàng.
-    - `total`: Tổng số tiền thanh toán trên hóa đơn.
-- **Phương pháp ánh xạ sang Schema thống nhất**:
-  - Ánh xạ `company` -> `seller_name`.
-  - Ánh xạ `date` -> `invoice_date`.
-  - Ánh xạ `total` -> `total_amount`.
-  - Ánh xạ `address` -> `seller_address`.
-- **Số liệu khảo sát thực nghiệm**:
-  - Chờ Giai đoạn 1 thực thi: Thống kê chi tiết số lượng ký tự trung bình mỗi hóa đơn.
+Các category có thể nghiên cứu gồm governing law, termination, confidentiality, liability, indemnification và dispute resolution. Đây là taxonomy candidate/scaffold, không phải tuyên bố CUAD extraction đã hoàn thành.
 
-### 2.4. CUAD (Contract Understanding Atticus Dataset)
+## Shared output contract
 
-- **Nguồn gốc**: Bộ dữ liệu chuyên sâu về hiểu hợp đồng do Atticus Project công bố, được gán nhãn bởi các luật sư chuyên nghiệp tại Mỹ.
-- **Loại tài liệu**: Hợp đồng thương mại, kinh doanh, thỏa thuận bảo mật (NDA), thỏa thuận cấp phép (License Agreement) có độ dài từ vài trang đến hàng chục trang.
-- **Cấu trúc nhãn gốc**:
-  - Định dạng JSON theo kiểu SQuAD (Stanford Question Answering Dataset):
-    - `context`: Đoạn văn bản pháp lý dài của toàn bộ hợp đồng.
-    - `qas`: Danh sách 41 câu hỏi tương ứng với 41 loại điều khoản pháp lý (ví dụ: "Governing Law", "Termination for Convenience", "Indemnification", "Non-Compete").
-    - `answers`: Chọn đoạn văn bản (text span) chứa câu trả lời kèm vị trí bắt đầu `answer_start` (ký tự thứ bao nhiêu trong văn bản).
-- **Phương pháp ánh xạ sang Schema thống nhất**:
-  - `document_type` được gán cố định là `DocumentType.CONTRACT`.
-  - Mỗi câu trả lời span được chuyển thành một `ExtractedField` với `field_name` là tên loại điều khoản pháp lý, `field_value` là đoạn trích văn bản điều khoản đó.
-  - `bounding_box` sẽ được xác định thông qua tọa độ của trang chứa đoạn trích đó khi chuyển PDF hợp đồng thành ảnh.
-- **Số liệu khảo sát thực nghiệm**:
-  - Chờ Giai đoạn 1 thực thi: Thống kê số trang trung bình mỗi hợp đồng và phân bố 41 loại điều khoản.
+Hai track đều phải trả `UnifiedDocumentOutput` với:
 
----
+- `document_type`: `invoice`, `receipt`, `contract` hoặc `unknown`;
+- `fields[]`: `field_name`, `field_value`, confidence và optional evidence location;
+- `risk_flags[]`: domain risk flags;
+- execution/pipeline metadata khi đo được.
 
-## 3. Quy định ánh xạ trường dữ liệu (Field Mapping Reference)
+Envelope chung giúp FastAPI, Dash và Evaluation không phụ thuộc output tùy tiện của model. Nó không có nghĩa field Invoice và Contract phải giống nhau.
 
-Để cả hai pipeline (Track A và Track B) trả về kết quả đồng nhất, các trường gốc của 4 bộ dữ liệu được quy về bộ từ khóa chuẩn sau:
+## Data quality và EDA
 
-| Trường chuẩn (`field_name`) | mcocr2021 | CORD | SROIE | CUAD | Kiểu dữ liệu |
-|---|---|---|---|---|---|
-| `seller_name` | SELLER / Tên người bán | nm / store_name | company | parties / contractor | string |
-| `invoice_date` | TIMESTAMP / Ngày | date | date | agreement_date / effective_date | string (chuẩn hoá YYYY-MM-DD nếu có) |
-| `total_amount` | TOTAL_COST / Tổng tiền | total.total_price | total | không áp dụng | float / string số tiền |
-| `vat_amount` | VAT / Thuế | sub_total.tax_price | không có sẵn | không áp dụng | float / string số tiền |
-| `line_items` | Danh sách dòng hàng | menu items | không có sẵn | không áp dụng | json / list |
-| `governing_law` | Không áp dụng | Không áp dụng | Không áp dụng | Governing Law clause | string đoạn văn |
-| `termination_clause` | Không áp dụng | Không áp dụng | Không áp dụng | Termination clause | string đoạn văn |
-| `indemnification` | Không áp dụng | Không áp dụng | Không áp dụng | Indemnification clause | string đoạn văn |
+EDA cần kiểm tra:
 
----
+- Invoice: ảnh mờ/nghiêng, độ phân giải, polygon, OCR text và phân bố field/line item.
+- Contract: độ dài context, span offset, số trang nếu có, overlap/thiếu clause và phân bố taxonomy.
+- Mapping: giữ provenance từ annotation gốc đến `field_name`, `field_value`, `raw_text` và evidence.
 
-## 4. Kế hoạch lưu trữ tài nguyên dữ liệu
+Thực hiện bằng `notebooks/01-eda.ipynb` hoặc `scripts/run_eda.py` sau khi phase dữ liệu được phê duyệt. Không tạo số liệu giả để điền báo cáo.
 
-Toàn bộ dữ liệu thô được tổ chức tại:
-- `data/raw/mcocr2021/`
-- `data/raw/cord/`
-- `data/raw/sroie/`
-- `data/raw/cuad/`
+## Lưu trữ
 
-Các dữ liệu sau khi qua bước làm sạch, lọc bớt nhiễu và chuẩn hoá tọa độ sẽ được lưu tại:
-- `data/processed/`
+```text
+data/raw/<dataset>/        # dữ liệu gốc, không sửa trực tiếp
+data/interim/              # chuyển đổi/trung gian
+data/processed/            # chuẩn hoá cho product/research
+```
 
-Tất cả đều được loại khỏi git commit thông qua file `.gitignore` để tránh làm phình dung lượng repository.
+Dataset license, provenance, split và ground truth phải được ghi kèm trước khi dùng cho Research milestone.

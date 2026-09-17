@@ -2,6 +2,8 @@
 
 Đây là tài liệu của Research & Quality layer trong DocAI Document Intelligence Platform. Layer này dùng output chuẩn hoá của Track A và Track B để đo Field-level F1, Agreement Ratio, latency, cost, robustness và explainability. Evaluation không phải bước bắt buộc trong Product flow khi người dùng chỉ xử lý một tài liệu.
 
+Evaluation phải báo cáo riêng theo domain khi có đủ ground truth: Invoice tập trung vào field/number/table extraction; Contract tập trung vào metadata, clause span/category và missing-clause signals. CUAD vì thế phục vụ đồng thời Contract product capability và generalization research.
+
 ---
 
 ## 1. Tại sao chỉ đo độ chính xác nhận dạng chữ (OCR) là chưa đủ?
@@ -96,26 +98,19 @@ Benchmark tương lai cần báo cáo các chỉ số sau. Hiện tại [`comput
 
 ---
 
-## 5. Phân tích Chi phí Điện toán GPU trên Modal vs Commercial API
+## 5. Chi phí Product và Research sẽ được đo như thế nào?
 
-Một bài báo khoa học chỉ quan tâm đến F1-score, nhưng một dự án kỹ thuật thực tế phải trả lời câu hỏi: **"Mỗi trang tài liệu xử lý tốn bao nhiêu tiền điện toán?"**.
+Một sản phẩm thực tế cần biết mỗi trang Invoice hoặc Contract tốn bao nhiêu tài nguyên. Đây là planned research measurement, chưa phải số liệu đã có.
 
 ### Cơ chế tính giá theo giây của Modal Serverless GPU
-Trên nền tảng [Modal](https://modal.com), máy chủ GPU được khởi chạy theo nhu cầu (serverless) và tính tiền theo thời gian thực thi. Bảng dưới đây chỉ là ước tính kế hoạch/tham chiếu, không phải chi phí đã phát sinh hoặc số liệu đã xác minh trong repository:
-
-| Loại GPU | VRAM | Đơn giá ước tính | Phù hợp với |
-| :--- | :--- | :--- | :--- |
-| **NVIDIA T4** | 16 GB | $\approx \$0.59$ / giờ ($\approx \$0.00016$ / giây) | Track A (YOLOv8 + PaddleOCR + LayoutLMv3) |
-| **NVIDIA A10G** | 24 GB | $\approx \$1.10$ / giờ ($\approx \$0.00030$ / giây) | Track B (PaddleOCR-VL / dots.ocr inference) |
-| **NVIDIA A100 (40GB)** | 40 GB | $\approx \$3.67$ / giờ ($\approx \$0.00102$ / giây) | Fine-tuning LayoutLMv3 trên batch size lớn |
+Trên nền tảng [Modal](https://modal.com), runtime GPU có thể được ghi theo thời gian thực thi. Khi đo, phải ghi model/checkpoint, GPU, warm-up, batch size, số trang, wall-clock time, đơn giá tại thời điểm đo và công thức. Candidate hardware trong các tài liệu cũ không phải lựa chọn đã chốt.
 
 ### So sánh với API thương mại (Commercial APIs)
-Các dịch vụ đám mây như Google Cloud Document AI, AWS Textract hay Azure Form Recognizer thường tính phí cố định theo trang:
-- Đơn giá trung bình của API thương mại: Dao động từ $\$0.015$ đến $\$0.05$ cho mỗi trang tài liệu được phân tích.
+API thương mại chỉ được dùng làm comparison khi có nguồn giá công khai, ngày kiểm tra và workload tương đương. Không dùng một khoảng giá tham khảo để tuyên bố cost advantage.
 
-### Phân tích Điểm hòa vốn (Break-even Analysis):
-- **Ở quy mô nhỏ (Dưới 1.000 trang/tháng)**: Sử dụng API thương mại tiết kiệm chi phí hơn vì không phải chịu chi phí thời gian khởi động lạnh của GPU (Cold start overhead) và chi phí duy trì hạ tầng.
-- **Ở quy mô lớn (Hàng trăm nghìn trang/tháng)**: Việc tự triển khai pipeline mã nguồn mở (Track A hoặc Track B) trên Serverless GPU như Modal giúp giảm chi phí từ $5\times$ đến $10\times$ so với gọi API trả tiền theo trang, đồng thời đảm bảo bảo mật dữ liệu tài chính nội bộ.
+### Break-even Analysis (PLANNED)
+
+Chỉ tính break-even sau khi có workload, cold start, utilization, storage, retry và đơn giá thực tế. Repository hiện chưa có kết luận engine nào rẻ hơn API thương mại.
 
 ---
 

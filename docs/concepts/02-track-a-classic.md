@@ -6,6 +6,8 @@ Tài liệu này đi sâu vào kiến trúc và nguyên lý hoạt động của
 
 Track A là một processing backend bên trong Product, không phải sản phẩm độc lập. Output của track được chuẩn hoá về `UnifiedDocumentOutput` để phục vụ Product flow hoặc Research comparison.
 
+Trong product, Track A có thể phục vụ cả Invoice Intelligence và Contract Intelligence. Các ví dụ bên dưới ưu tiên Invoice vì đó là flow layout/OCR dễ quan sát; Contract sẽ cần mapping span/clause, context dài và taxonomy phù hợp. Khả năng Contract end-to-end hiện vẫn là `SCAFFOLD`/`PLANNED`.
+
 ---
 
 ## 1. Triết lý "chia để trị" của Track A là gì và tại sao lại tách thành 3 chặng?

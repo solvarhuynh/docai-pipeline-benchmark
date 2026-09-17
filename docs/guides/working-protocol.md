@@ -1,6 +1,6 @@
 # Quy trình làm việc, log và Git cho DocAI
 
-Áp dụng cho toàn bộ repository **DocAI Dual-Pipeline Benchmark**, bao gồm Nhánh A, Nhánh B, phần dùng chung và AI hỗ trợ dự án.
+Áp dụng cho toàn bộ repository **DocAI Document Intelligence Platform**, bao gồm bốn vùng responsibility (Track A, Track B, Product Engineering và Research & Evaluation), phần dùng chung và AI hỗ trợ dự án.
 
 Mục tiêu của quy trình này là giữ repository gọn, mọi thay đổi đều truy được lý do, không có nhiều file cùng chức năng, không biến notebook thành nơi chứa toàn bộ logic, và không tuyên bố một chức năng đã hoàn thành khi mới chỉ có scaffold hoặc kiểm tra tĩnh.
 

@@ -5,12 +5,9 @@ Stack công nghệ chính thức:
 Python -> pandas -> Plotly -> Dash
 
 Mục đích kiến trúc:
-Cung cấp giao diện trực quan tương tác phục vụ:
-1. Hiển thị kết quả trích xuất tài liệu và độ tin cậy (confidence) của từng trường.
-2. So sánh đối đầu song song giữa Track A (Classic) và Track B (VLM-native).
-3. Hiển thị cờ cảnh báo gian lận số liệu và rủi ro điều khoản (fraud/risk flags).
-4. Minh hoạ bản đồ nhiệt giải thích (Explainability Heatmap Overlay).
-5. Theo dõi các chỉ số benchmark thực nghiệm (F1 field-level, độ trễ, chi phí GPU).
+Cung cấp ba khu vực frontend tương tác: Invoice Workspace, Contract Workspace và Research Lab.
+Product workspace hiển thị kết quả trích xuất, risk flags, evidence và JSON; Research Lab
+hiển thị comparison/benchmark khi có kết quả thực nghiệm.
 
 Cam kết kiến trúc:
 Không sử dụng Power BI, không phụ thuộc file .pbix hay công cụ BI độc quyền bên ngoài.
@@ -41,19 +38,17 @@ def create_dashboard_app():
         children=[
             html.H1("DocAI Document Intelligence Platform", style={"textAlign": "center"}),
             html.P(
-                "Khu vực Product và Research Lab cho hệ thống Document AI "
+                "Invoice Workspace + Contract Workspace + Research Lab "
                 "(Stack: Python -> pandas -> Plotly -> Dash).",
                 style={"textAlign": "center"}
             ),
             dcc.Tabs(
                 id="dashboard-tabs",
-                value="tab-extraction",
+                value="tab-invoice",
                 children=[
-                    dcc.Tab(label="Kết quả trích xuất & Confidence", value="tab-extraction"),
-                    dcc.Tab(label="So sánh Track A vs Track B", value="tab-comparison"),
-                    dcc.Tab(label="Cảnh báo Gian lận & Rủi ro", value="tab-fraud"),
-                    dcc.Tab(label="Bản đồ nhiệt Giải thích (Explainability)", value="tab-explain"),
-                    dcc.Tab(label="Chỉ số Benchmark & Chi phí GPU", value="tab-benchmark"),
+                    dcc.Tab(label="Invoice Workspace", value="tab-invoice"),
+                    dcc.Tab(label="Contract Workspace", value="tab-contract"),
+                    dcc.Tab(label="Research Lab", value="tab-research"),
                 ]
             ),
             html.Div(id="tab-content", style={"padding": "20px"}),

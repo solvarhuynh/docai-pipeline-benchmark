@@ -1,18 +1,18 @@
 """
-Module động cơ kiểm tra gian lận và cảnh báo rủi ro (Fraud & Risk Engine).
+Module domain validation và cảnh báo rủi ro (Risk Engine; package name giữ tương thích).
 
 Thuộc: Giai đoạn 7 (Fraud/Risk Engine).
 Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 7.
 
 Mục đích:
-Kết hợp AI trích xuất với luật logic nghiệp vụ để phát hiện rủi ro:
+Kết hợp AI trích xuất với luật logic nghiệp vụ để gắn cờ rủi ro cần review:
 1. Với Hóa đơn:
    - Rule đối chiếu số học: Tổng tiền trước thuế (subtotal) + Tiền thuế VAT (tax) == Tổng thanh toán (total).
    - Rule phát hiện bất thường độ tin cậy OCR (OCR confidence anomaly): Phát hiện các số bị sửa/tẩy xóa
      (ví dụ: số 8 có confidence 0.4 trong khi các chữ xung quanh đạt 0.95).
 2. Với Hợp đồng:
-   - Clause-risk flagging: Tự động cảnh báo khi hợp đồng thiếu các điều khoản chuẩn bắt buộc
-     (Governing Law, Termination, Dispute Resolution) hoặc có điều khoản bất thường dựa trên taxonomy CUAD.
+   - Contract-risk flagging: Cảnh báo khi hợp đồng thiếu một nhóm điều khoản cần review
+     (Governing Law, Termination, Dispute Resolution). Đây không phải kết luận pháp lý.
 
 Phần baseline hiện có:
 - Đối chiếu số học, quét confidence, kiểm tra ba điều khoản hợp đồng bắt buộc qua `run()`.
@@ -29,7 +29,7 @@ from docai.core.schema import DocumentType, ExtractedField, RiskFlag, SeverityLe
 
 class FraudRiskEngine:
     """
-    Engine kiểm tra gian lận số liệu hóa đơn và rủi ro điều khoản hợp đồng.
+    Engine kiểm tra Invoice Risk và Contract Risk; không tự kết luận gian lận/pháp lý.
     """
 
     MANDATORY_CONTRACT_CLAUSES = [

@@ -1,31 +1,36 @@
-# Báo cáo kết quả Benchmark — DocAI Dual-Pipeline
+# Benchmark results — DocAI Research Lab
 
-Ghi chú: Chờ Giai đoạn tương ứng (Giai đoạn 3, Giai đoạn 4, Giai đoạn 5, Giai đoạn 6, Giai đoạn 9).
-Nội dung thật sẽ được tổng hợp và điền dần khi từng giai đoạn hoàn thành.
+**Trạng thái: PLANNED / REPORT SCAFFOLD.** Repository chưa tải dataset, chưa có output inference thật và chưa có benchmark result. Không điền số liệu giả vào tài liệu này.
 
----
+## Research scope
 
-## 1. Track A — Layout & OCR Baseline (Chờ Giai đoạn 3)
-- Tỷ lệ phát hiện đúng vùng bảng (Table detection accuracy).
-- Tỷ lệ đọc đúng ký tự (CER / WER) so với ground truth trên mcocr2021, CORD, SROIE.
+Benchmark sẽ so sánh Track A Classic và Track B VLM-native khi cả hai trả cùng `UnifiedDocumentOutput`, theo từng domain:
 
-## 2. Track A — KIE với LayoutLMv3 Fine-tuned (Chờ Giai đoạn 4)
-- F1-score cấp field trên tập test riêng.
-- Độ chính xác theo từng trường dữ liệu (seller, date, total, vat, items).
+- **Invoice**: tài liệu ngắn, nhiều số, bảng biểu và field tương đối rõ.
+- **Contract**: tài liệu dài, ngôn ngữ pháp lý, clause và quan hệ ngữ nghĩa phức tạp; CUAD phục vụ cả Contract capability và generalization research.
 
-## 3. Track B — VLM-Native Parsing (Chờ Giai đoạn 5)
-- F1-score cấp field với PaddleOCR-VL / dots.ocr trên cùng tập test.
-- Độ trễ (latency) trung bình trên mỗi trang tài liệu.
+## Metrics sẽ ghi nhận
 
-## 4. So sánh trực tiếp trên Hóa đơn (Track A vs Track B) (Chờ Giai đoạn 5)
-- Bảng đối chiếu F1, Latency, độ phức tạp hệ thống.
+- field-level Precision, Recall, F1 trên ground truth;
+- OCR/layout metrics khi phù hợp;
+- latency theo page/document;
+- robustness trên clean/noisy variants;
+- explainability evidence quality và localization khi có ground truth phù hợp;
+- cost measurement hoặc estimate có nêu rõ assumptions;
+- agreement/disagreement giữa hai track.
 
-## 5. Đánh giá tổng quát hoá trên Hợp đồng CUAD (Chờ Giai đoạn 6)
-- Tỷ lệ suy giảm hiệu năng khi chuyển từ hóa đơn sang hợp đồng dài.
-- Nhận định về khả năng tổng quát hoá của từng kiến trúc.
+## Milestones
 
-## 6. Tổng hợp Benchmark cuối cùng (Chờ Giai đoạn 9)
-- Bảng so sánh tổng hợp tất cả chỉ số đánh giá trên cả 4 bộ dữ liệu.
+1. Track A layout/OCR baseline — `PLANNED`.
+2. Track A KIE/LayoutLMv3 — `PLANNED`.
+3. Track B VLM parsing — `PLANNED`; model cụ thể chưa chốt.
+4. Invoice comparison — `PLANNED`.
+5. Contract/CUAD extraction và clause analysis — `PLANNED`.
+6. Clean/noisy robustness — `PLANNED`.
+7. Cost analysis và tổng hợp — `PLANNED`.
 
-## 7. Định hướng mở rộng
-- Ghi nhận các ý tưởng nghiên cứu và cải tiến ngoài 10 giai đoạn.
+Không kết luận track nào thắng trước khi có output thật, ground truth và số liệu được tái lập. Research Complete là milestone riêng, không suy ra từ Product MVP.
+
+## Định hướng mở rộng
+
+Ý tưởng ngoài roadmap 10 phase được ghi ở đây, không tự động triển khai trong task định vị.

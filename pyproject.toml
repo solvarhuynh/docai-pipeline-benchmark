@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "docai"
 version = "0.1.0"
-description = "Document Intelligence platform for invoice and receipt extraction with classic and VLM processing backends, plus research benchmarking."
+description = "Document Intelligence platform for invoice and contract intelligence with FastAPI, Plotly Dash, classic and VLM processing backends, plus integrated research evaluation."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [

@@ -1,22 +1,27 @@
-# Báo cáo độ bền trước nhiễu (Robustness Report)
+# Robustness report — DocAI Research Lab
 
-Ghi chú: Chờ Giai đoạn tương ứng (Giai đoạn 9).
-Nội dung thật và đường cong độ giảm hiệu năng F1 sẽ được tổng hợp sau khi chạy bộ kiểm thử Robustness Test Suite ở Giai đoạn 9.
+**Trạng thái: PLANNED / REPORT SCAFFOLD.** Chưa có perturbation run hoặc F1 degradation curve. Không có kết luận về production readiness.
 
----
+## Phạm vi
 
-## 1. Thiết kế bộ nghịch biến (Perturbation Suite)
-- Xoay lệch góc (Rotation): 5 độ, 10 độ, 15 độ.
-- Làm mờ quang học (Gaussian Blur): kernel size 3x3, 5x5, 7x7.
-- Giảm độ sáng / độ tương phản (Low illumination / Low contrast): 70%, 50%, 30%.
-- Watermark mờ đè lên nội dung văn bản.
+Đánh giá Track A và Track B trên cả Invoice và Contract khi có dataset, ground truth và pipeline runtime thật. So sánh clean input với noisy variants tương ứng.
 
-## 2. Đường cong suy giảm F1-score theo loại nhiễu (Track A vs Track B)
-- Biểu đồ độ giảm F1 khi tăng mức độ xoay góc ảnh.
-- Biểu đồ độ giảm F1 khi tăng độ mờ Gaussian.
-- Biểu đồ độ giảm F1 dưới điều kiện thiếu sáng và nhiễu watermark.
+## Perturbation suite dự kiến
 
-## 3. Phân tích nguyên nhân và tính ổn định hệ thống
-- Điểm đứt gãy của Track A (ví dụ: PaddleOCR nhạy cảm với góc nghiêng nếu không bật angle classification).
-- Khả năng chống chịu của Track B (VLM-native với cơ chế visual attention tự động bù trừ nhiễu).
-- Kết luận về tính sẵn sàng đưa vào production trong môi trường thực tế.
+- rotation ở nhiều mức;
+- Gaussian blur;
+- low illumination/low contrast;
+- watermark hoặc che khuất nhẹ;
+- các biến dạng khác chỉ thêm khi protocol và ground truth vẫn hợp lệ.
+
+## Metrics
+
+- F1/Precision/Recall theo domain và field/clause;
+- `ΔF1 = F1_clean - F1_noisy`;
+- latency/cost thay đổi dưới nhiễu;
+- lỗi OCR/layout/KIE hoặc VLM parsing theo nguyên nhân;
+- evidence/explainability stability khi có measurement phù hợp.
+
+## Tiêu chí kết luận
+
+Chỉ mô tả track nào robust hơn khi dùng cùng protocol, cùng workload và số liệu tái lập. Không suy ra khả năng chống nhiễu hoặc production readiness từ kiến trúc lý thuyết.

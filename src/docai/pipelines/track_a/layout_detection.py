@@ -1,15 +1,15 @@
 """
 Module phân vùng Layout (Layout Detection) cho Track A - Classic Pipeline.
 
-Thuộc: Giai đoạn 3 (Track A: Layout Detection & OCR - hóa đơn).
+Thuộc: Giai đoạn 3 (Track A: Layout Detection & OCR cho Invoice/Contract theo capability).
 Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 3.
 
 Mục đích:
-Sử dụng mô hình pretrained YOLOv8-doc hoặc DocLayout-YOLO để phân vùng các khu vực trong hóa đơn
-(Header, Table, Signature, Text, Total, v.v.), không huấn luyện từ đầu.
+Sử dụng candidate pretrained YOLOv8-doc hoặc DocLayout-YOLO để phân vùng các khu vực trong tài liệu
+(Invoice hoặc Contract), không huấn luyện từ đầu. Candidate/checkpoint chưa được chốt.
 
 Input mong đợi:
-- image_input: Path hoặc str trỏ tới file ảnh hóa đơn (hoặc PIL.Image / np.ndarray).
+- image_input: Path hoặc str trỏ tới file ảnh tài liệu (Invoice hoặc Contract; hoặc PIL.Image / np.ndarray).
 - conf_threshold: float, ngưỡng độ tin cậy để lọc bounding box (mặc định: 0.25).
 
 Output mong đợi:
