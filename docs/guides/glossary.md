@@ -1,4 +1,4 @@
-# Bảng thuật ngữ kỹ thuật (Glossary) — DocAI Dual-Pipeline Benchmark
+# Bảng thuật ngữ kỹ thuật (Glossary) — DocAI Product & Research
 
 Tài liệu này tra cứu toàn bộ các thuật ngữ chuyên ngành được sử dụng trong dự án Document AI này. Mỗi thuật ngữ đều có một câu giải thích ngắn gọn, dễ hiểu và chỉ rõ vị trí xuất hiện trong mã nguồn hoặc báo cáo.
 

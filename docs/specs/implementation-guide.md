@@ -1,11 +1,40 @@
-# Implementation Guide — DocAI Dual-Pipeline Benchmark
+# Implementation Guide — DocAI Document Intelligence Platform
 
 > Đọc kèm file `docai-benchmark-overview.pdf` (trong `docs/specs/`) để hiểu bức tranh tổng thể trước khi đi vào chi tiết từng giai đoạn.
 
 ## Mục tiêu dự án
-So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ điển nhiều tầng (Track A) và mô hình VLM-native hiện đại (Track B) — trên hai loại tài liệu thật khác hẳn nhau (hóa đơn và hợp đồng), có thêm lớp Explainability, Robustness Test và phân tích chi phí vận hành thật trên Modal.
+Xây dựng một sản phẩm Document Intelligence ưu tiên Invoice/Receipt: nhận tài liệu thật, trích xuất structured output, kiểm tra validation/risk và phục vụ qua API/Dashboard. Hai processing engine Track A và Track B được giữ độc lập để sản phẩm có thể lựa chọn engine, đồng thời cung cấp nền tảng cho nghiên cứu so sánh nghiêm túc.
 
 Trạng thái lựa chọn: Layout model và VLM checkpoint cụ thể chưa chốt. Các tên YOLOv8-doc/DocLayout-YOLO và PaddleOCR-VL/dots.ocr trong tài liệu là các ứng viên để đánh giá ở phase tương ứng, không phải kết quả đã chạy.
+
+## Product MVP và Research Complete
+
+### Product MVP
+
+Product MVP là luồng Invoice/Receipt tối thiểu:
+
+```text
+Input document → processing engine → UnifiedDocumentOutput
+→ validation/risk cơ bản → FastAPI → Plotly Dash
+```
+
+MVP chỉ được đánh dấu hoàn thành khi ít nhất một processing engine chạy end-to-end thật trên tài liệu, trả output chuẩn hoá, có validation/risk cơ bản và được truy cập qua API/UI. Hiện tại MVP chưa hoàn thành; các engine, API orchestration và Dash callbacks vẫn là scaffold.
+
+### Research Complete
+
+Research Complete là milestone độc lập với Product MVP. Chỉ xác nhận khi Track A và Track B đều có output thật trên tập test có ground truth, cùng các phép đo accuracy, latency, cost, robustness và explainability tương ứng. Không dùng scaffold hoặc số liệu kế hoạch để đánh dấu hoàn thành.
+
+## Roadmap ưu tiên Product-first
+
+Giữ nguyên số phase hiện tại để không phá các reference, nhưng đọc roadmap theo thứ tự trách nhiệm sau:
+
+1. **Giai đoạn 1–2**: Data ingestion/normalization, unified schema và nền tảng package.
+2. **Giai đoạn 3–5**: Xây dựng hai processing backend Track A và Track B.
+3. **Giai đoạn 7–8**: Bổ sung Product Risk/Fraud baseline và Explainability cho người dùng.
+4. **Giai đoạn 10**: Tích hợp Product API, Dashboard và deployment workflow.
+5. **Giai đoạn 6 và 9**: Các research extension gồm Contract/CUAD, evaluation, benchmark và robustness/cost analysis.
+
+Roadmap này không biến Contract thành product MVP thứ hai và không yêu cầu triển khai model lớn trong giai đoạn định vị.
 
 ## Nguồn dữ liệu
 
@@ -94,7 +123,7 @@ Trạng thái lựa chọn: Layout model và VLM checkpoint cụ thể chưa ch�
 
 ---
 
-## Giai đoạn 6 — Mở rộng sang hợp đồng (CUAD)
+## Giai đoạn 6 — Research extension: Mở rộng sang hợp đồng (CUAD)
 
 **Việc cần làm:**
 1. Chuẩn bị subset CUAD (vài chục đến vài trăm hợp đồng), chuyển định dạng SQuAD-style span extraction sang JSON schema thống nhất.
@@ -109,11 +138,11 @@ Trạng thái lựa chọn: Layout model và VLM checkpoint cụ thể chưa ch�
 
 ---
 
-## Giai đoạn 7 — Fraud/Risk Engine
+## Giai đoạn 7 — Product Risk/Fraud baseline và contract extension
 
 **Việc cần làm:**
 1. Với hóa đơn: viết rule kiểm tra tổng tiền trước thuế + VAT = tổng tiền, phát hiện dấu hiệu vùng số bị chỉnh sửa (dựa vào độ tin cậy OCR bất thường ở vùng số).
-2. Với hợp đồng: dùng taxonomy điều khoản có sẵn trong CUAD (loại điều khoản như Termination, Governing Law, Indemnification...) để viết rule phát hiện hợp đồng thiếu điều khoản chuẩn hoặc có điều khoản đánh dấu rủi ro cao.
+2. Với hợp đồng extension: dùng một subset taxonomy điều khoản có sẵn trong CUAD (loại điều khoản như Termination, Governing Law, Indemnification...) để viết rule baseline; không coi đây là phạm vi Product MVP.
 3. Đóng gói cả hai thành `src/docai/fraud/rules.py`, expose qua field `risk_flags` trong JSON output.
 
 **Definition of Done:**
@@ -122,7 +151,7 @@ Trạng thái lựa chọn: Layout model và VLM checkpoint cụ thể chưa ch�
 
 ---
 
-## Giai đoạn 8 — Explainability Layer
+## Giai đoạn 8 — Product Explainability Layer
 
 **Việc cần làm:**
 1. Với Track A: trích attention weights từ LayoutLMv3 cho từng field đã dự đoán, ánh xạ về bounding box tương ứng trên ảnh gốc.
@@ -136,7 +165,7 @@ Trạng thái lựa chọn: Layout model và VLM checkpoint cụ thể chưa ch�
 
 ---
 
-## Giai đoạn 9 — Robustness Test & Benchmark tổng hợp
+## Giai đoạn 9 — Research: Robustness Test & Benchmark tổng hợp
 
 **Việc cần làm:**
 1. Từ tập test thật (hóa đơn + hợp đồng), sinh biến thể: xoay 5-15 độ, làm mờ Gaussian, thêm watermark mờ, giảm độ sáng.
@@ -151,18 +180,18 @@ Trạng thái lựa chọn: Layout model và VLM checkpoint cụ thể chưa ch�
 
 ---
 
-## Giai đoạn 10 — FastAPI Service & Tài liệu hoá
+## Giai đoạn 10 — Product integration: FastAPI, Dashboard & Tài liệu hoá
 
 **Việc cần làm:**
-1. Viết `src/docai/api/main.py` expose các endpoint: `/parse/classic`, `/parse/vlm`, `/compare` (chạy cả 2 track, trả kết quả song song), `/explain`.
+1. Tích hợp `src/docai/api/main.py` cho Product endpoints `/parse/classic`, `/parse/vlm`, `/explain`; giữ `/compare` là endpoint Research để đối chiếu hai track khi có output thật.
 2. Deploy service lên Modal (`modal deploy`), xác nhận endpoint hoạt động qua request thật.
 3. Đóng gói `docker-compose.yml` hoàn chỉnh cho người khác chạy local (không cần tài khoản Modal, dùng model nhỏ hơn hoặc mock cho mục đích demo).
 4. Hoàn thiện toàn bộ `docs/` (xem cấu trúc bên dưới), README.md ở root.
 
 **Definition of Done:**
-- [ ] API deploy thành công trên Modal, có URL truy cập được.
-- [ ] `docker-compose.yml` chạy được bản demo local.
-- [ ] README.md và toàn bộ docs/ hoàn chỉnh, không còn mục "TODO" hoặc "Chờ giai đoạn X".
+- [ ] Ít nhất một Product parsing flow Invoice/Receipt chạy end-to-end thật và trả `UnifiedDocumentOutput`.
+- [ ] Product endpoints và Dashboard hiển thị được output/risk khi có implementation tương ứng; `/compare` vẫn được đánh giá theo Research milestone riêng.
+- [ ] Deployment và Docker chỉ được đánh dấu hoàn thành sau khi có validation runtime; scaffold không được ghi là production-ready.
 
 ---
 

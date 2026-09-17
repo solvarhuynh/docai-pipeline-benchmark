@@ -1,6 +1,6 @@
-# Hướng dẫn vận hành và chạy dự án (How-to-Run Guide)
+# Hướng dẫn vận hành DocAI Product và Research Lab (How-to-Run Guide)
 
-Tài liệu này hướng dẫn chi tiết từng bước để cài đặt, thiết lập môi trường và vận hành hệ thống DocAI Dual-Pipeline Benchmark theo chuẩn kiến trúc `src/ layout` trên máy tính cá nhân hoặc trên hạ tầng đám mây Modal.
+Tài liệu này hướng dẫn cài đặt và vận hành DocAI Document Intelligence Platform theo chuẩn kiến trúc `src/ layout`. Product flow ưu tiên Invoice/Receipt; các lệnh compare/benchmark và báo cáo thực nghiệm thuộc Research Lab.
 
 ---
 
@@ -87,10 +87,12 @@ python scripts/run_track_a.py --image path/to/invoice.jpg --lang vi
 python scripts/run_track_b.py --image path/to/invoice.jpg --type invoice
 ```
 
-### 4.4. Chạy đối chiếu Benchmark Track A vs Track B
+### 4.4. Chạy Research comparison Track A vs Track B
 ```bash
 python scripts/run_benchmark.py --image path/to/invoice.jpg
 ```
+
+Các lệnh Track A/Track B và comparison hiện mới khởi tạo hoặc gọi scaffold; chúng không chứng minh model inference hay benchmark trên dữ liệu thật đã hoạt động. Chỉ dùng đường dẫn tài liệu thật khi muốn kiểm tra interface và xem lỗi thiếu implementation tương ứng.
 
 ---
 
@@ -116,9 +118,9 @@ Ghi chú về dữ liệu:
 
 ## 6. Bước 5: Chạy FastAPI Server cục bộ (Local Dev Server)
 
-FastAPI cung cấp 4 endpoint: `/parse/classic`, `/parse/vlm`, `/compare`, `/explain`.
+FastAPI là giao diện sản phẩm. Các endpoint Product hiện được định hướng gồm `/parse/classic`, `/parse/vlm` và `/explain`; `/compare` là endpoint Research/Analysis để đối chiếu hai engine.
 
-Hiện tại các route parsing/compare/explain là `SCAFFOLD` và trả HTTP 501; chỉ `/health` có hành vi runtime hoàn chỉnh.
+Hiện tại các route Product parsing/explain và route Research compare là `SCAFFOLD` và trả HTTP 501; chỉ `/health` có hành vi runtime hoàn chỉnh.
 
 ### Cách 1: Chạy trực tiếp bằng Uvicorn
 
@@ -153,7 +155,7 @@ Dự án sử dụng Plotly Dash làm framework trực quan hoá mặc định (
 python -m docai.dashboard.app
 ```
 
-Giao diện dashboard sẽ mở tại `http://localhost:8050`. Hiện tại lệnh chỉ khởi tạo scaffold layout khi Dash đã được cài; callbacks và dữ liệu thật sẽ bổ sung ở phase sau.
+Giao diện dashboard sẽ mở tại `http://localhost:8050`. Về định hướng, Dashboard có khu vực **Product** (Document Parser, Risk Review, Document Details) và **Research Lab** (Track Comparison, Benchmark, Robustness, Cost Analysis). Hiện tại lệnh chỉ khởi tạo scaffold layout; callbacks và dữ liệu thật sẽ bổ sung ở phase sau.
 
 ---
 

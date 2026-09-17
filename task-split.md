@@ -1,11 +1,40 @@
-# Phân chia công việc — DocAI Dual-Pipeline Benchmark
+# Phân chia công việc — DocAI Product & Research
 
 Dự án chia thành 2 nhánh công việc song song, phối hợp qua `log/progress-log.md` và JSON schema thống nhất (`src/docai/core/schema.py`). Mỗi giai đoạn trong `docs/specs/implementation-guide.md` được tách thành các task cụ thể, gán cho từng nhánh.
 
 - **Nhánh A — Hạ tầng, Dữ liệu, Sản phẩm hoá**
 - **Nhánh B — Mô hình, Đánh giá, Nghiên cứu**
 
-Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo cáo benchmark cuối cùng (Giai đoạn 9-10).
+Hai nhánh phối hợp qua Product layer và JSON schema chung. Benchmark là research component dùng output của product; không phải toàn bộ identity của dự án.
+
+## Phân loại phạm vi công việc
+
+### Track-specific
+
+- **Track A**: Layout Detection → OCR → KIE → structured output.
+- **Track B**: VLM → structured prompt → JSON/schema validation → structured output.
+
+Hai track là processing backend bên trong cùng một Document Processing Engine, không phải hai sản phẩm độc lập.
+
+### Product/shared
+
+- Data ingestion và normalization.
+- Unified schema và validation.
+- Fraud/Risk baseline.
+- FastAPI, Docker, scripts, logging và Plotly Dash.
+- Integration từ input document đến output cho Product MVP, ưu tiên Invoice/Receipt.
+
+### Research/shared
+
+- Evaluation metrics và ground-truth comparison.
+- Benchmark Track A vs Track B.
+- Robustness testing.
+- Cost analysis và research reports.
+- Contract/CUAD như secondary research use case để kiểm tra generalization.
+
+Research question chính:
+
+> Khi cùng phục vụ một hệ thống Document AI thực tế, pipeline Classic modular và pipeline VLM-native đánh đổi như thế nào về accuracy, latency, robustness, explainability và cost?
 
 ---
 
@@ -27,7 +56,7 @@ Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo c�
 | Viết `docker-compose.yml`, `requirements.txt` | A |
 | Khởi tạo `log/progress-log.md` | A |
 
-## Giai đoạn 3 — Track A: Layout Detection & OCR
+## Giai đoạn 3 — Product processing backend: Track A: Layout Detection & OCR
 
 | Task | Nhánh phụ trách |
 |---|---|
@@ -36,7 +65,7 @@ Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo c�
 | Tích hợp PaddleOCR trong `src/docai/pipelines/track_a/ocr_extraction.py`, ghép output vào JSON trung gian | A |
 | Đánh giá sơ bộ tỷ lệ đọc đúng ký tự/vùng bảng so với ground truth | B |
 
-## Giai đoạn 4 — Track A: Fine-tune LayoutLMv3
+## Giai đoạn 4 — Product processing backend: Track A: Fine-tune LayoutLMv3
 
 | Task | Nhánh phụ trách |
 |---|---|
@@ -45,7 +74,7 @@ Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo c�
 | Thiết lập vòng lặp huấn luyện, chọn hyperparameter, đánh giá F1 field-level | B |
 | Log chi phí GPU-giờ vào `log/progress-log.md` | A |
 
-## Giai đoạn 5 — Track B: VLM-native parsing
+## Giai đoạn 5 — Product processing backend: Track B: VLM-native parsing
 
 | Task | Nhánh phụ trách |
 |---|---|
@@ -53,7 +82,7 @@ Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo c�
 | Thiết kế prompt/schema trích field, tối ưu qua nhiều vòng thử nghiệm | B |
 | Đánh giá F1, latency, so sánh với Track A | B |
 
-## Giai đoạn 6 — Mở rộng sang hợp đồng (CUAD)
+## Giai đoạn 6 — Research extension: Hợp đồng (CUAD)
 
 | Task | Nhánh phụ trách |
 |---|---|
@@ -62,7 +91,7 @@ Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo c�
 | Điều chỉnh prompt Track B cho phù hợp hợp đồng | B |
 | Phân tích số liệu tổng quát hoá, viết nhận định so sánh 2 track | B |
 
-## Giai đoạn 7 — Fraud/Risk Engine
+## Giai đoạn 7 — Product Risk/Fraud baseline và contract extension
 
 | Task | Nhánh phụ trách |
 |---|---|
@@ -71,7 +100,7 @@ Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo c�
 | Xây taxonomy điều khoản rủi ro từ CUAD, viết rule clause-risk flagging | B |
 | Tích hợp cả hai vào `src/docai/fraud/rules.py`, expose qua API | A |
 
-## Giai đoạn 8 — Explainability Layer
+## Giai đoạn 8 — Product Explainability Layer
 
 | Task | Nhánh phụ trách |
 |---|---|
@@ -80,7 +109,7 @@ Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo c�
 | Vẽ overlay heatmap lên ảnh, đóng gói hàm dùng chung tại `src/docai/explainability/explainer.py` | A |
 | Expose endpoint `/explain` | A |
 
-## Giai đoạn 9 — Robustness Test & Benchmark tổng hợp
+## Giai đoạn 9 — Research: Robustness Test & Benchmark tổng hợp
 
 | Task | Nhánh phụ trách |
 |---|---|
@@ -89,7 +118,7 @@ Hai nhánh gặp nhau tại JSON schema chung (Giai đoạn 1) và tại báo c�
 | Phân tích đường cong độ giảm hiệu năng, thiết kế cách đo lường thống kê trong `src/docai/evaluation/metrics.py` | B |
 | Tổng hợp toàn bộ báo cáo benchmark, đối chiếu chi phí GPU-giờ vs API thương mại | A + B (cùng viết) |
 
-## Giai đoạn 10 — FastAPI Service, Scripts, Dashboard & Tài liệu hoá
+## Giai đoạn 10 — Product integration: FastAPI, Scripts, Dashboard & Tài liệu hoá
 
 | Task | Nhánh phụ trách |
 |---|---|

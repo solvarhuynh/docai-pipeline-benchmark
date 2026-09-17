@@ -1,44 +1,44 @@
-# Bản đồ tri thức kỹ thuật (Concept Map) — DocAI Benchmark
+# Bản đồ tri thức kỹ thuật (Concept Map) — DocAI Product & Research
 
-Chào mừng bạn đến với khu vực tài liệu giải thích kiến trúc, thuật toán và khái niệm kỹ thuật của dự án **DocAI Dual-Pipeline Benchmark**.
+Chào mừng bạn đến với khu vực tài liệu giải thích kiến trúc, thuật toán và khái niệm kỹ thuật của **DocAI Document Intelligence Platform**.
 
-Nếu bạn là người mới tiếp cận hệ thống, tài liệu này được thiết kế như một **bản đồ lộ trình học tập**. Thay vì đọc ngẫu nhiên từng file mã nguồn, bạn nên đi theo câu chuyện diễn tiến của một tài liệu từ lúc bước vào hệ thống cho đến khi trở thành dữ liệu chuẩn hoá có thể tin cậy được.
+Nếu bạn là người mới tiếp cận hệ thống, tài liệu này được thiết kế như một **bản đồ lộ trình học tập**. Hãy bắt đầu từ Product flow xử lý hóa đơn/biên lai, sau đó đi vào hai processing engine và cuối cùng là Research Lab dùng chung output để benchmark.
 
 ---
 
-## 1. Dòng chảy tri thức: Tài liệu đi qua hệ thống như thế nào?
+## 1. Product flow và Research flow khác nhau như thế nào?
 
-Toàn bộ hệ thống DocAI Benchmark xoay quanh một nhiệm vụ cốt lõi: **Biến một bức ảnh chụp hóa đơn nhàu nhĩ hoặc một bản quét hợp đồng pháp lý phức tạp thành dữ liệu có cấu trúc (JSON), có thể kiểm chứng tính trung thực và giải thích được bằng mắt thường.**
-
-Dòng chảy xử lý và các chủ đề kỹ thuật tương ứng:
+Product flow ưu tiên biến một ảnh/PDF hóa đơn hoặc biên lai thành JSON có cấu trúc, có thể kiểm tra rủi ro và hiển thị cho người dùng:
 
 ```text
-[ 1. Bức ảnh tài liệu đầu vào (Pixel) ]
-                    ↓
-[ 2. Hiểu cấu trúc trang & các lớp thông tin ]  →  Đọc: 01-docai-foundations.md
-                    ↓
-        +-----------+-----------+
-        |                       |
-[ Track A: Tiếp cận Cổ điển ]   [ Track B: VLM-native ]
-(Layout → OCR → LayoutLMv3)     (Vision-Language Model)
-        ↓                               ↓
-Đọc: 02-track-a-classic.md      Đọc: 03-track-b-vlm.md
-        |                               |
-        +-----------+-----------+
-                    ↓
-[ 3. Hợp đồng dữ liệu chung: Unified JSON Schema ]  →  src/docai/core/schema.py
-                    ↓
-[ 4. Phát hiện bất thường & Minh bạch hoá AI ]
-     - Động cơ kiểm tra gian lận (Fraud/Risk Engine)
-     - Bản đồ nhiệt giải thích (Explainability Heatmap)
-     →  Đọc: 04-fraud-and-explainability.md
-                    ↓
-[ 5. Đánh giá, So sánh đối đầu & Chi phí GPU ]  →  Đọc: 05-evaluation.md
-                    ↓
-[ 6. Đưa vào sản phẩm & Trực quan hoá ]
-     - FastAPI REST Endpoints (src/docai/api/main.py)
-     - Plotly Dash Dashboard (src/docai/dashboard/app.py)
+[ Upload Invoice / Receipt ]
+              ↓
+[ Input validation & normalization ]
+              ↓
+      +-------+-------+
+      |               |
+ [ Track A ]      [ Track B ]
+ Layout → OCR →   VLM → Prompt
+ KIE                → JSON
+      |               |
+      +-------+-------+
+              ↓
+[ UnifiedDocumentOutput ]
+              ↓
+[ Validation → Risk/Fraud → Explainability ]
+              ↓
+[ FastAPI → Plotly Dash ]
 ```
+
+Research flow dùng output chung để trả lời câu hỏi về trade-off giữa hai engine:
+
+```text
+Track A output ─┐
+                ├→ Evaluation → Benchmark → Robustness/Cost reports
+Track B output ─┘
+```
+
+Contract/CUAD đi qua các contract/module tương tự nhưng là secondary research use case, không phải product MVP thứ hai.
 
 ---
 
@@ -54,7 +54,7 @@ Dòng chảy xử lý và các chủ đề kỹ thuật tương ứng:
   - Document AI là gì và tại sao tài liệu quét không đơn giản là một bức ảnh?
   - Các tầng thông tin: từ pixel thô đến cấu trúc bảng biểu và ngữ nghĩa nghiệp vụ.
   - Tọa độ hộp giới hạn (Bounding Box) và kỹ thuật chuẩn hoá không gian.
-  - Tại sao hai hướng tiếp cận trái ngược bắt buộc phải nói cùng một ngôn ngữ đầu ra (`UnifiedDocumentOutput`)?
+  - Tại sao hai processing engine trong cùng product bắt buộc phải nói cùng một ngôn ngữ đầu ra (`UnifiedDocumentOutput`)?
 
 ### Bước 2: Đi sâu vào Track A — Hướng tiếp cận Cổ điển đa tầng
 - [`02-track-a-classic.md`](./02-track-a-classic.md):
@@ -74,7 +74,7 @@ Dòng chảy xử lý và các chủ đề kỹ thuật tương ứng:
 - [`04-fraud-and-explainability.md`](./04-fraud-and-explainability.md):
   - Phân biệt rạch ròi giữa Dự đoán của mô hình AI (Model Prediction) và Luật nghiệp vụ tất định (Rule-based Engine).
   - Cơ chế đối chiếu số học hóa đơn và phát hiện bất thường độ tin cậy OCR.
-  - Kiểm tra điều khoản rủi ro trong hợp đồng pháp lý dựa trên bộ taxonomy CUAD 41 điều khoản.
+  - Kiểm tra điều khoản rủi ro trong hợp đồng pháp lý như một research extension dựa trên taxonomy CUAD.
   - Lớp giải thích (Explainability Layer): Cách trích xuất trọng số chú ý (Attention weights) và Grad-CAM để tạo bản đồ nhiệt phủ màu lên ảnh gốc.
 
 ### Bước 5: Đo lường, Đánh giá thực nghiệm và Phân tích chi phí
@@ -96,4 +96,4 @@ Tùy theo mục tiêu nghiên cứu hoặc phát triển của bạn:
 - **Dành cho Kỹ sư Phần mềm / Hệ thống (Backend & Platform Engineer)**:
   Ưu tiên đọc `01-docai-foundations.md` → `04-fraud-and-explainability.md` → `05-evaluation.md` kết hợp đối chiếu [`docs/architecture/architecture-explained.md`](../architecture/architecture-explained.md) và [`docs/guides/how-to-run.md`](../guides/how-to-run.md). Tập trung vào luồng xử lý API, hợp đồng dữ liệu Pydantic, rule engine và quản lý chi phí GPU-giờ trên Modal.
 - **Dành cho Chuyên viên Phân tích Nghiệp vụ / Quản lý Sản phẩm (BA / Product Manager)**:
-  Ưu tiên đọc `01-docai-foundations.md` → `04-fraud-and-explainability.md` → `05-evaluation.md`. Tập trung vào nghiệp vụ đối chiếu hóa đơn, kiểm tra rủi ro hợp đồng, ý nghĩa của bản đồ nhiệt minh bạch hoá và bài toán tối ưu chi phí vận hành doanh nghiệp.
+  Ưu tiên đọc `01-docai-foundations.md` → `04-fraud-and-explainability.md` → `05-evaluation.md`. Tập trung trước vào nghiệp vụ hóa đơn/biên lai, validation/risk và bằng chứng giải thích; phần rủi ro hợp đồng và tối ưu chi phí thuộc research extension.

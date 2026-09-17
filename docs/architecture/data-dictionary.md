@@ -1,4 +1,4 @@
-# Từ điển dữ liệu (Data Dictionary) — DocAI Dual-Pipeline Benchmark
+# Từ điển dữ liệu (Data Dictionary) — DocAI Product & Research
 
 Tài liệu này mô tả chi tiết 4 bộ dữ liệu thực tế dự kiến sử dụng trong dự án, quy định cấu trúc nhãn gốc và phương pháp ánh xạ (mapping) sang JSON schema thống nhất (`src/docai/core/schema.py`).
 

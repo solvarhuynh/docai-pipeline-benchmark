@@ -172,11 +172,11 @@ Nếu một đoạn code trong notebook bắt đầu được dùng lại ở nh
 
 ## 4. Quy tắc cho Nhánh A và Nhánh B
 
-Repository có hai hướng xử lý chính:
+Repository có hai processing backend chính bên trong một product:
 
 - **Nhánh A:** pipeline cổ điển/modular.
 - **Nhánh B:** pipeline dựa trên VLM.
-- **A + B:** phần dùng chung như schema, evaluation, documentation hoặc benchmark.
+- **A + B:** phần dùng chung như schema, Product integration, evaluation, documentation hoặc benchmark.
 
 Mọi task phải ghi rõ owner là:
 
@@ -188,7 +188,7 @@ A + B
 
 Không được gán một task dùng chung cho riêng A hoặc B nếu thực tế cả hai pipeline đều phụ thuộc vào nó.
 
-Hai track được phép khác cách xử lý, nhưng nếu mục tiêu là benchmark chung thì output phải đi về contract/schema chung khi architecture yêu cầu.
+Hai track được phép khác cách xử lý, nhưng output phải đi về contract/schema chung khi được dùng trong Product hoặc Research comparison.
 
 Không duplicate schema chỉ vì hai track khác implementation.
 

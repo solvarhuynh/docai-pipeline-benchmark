@@ -1,6 +1,6 @@
-# Cấu trúc Repository — DocAI Dual-Pipeline Benchmark
+# Cấu trúc Repository — DocAI Document Intelligence Platform
 
-Tài liệu này giải thích toàn diện cấu trúc tổ chức thư mục và tập tin của dự án theo chuẩn kiến trúc `src/ layout`. Mục tiêu là giúp bất kỳ thành viên nào tham gia dự án đều hiểu rõ vị trí của từng module, ý nghĩa thiết kế kiến trúc phía sau và quy tắc phân chia trách nhiệm của từng thành phần.
+Tài liệu này giải thích cấu trúc `src/ layout` của sản phẩm Document Intelligence và ranh giới giữa Product layer với Research/Evaluation layer. Mục tiêu là giúp thành viên mới hiểu vị trí, trách nhiệm và trạng thái của từng module.
 
 ---
 
@@ -95,7 +95,8 @@ docai-dual-pipeline-benchmark/
 │
 ├── log/                               # Nhật ký tiến độ và báo cáo kiểm duyệt
 │   ├── progress-log.md
-│   └── review-report-2026-09-17.md
+│   └── track_b/
+│       └── review-report-2026-09-17.md
 │
 └── docs/                              # Tài liệu kỹ thuật chi tiết
     ├── architecture/                  # Kiến trúc hệ thống, từ điển dữ liệu, cấu trúc repo
@@ -133,14 +134,14 @@ Hai track này hoàn toàn độc lập về logic thuật toán nhưng bắt bu
   - `config.py`: Quản lý đường dẫn tuyệt đối an toàn tới `data/raw/`, `data/interim/`, `data/processed/` và các tham số cấu hình.
   - `schema.py`: Định nghĩa Pydantic models chuẩn hoá cho toàn bộ hệ thống (`UnifiedDocumentOutput`, `ExtractedField`, `BoundingBox`, `RiskFlag`).
 - **`docai.fraud`**:
-  - `rules.py`: Chứa `FraudRiskEngine` độc lập với mô hình, thực hiện đối chiếu số học hóa đơn và phát hiện thiếu điều khoản hợp đồng CUAD.
+  - `rules.py`: Chứa `FraudRiskEngine` độc lập với mô hình, ưu tiên đối chiếu số học hóa đơn; kiểm tra thiếu điều khoản hợp đồng CUAD là extension.
 - **`docai.explainability`**:
   - `explainer.py`: Chứa `DocumentExplainer` điều phối trích xuất attention map từ LayoutLMv3 hoặc visual grounding từ VLM để tạo ảnh overlay heatmap.
 
 ### 2.4. Trách nhiệm của `src/docai/evaluation/`
 
 - `metrics.py`: Cung cấp các công thức tính F1 field-level, tỷ lệ đồng thuận (agreement ratio) và phân tích độ trễ (latency).
-- `benchmark.py`: Cung cấp `BenchmarkRunner` điều phối so sánh đối đầu giữa Track A và Track B trên cùng một tập dữ liệu thử nghiệm.
+- `benchmark.py`: Cung cấp `BenchmarkRunner` cho Research layer, điều phối so sánh Track A và Track B trên cùng một tập dữ liệu thử nghiệm; không phải dependency bắt buộc của Product parsing flow.
 
 ### 2.5. Tầng trực quan hoá Dashboard (`src/docai/dashboard/`)
 
@@ -163,5 +164,12 @@ Dự án xác định stack trực quan hoá chuẩn mực:
 
 - `data/raw/`: Chứa dữ liệu gốc tải về (mcocr2021, CORD, SROIE, CUAD). Tuyệt đối không chỉnh sửa trực tiếp.
 - `data/interim/`: Chứa dữ liệu trung gian trong quá trình làm sạch và chuyển đổi định dạng.
-- `data/processed/`: Chứa dữ liệu chuẩn hoá cuối cùng sẵn sàng nạp vào pipeline và đánh giá benchmark.
+- `data/processed/`: Chứa dữ liệu chuẩn hoá cuối cùng sẵn sàng nạp vào Product processing flow hoặc Research evaluation/benchmark.
 Cả 3 thư mục đều được giữ trên Git bằng file `.gitkeep`, nhưng toàn bộ nội dung dữ liệu thật bị chặn bởi `.gitignore`.
+
+### 2.8. Product layer và Research layer nằm ở đâu?
+
+- **Product layer**: `src/docai/data/`, `src/docai/pipelines/`, `src/docai/core/`, `src/docai/fraud/`, `src/docai/explainability/`, `src/docai/api/` và `src/docai/dashboard/`. Đây là các thành phần hướng tới luồng upload tài liệu, xử lý, chuẩn hoá output, kiểm tra rủi ro và trình bày kết quả.
+- **Research/Evaluation layer**: `src/docai/evaluation/`, `scripts/run_benchmark.py` và `docs/reports/`. Layer này dùng output chung để đo accuracy, latency, cost, robustness và explainability; không bắt buộc chạy khi Product chỉ xử lý một tài liệu.
+- **Shared contract**: `src/docai/core/schema.py` là điểm giao tiếp giữa hai processing engine và mọi consumer phía sau. Product không phụ thuộc trực tiếp vào chi tiết nội bộ của Track A hoặc Track B.
+- **Trạng thái hiện tại**: Product flow, API orchestration và Dashboard callbacks còn scaffold; Research reports chưa có kết quả thực nghiệm.

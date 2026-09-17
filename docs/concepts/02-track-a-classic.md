@@ -4,6 +4,8 @@ Tài liệu này đi sâu vào kiến trúc và nguyên lý hoạt động của
 
 **Trạng thái lựa chọn model:** `CHƯA CHỐT CHECKPOINT CỤ THỂ`. YOLOv8-doc và DocLayout-YOLO là các ứng viên cho layout detection; giá trị mặc định `yolov8x-doc.pt` trong scaffold chỉ là interface default, không phải kết quả đã xác nhận.
 
+Track A là một processing backend bên trong Product, không phải sản phẩm độc lập. Output của track được chuẩn hoá về `UnifiedDocumentOutput` để phục vụ Product flow hoặc Research comparison.
+
 ---
 
 ## 1. Triết lý "chia để trị" của Track A là gì và tại sao lại tách thành 3 chặng?

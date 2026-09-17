@@ -45,7 +45,7 @@ Hai khái niệm này thường bị nhầm lẫn, nhưng chúng đóng hai vai 
 
 ## 3. Động cơ Phát hiện Gian lận và Cảnh báo Rủi ro (Fraud & Risk Engine)
 
-Động cơ luật trong repository được thiết kế chuyên biệt cho hai bài toán nghiệp vụ cốt lõi: Hóa đơn và Hợp đồng pháp lý.
+Động cơ luật trong repository ưu tiên bài toán product là Hóa đơn/biên lai. Hợp đồng pháp lý được giữ như một extension để nghiên cứu generalization và risk extraction, không phải Product MVP thứ hai.
 
 ### 3.1. Nghiệp vụ Hóa đơn: Kiểm tra đối chiếu số học (Invoice Arithmetic Check)
 Một hóa đơn tài chính hợp lệ bắt buộc phải thỏa mãn phương trình kế toán cơ bản:
@@ -68,8 +68,8 @@ Khi đi qua chặng OCR:
 
 Rule `check_ocr_confidence_anomalies` quét toàn bộ các trường liên quan đến tiền bạc (`amount`, `total`). Nếu độ tin cậy rơi xuống dưới ngưỡng an toàn (mặc định $0.50$), hệ thống sẽ phát tín hiệu cảnh báo nghi vấn chỉnh sửa số liệu `RULE_OCR_CONFIDENCE_ANOMALY`.
 
-### 3.3. Nghiệp vụ Hợp đồng: Cảnh báo thiếu điều khoản theo Taxonomy CUAD
-Hợp đồng pháp lý trong bộ dữ liệu CUAD được phân loại theo danh mục chuẩn gồm 41 loại điều khoản (CUAD 41 Clauses Taxonomy).
+### 3.3. Research extension: Cảnh báo thiếu điều khoản theo Taxonomy CUAD
+Hợp đồng pháp lý trong bộ dữ liệu CUAD được phân loại theo taxonomy 41 loại điều khoản. Trong repository hiện tại, phần này chỉ là baseline/extension; không được hiểu là Product MVP đã hỗ trợ đầy đủ taxonomy.
 
 Trong giao kết hợp đồng kinh tế, có những điều khoản mang tính sống còn để bảo vệ doanh nghiệp:
 - **Luật điều chỉnh (Governing Law)**: Hợp đồng áp dụng luật pháp của quốc gia nào khi có tranh chấp?
@@ -93,6 +93,8 @@ Hãy tưởng tượng một kiểm toán viên nội bộ đang rà soát hồ 
 Kiểm toán viên không thể chỉ nhìn vào dòng chữ đó và nhấn nút "Phê duyệt chuyển tiền". Họ có quyền đặt câu hỏi chất vấn hệ thống: *"Bạn dựa vào đâu trên tờ giấy này để đọc ra con số 89 triệu đó? Hãy chỉ cho tôi xem!"*.
 
 > **Tầng giải thích mô hình (Explainability Layer)** là thành phần trực quan hóa vùng chú ý của mạng nơ-ron, tạo ra một bức ảnh có phủ bản đồ nhiệt màu (heatmap) làm bằng chứng cho thấy mô hình đã "nhìn" vào chính xác góc nào trên trang giấy để đưa ra kết quả đó.
+
+Trong Product, bằng chứng này giúp người dùng kiểm tra một field hoặc risk flag trước khi phê duyệt. Module hiện vẫn là `SCAFFOLD`; các kỹ thuật attention/Grad-CAM bên dưới là hướng triển khai, chưa phải kết quả runtime đã xác nhận.
 
 ---
 

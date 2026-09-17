@@ -1,6 +1,6 @@
 # 05. Phương Pháp Đánh Giá và Thử Nghiệm Thực Nghiệm (Evaluation & Benchmark Methodology)
 
-Tài liệu này trình bày toàn bộ hệ thống phương pháp luận đo lường khoa học của dự án DocAI Dual-Pipeline Benchmark. Để so sánh công bằng giữa hai trường phái Track A và Track B, hệ thống không chỉ đánh giá độ chính xác của chữ viết, mà còn đo lường độ chính xác ở cấp độ trường nghiệp vụ (Field-level F1), tỷ lệ đồng thuận (Agreement Ratio), độ trễ suy luận (Latency), chi phí điện toán GPU trên Modal, và độ bền bỉ khi gặp tài liệu bị biến dạng (Robustness testing).
+Đây là tài liệu của Research & Quality layer trong DocAI Document Intelligence Platform. Layer này dùng output chuẩn hoá của Track A và Track B để đo Field-level F1, Agreement Ratio, latency, cost, robustness và explainability. Evaluation không phải bước bắt buộc trong Product flow khi người dùng chỉ xử lý một tài liệu.
 
 ---
 

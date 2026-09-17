@@ -1,6 +1,6 @@
 # 01. Nền tảng Document AI và Hợp đồng Dữ liệu Chung
 
-Tài liệu này giải thích bản chất của bài toán Trí tuệ nhân tạo cho tài liệu (Document AI), phân tích các tầng thông tin mà máy tính cần giải mã trên một trang giấy, và lý do vì sao một hệ thống benchmark bắt buộc phải có một hợp đồng dữ liệu chuẩn hoá duy nhất.
+Tài liệu này giải thích bản chất của bài toán Trí tuệ nhân tạo cho tài liệu (Document AI), phân tích các tầng thông tin mà máy tính cần giải mã trên một trang giấy, và lý do vì sao product cùng research component bắt buộc phải có một hợp đồng dữ liệu chuẩn hoá duy nhất.
 
 ---
 
@@ -92,7 +92,7 @@ Trong repository:
 
 ## 4. Tại sao hai pipeline khác nhau lại bắt buộc phải nói cùng một ngôn ngữ đầu ra?
 
-Dự án này mang tên **DocAI Dual-Pipeline Benchmark** vì nó so sánh hai trường phái kỹ thuật có tư duy hoàn toàn trái ngược:
+Trong product này, hai processing engine đại diện cho hai trường phái kỹ thuật có tư duy hoàn toàn trái ngược; research component dùng chúng để so sánh:
 - **Track A (Classic)**: Chia nhỏ bài toán làm 3 bước nối tiếp (tìm vùng → đọc chữ → hiểu nghĩa).
 - **Track B (VLM-native)**: Dùng một mô hình ngôn ngữ - thị giác duy nhất đọc một lượt từ ảnh ra kết quả.
 
@@ -108,7 +108,7 @@ Dù Track A chạy qua 3 mô hình hay Track B chạy qua 1 mô hình, cả hai 
 
 ```text
 [ Kết quả Track A ] ─── ép về ───┐
-                                  ├──→ [ UnifiedDocumentOutput ] ──→ [ So sánh Benchmark / API / Dash ]
+                                  ├──→ [ UnifiedDocumentOutput ] ──→ [ Product API / Dash hoặc Research Benchmark ]
 [ Kết quả Track B ] ─── ép về ───┘
 ```
 

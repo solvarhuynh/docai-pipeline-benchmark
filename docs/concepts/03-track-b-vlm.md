@@ -4,6 +4,8 @@ Tài liệu này giải thích chi tiết kiến trúc hiện đại của Track
 
 **Trạng thái quyết định:** `CHƯA CHỐT MODEL CỤ THỂ`. PaddleOCR-VL và dots.ocr hiện chỉ là các ứng viên trong kế hoạch; code Track B mới cung cấp interface/prompt scaffold, chưa thực hiện inference.
 
+Track B cũng là processing backend bên trong Product. VLM-native parsing chỉ là một cách triển khai engine; việc so sánh với Track A thuộc Research component, không phải mục tiêu duy nhất của product.
+
 ---
 
 ## 1. Triết lý của Track B là gì và tại sao lại có xu hướng chuyển sang VLM-native?

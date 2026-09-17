@@ -1,12 +1,52 @@
-# Giải thích kiến trúc tổng thể — DocAI Dual-Pipeline Benchmark
+# Giải thích kiến trúc tổng thể — DocAI Document Intelligence Platform
 
-Tài liệu này giải thích toàn bộ kiến trúc của hệ thống DocAI Dual-Pipeline Benchmark theo ngôn ngữ trực quan, phân tích rõ ràng luồng dữ liệu và các quyết định kiến trúc cốt lõi.
+Tài liệu này giải thích kiến trúc product-first của DocAI: một hệ thống xử lý Invoice/Receipt Document Intelligence có hai processing engine bên trong, kèm một research component để benchmark các trade-off giữa Classic và VLM-native.
 
 Mỗi quyết định kiến trúc được trình bày theo cấu trúc chuẩn: **Vấn đề — Giải pháp — Lý do chọn**.
 
 ---
 
-## 1. Tổng quan kiến trúc và Luồng dữ liệu (Data Flow)
+## 1. Product Architecture và Research Architecture
+
+### Product Architecture
+
+Product layer chịu trách nhiệm nhận tài liệu, điều phối engine, chuẩn hoá output và phục vụ người dùng. Luồng mục tiêu là:
+
+```text
+Upload PDF/Image hóa đơn hoặc biên lai
+          ↓
+Input validation & normalization
+          ↓
+Document Processing Engine
+       ┌──┴──┐
+       ↓     ↓
+   Track A  Track B
+       └──┬──┘
+          ↓
+UnifiedDocumentOutput
+          ↓
+Schema validation → Fraud/Risk → Explainability khi khả dụng
+          ↓
+FastAPI → Plotly Dash
+```
+
+Invoice/Receipt là primary product use case. Contract/CUAD vẫn dùng chung các contract và module, nhưng được xem là extension và secondary research use case để kiểm tra generalization.
+
+### Research Architecture
+
+Research layer nhận output chuẩn hoá từ hai engine, không trở thành product flow bắt buộc cho từng tài liệu:
+
+```text
+Track A output ─┐
+                ├→ Evaluation → Benchmark → Robustness/Cost reports
+Track B output ─┘
+```
+
+Mục tiêu là trả lời: khi cùng phục vụ một product Document AI, Classic modular và VLM-native đánh đổi như thế nào về accuracy, latency, robustness, explainability và cost?
+
+Product MVP và Research Complete là hai milestone độc lập. Hiện repository mới có schema, baseline rules và scaffold cho các engine/API/Dash; chưa có Product MVP end-to-end hoặc kết quả research thật.
+
+## 2. Tổng quan kiến trúc và Luồng dữ liệu (Data Flow)
 
 Hệ thống được thiết kế để nhận đầu vào là một file ảnh tài liệu (hóa đơn, biên lai hoặc hợp đồng pháp lý) và đưa qua một trong hai pipeline (hoặc cả hai đồng thời để so sánh), sau đó trả về một kết quả chuẩn hoá duy nhất theo JSON schema thống nhất kèm các cảnh báo rủi ro và bản đồ nhiệt giải thích.
 
@@ -84,9 +124,9 @@ Track B tiếp cận theo hướng hợp nhất, loại bỏ các bước trung 
 
 ---
 
-## 2. Các quyết định kiến trúc cốt lõi
+## 3. Các quyết định kiến trúc cốt lõi
 
-Mỗi quyết định dưới đây giải thích rõ lý do vì sao dự án không đi theo lối mòn của một ứng dụng OCR thông thường, mà hướng đến một công trình benchmark đánh giá toàn diện.
+Mỗi quyết định dưới đây giải thích rõ vì sao product cần các thành phần hiện tại, đồng thời chỉ ra phần nào thuộc research/quality evaluation.
 
 ### Quyết định 1: Xây dựng 2 track song song thay vì chỉ chọn một hướng duy nhất
 
@@ -97,14 +137,14 @@ Mỗi quyết định dưới đây giải thích rõ lý do vì sao dự án kh
 - **Giải pháp**:
   Triển khai song song cả hai pipeline trên cùng một hệ thống mã nguồn, áp dụng cùng một bộ dữ liệu đánh giá và ép đầu ra về cùng một JSON schema thống nhất (`docai.core.schema`).
 - **Lý do chọn**:
-  Chỉ khi đặt hai hướng tiếp cận trên cùng một bàn cân với cùng điều kiện thử nghiệm, chúng ta mới có thể đưa ra kết luận khoa học và khách quan về sự đánh đổi giữa độ chính xác (F1-score), thời gian phản hồi (latency), chi phí vận hành (cost) và tài nguyên phần cứng.
+  Product có thể chọn một engine để xử lý tài liệu, còn research có thể đặt hai engine lên cùng một bàn cân với cùng điều kiện thử nghiệm để đo sự đánh đổi giữa độ chính xác (F1-score), thời gian phản hồi (latency), chi phí vận hành (cost) và tài nguyên phần cứng.
 
-### Quyết định 2: Mở rộng sang Hợp đồng (CUAD) làm loại tài liệu thứ hai (Kiểm tra Tổng quát hoá)
+### Quyết định 2: Giữ Hợp đồng (CUAD) như extension nghiên cứu
 
 - **Vấn đề**:
   Phần lớn các dự án Document AI trên GitHub chỉ dừng lại ở hóa đơn và biên lai. Hóa đơn là loại tài liệu có bố cục tương đối cố định, độ dài ngắn (1-2 trang), chứa nhiều số liệu và các từ khóa lặp lại (Tổng tiền, VAT, Ngày). Một pipeline hoạt động tốt trên hóa đơn không đồng nghĩa với việc sẽ hoạt động tốt trên các loại tài liệu khác. Khi đưa vào hợp đồng pháp lý (văn bản dài hàng chục trang, ngôn từ pháp lý phức tạp, cấu trúc phi tiêu chuẩn), hiệu năng mô hình thường bị tụt giảm nghiêm trọng.
 - **Giải pháp**:
-  Đưa bộ dữ liệu hợp đồng pháp lý CUAD (Contract Understanding Atticus Dataset) gồm 510 hợp đồng thật với hơn 13.000 điều khoản được các luật sư gán nhãn vào làm loại tài liệu thứ hai để đo lường Generalization drop (độ sụt giảm hiệu năng khi tổng quát hoá sang miền dữ liệu mới).
+  Giữ bộ dữ liệu hợp đồng pháp lý CUAD (Contract Understanding Atticus Dataset) gồm 510 hợp đồng thật với hơn 13.000 điều khoản được các luật sư gán nhãn như một extension để đo Generalization drop (độ sụt giảm hiệu năng khi tổng quát hoá sang miền dữ liệu mới), không đặt ngang hàng với Invoice/Receipt trong Product MVP.
 - **Lý do chọn**:
   Kiểm tra xem kiến trúc nào tổng quát hoá tốt hơn khi chuyển từ hóa đơn sang hợp đồng. Về mặt lý thuyết, mô hình VLM được huấn luyện trên kho ngữ liệu khổng lồ thường có khả năng tổng quát hoá zero-shot tốt hơn Track A vốn bị bó buộc vào tập nhãn BIO của LayoutLMv3. Đây là điểm nhấn nghiên cứu quan trọng nhất của dự án.
 
@@ -143,18 +183,21 @@ Mỗi quyết định dưới đây giải thích rõ lý do vì sao dự án kh
   - Module `docai.fraud.rules` triển khai:
     - Rule đối chiếu số học hóa đơn: Tổng tiền trước thuế + Tiền thuế VAT = Tổng thanh toán.
     - Rule bất thường độ tin cậy OCR: Phát hiện các ký tự số có confidence thấp hơn bất thường so với các chữ xung quanh (dấu hiệu tẩy xóa, chỉnh sửa ảnh).
-    - Rule hợp đồng: Kiểm tra sự hiện diện của các điều khoản bắt buộc (Governing Law, Termination, Dispute Resolution) và cảnh báo các điều khoản bất lợi dựa trên taxonomy CUAD.
+    - Rule hợp đồng ở mức extension: Kiểm tra một số điều khoản bắt buộc (Governing Law, Termination, Dispute Resolution); taxonomy CUAD đầy đủ và generalization evaluation thuộc research phase sau.
 - **Lý do chọn**:
   Tạo ra giá trị ứng dụng nghiệp vụ thực tế, kết hợp giữa trí tuệ nhân tạo (trích xuất) và luật logic nghiệp vụ (business rules validation) trong cùng một gói API.
 
 ### Quyết định 6: Lựa chọn Plotly Dash cho tầng trực quan hoá và Dashboard (Visualization Layer)
 
 - **Vấn đề**:
-  Hệ thống benchmark cần một giao diện trực quan tương tác để khám phá dữ liệu, so sánh song song kết quả của hai pipeline (Track A và Track B), hiển thị bản đồ nhiệt giải thích (explainability heatmap overlay), gắn cờ rủi ro (risk flags), cũng như theo dõi các chỉ số benchmark (F1 field-level, latency, chi phí GPU-giờ). Việc sử dụng các công cụ Business Intelligence độc quyền (như Power BI) tạo ra sự phụ thuộc vào phần mềm bên ngoài, định dạng nhị phân đóng (.pbix), khó tích hợp vào quy trình CI/CD mã nguồn mở và không tận dụng được cấu trúc dữ liệu JSON/Pydantic của hệ sinh thái Python.
+  Product cần giao diện để người dùng xem kết quả trích xuất, confidence, risk flags và bằng chứng giải thích. Research Lab cũng cần một khu vực so sánh hai pipeline và theo dõi metric benchmark. Việc sử dụng các công cụ Business Intelligence độc quyền (như Power BI) tạo ra sự phụ thuộc vào phần mềm bên ngoài, định dạng nhị phân đóng (.pbix), khó tích hợp vào quy trình CI/CD mã nguồn mở và không tận dụng được cấu trúc dữ liệu JSON/Pydantic của hệ sinh thái Python.
 - **Giải pháp**:
   Chuẩn hoá stack trực quan hoá mặc định trên nền tảng Python native:
   `Python → pandas → Plotly → Dash`
-  Dashboard sẽ đọc trực tiếp kết quả chuẩn hoá từ pipeline DocAI/API (`UnifiedDocumentOutput`) để trực quan hoá:
+  Dashboard sẽ đọc trực tiếp kết quả chuẩn hoá từ pipeline DocAI/API (`UnifiedDocumentOutput`) để phục vụ hai khu vực:
+  - **Product**: Document Parser, Risk Review, Document Details và Explainability khi đã có output.
+  - **Research Lab**: Track Comparison, Benchmark, Robustness và Cost Analysis khi đã có dữ liệu thực nghiệm.
+  Các nhóm nội dung gồm:
   - Kết quả trích xuất tài liệu chi tiết theo từng trường;
   - Độ tin cậy (confidence score) của các trường;
   - So sánh đối đầu giữa Track A (Classic) và Track B (VLM);
@@ -166,8 +209,10 @@ Mỗi quyết định dưới đây giải thích rõ lý do vì sao dự án kh
 
 ---
 
-## 3. Trạng thái triển khai hiện tại (Status)
+## 4. Trạng thái triển khai hiện tại (Status)
 
 Theo dõi đối chiếu với `log/progress-log.md`:
-- **Khung kiến trúc và mã nguồn (Scaffolding)**: Đã hoàn thành đầy đủ (Pydantic schema, các class stub, FastAPI routes, Docker Compose, script test Modal GPU).
+- **Product layer**: Đã xác định data/input, processing engines, schema, validation/risk, API và Dashboard responsibilities; phần runtime end-to-end chưa hoàn thành.
+- **Research layer**: Đã có khung metrics/benchmark và các báo cáo chờ dữ liệu thật; chưa có kết quả thực nghiệm.
+- **Khung kiến trúc và mã nguồn (Scaffolding)**: Đã hoàn thành (Pydantic schema, các class stub, FastAPI routes, Docker Compose, script test Modal GPU).
 - **Logic xử lý thực tế của các mô hình**: Đã lên kế hoạch, chưa triển khai (sẽ được hiện thực hoá lần lượt qua các Giai đoạn 1 đến 10 trong `docs/specs/implementation-guide.md`).
