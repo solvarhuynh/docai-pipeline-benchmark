@@ -89,7 +89,7 @@ Tài liệu trong `docs/concepts/` không phải là bách khoa toàn thư lý t
 
 Tài liệu kỹ thuật phải trung thực tuyệt đối với hiện trạng mã nguồn. Phải phân biệt rõ 5 mức độ:
 1. **ĐÃ CHỐT**: Công nghệ hoặc quyết định kiến trúc đã được lựa chọn chính thức (ví dụ: JSON schema Pydantic, Plotly Dash, cấm Power BI).
-2. **ĐANG SỬ DỤNG**: Mã nguồn đã được hiện thực hoá hoàn chỉnh và có kiểm thử tự động xác nhận hoạt động (ví dụ: `docai.core.schema`, `docai.fraud.rules`, `docai.data.*`, `docai.evaluation.metrics`).
+2. **ĐANG SỬ DỤNG**: Mã nguồn đã được hiện thực hoá hoàn chỉnh và có kiểm thử tự động xác nhận hoạt động; khi gắn nhãn trạng thái cho module cụ thể phải đối chiếu cả implementation và test hiện có.
 3. **SCAFFOLD**: Khung module, class, interface, tham số đã được dựng sẵn kèm TODO và ngoại lệ `NotImplementedError`, sẵn sàng tiếp nhận mô hình thật (ví dụ: `LayoutDetector`, `OCRExtractor`, `LayoutLMv3Extractor`, `VLMDocumentParser`, `DocumentExplainer`).
 4. **DỰ KIẾN Ở GIAI ĐOẠN X**: Kỹ thuật đã có lộ trình rõ ràng trong `docs/specs/implementation-guide.md` nhưng chưa đến giai đoạn thực hiện (ví dụ: fine-tune LayoutLMv3 ở Giai đoạn 4, kiểm thử độ bền ở Giai đoạn 9).
 5. **CHƯA CHỐT CỤ THỂ**: Kỹ thuật nằm trong định hướng nhưng chưa cố định phiên bản hoặc checkpoint cụ thể (ví dụ: mô hình VLM chính xác cho Track B khi mở rộng hợp đồng CUAD).
@@ -127,4 +127,3 @@ Không để người đọc nhầm lẫn giữa các cấp độ:
 - **Ngôn ngữ**: Sử dụng tiếng Việt chuẩn có dấu UTF-8.
 - **Tuyệt đối không dùng emoji hoặc icon**: Không dùng bất kỳ biểu tượng cảm xúc nào để đảm bảo tính trang trọng và độ tin cậy của tài liệu kỹ thuật chuẩn công nghiệp.
 - **Liên kết chéo**: Trỏ link markdown trực tiếp đến các file mã nguồn và tài liệu liên quan để người đọc dễ dàng đối chiếu.
-

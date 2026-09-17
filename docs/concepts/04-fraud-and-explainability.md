@@ -79,9 +79,9 @@ Trong giao kết hợp đồng kinh tế, có những điều khoản mang tính
 Phương thức `check_contract_clauses` đối chiếu danh sách các trường trích xuất được với danh mục điều khoản bắt buộc. Nếu thiếu bất kỳ điều khoản nào, hệ thống phát sinh cờ cảnh báo `RULE_CONTRACT_MISSING_*` mức độ `HIGH`.
 
 ### Vị trí trong codebase và Trạng thái
-- **Tập tin**: [`src/docai/fraud/rules.py`](file:///d:/2-personal-project/src/docai/fraud/rules.py)
+- **Tập tin**: [`src/docai/fraud/rules.py`](../../src/docai/fraud/rules.py)
 - **Class chính**: `FraudRiskEngine`
-- **Trạng thái**: `ĐANG SỬ DỤNG` (Toàn bộ logic đối chiếu số học, quét confidence và kiểm tra điều khoản đã được triển khai hoàn chỉnh và kiểm thử thành công bằng test suite tại [`tests/test_core.py`](file:///d:/2-personal-project/tests/test_core.py)).
+- **Trạng thái**: `ĐANG SỬ DỤNG` ở mức baseline (các rule hiện có đã được triển khai và kiểm thử tại [`tests/unit/test_fraud_rules.py`](../../tests/unit/test_fraud_rules.py); chuẩn hoá tiền tệ nâng cao và taxonomy đầy đủ vẫn thuộc phase sau).
 
 ---
 
@@ -152,7 +152,6 @@ Bản đồ nhiệt thô ban đầu chỉ là một ma trận số thực trong 
    Với hệ số $\alpha = 0.5$, bức ảnh kết quả cho thấy một quầng sáng đỏ rực bao quanh đúng vị trí dòng tổng tiền trên trang giấy.
 
 ### Vị trí trong codebase và Trạng thái
-- **Tập tin**: [`src/docai/explainability/explainer.py`](file:///d:/2-personal-project/src/docai/explainability/explainer.py)
+- **Tập tin**: [`src/docai/explainability/explainer.py`](../../src/docai/explainability/explainer.py)
 - **Class chính**: `DocumentExplainer`
 - **Trạng thái**: `SCAFFOLD` (Dự kiến hoàn thiện trích xuất attention weights và Grad-CAM ở Giai đoạn 8).
-

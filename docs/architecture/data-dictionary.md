@@ -1,6 +1,6 @@
 # Từ điển dữ liệu (Data Dictionary) — DocAI Dual-Pipeline Benchmark
 
-Tài liệu này mô tả chi tiết 4 bộ dữ liệu thực tế được sử dụng trong dự án, quy định cấu trúc nhãn gốc và phương pháp ánh xạ (mapping) sang JSON schema thống nhất (`shared/schema.py`).
+Tài liệu này mô tả chi tiết 4 bộ dữ liệu thực tế dự kiến sử dụng trong dự án, quy định cấu trúc nhãn gốc và phương pháp ánh xạ (mapping) sang JSON schema thống nhất (`src/docai/core/schema.py`).
 
 Ghi chú về trạng thái: Theo đối chiếu với `log/progress-log.md`, dự án hiện ở bước hoàn thành dựng khung (Scaffold). Các số liệu thống kê chi tiết về dung lượng file, phân bố chiều cao/chiều rộng ảnh sẽ được điền đầy đủ khi Giai đoạn 1 (Tải và tiền xử lý dữ liệu thật) được thực thi.
 

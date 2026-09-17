@@ -2,6 +2,8 @@
 
 Tài liệu này giải thích chi tiết kiến trúc hiện đại của Track B — trường phái sử dụng Mô hình Thị giác - Ngôn ngữ (Vision-Language Model - VLM) để đọc hiểu và trích xuất tài liệu trong một lượt suy luận duy nhất (single-pass), đối chiếu triết lý với Track A và phân tích các thách thức cốt lõi như hiện tượng ảo giác (hallucination) và chi phí tài nguyên tính toán.
 
+**Trạng thái quyết định:** `CHƯA CHỐT MODEL CỤ THỂ`. PaddleOCR-VL và dots.ocr hiện chỉ là các ứng viên trong kế hoạch; code Track B mới cung cấp interface/prompt scaffold, chưa thực hiện inference.
+
 ---
 
 ## 1. Triết lý của Track B là gì và tại sao lại có xu hướng chuyển sang VLM-native?
@@ -69,7 +71,7 @@ Mô hình ngôn ngữ tự nhiên vốn được huấn luyện để trò chuy�
 Định dạng này hoàn toàn vô dụng đối với các hệ thống backend tự động.
 
 ### Kỹ thuật Structured Prompting (Câu lệnh cấu trúc)
-Trong file [`src/docai/pipelines/track_b/vlm_parser.py`](file:///d:/2-personal-project/src/docai/pipelines/track_b/vlm_parser.py#L47-L62), phương thức `build_prompt` định hình câu lệnh theo nguyên tắc chặt chẽ:
+Trong file [`src/docai/pipelines/track_b/vlm_parser.py`](../../src/docai/pipelines/track_b/vlm_parser.py), phương thức `build_prompt` định hình câu lệnh theo nguyên tắc chặt chẽ:
 
 ```text
 Vai trò hệ thống: Bạn là chuyên gia Document AI.
@@ -91,7 +93,7 @@ Ngay cả khi đã hướng dẫn kỹ, VLM vẫn có xác suất sinh ra các l
 - Thiếu dấu đóng ngoặc nhọn `}` ở cuối chuỗi do hết độ dài token cho phép (max tokens).
 - Thừa dấu phẩy `,` ở phần tử cuối cùng của mảng.
 
-Quy trình xử lý hậu kỳ trong Track B bóc tách chuỗi JSON sạch, áp dụng thuật toán vá lỗi JSON (JSON Repair), sau đó đưa qua Pydantic model [`UnifiedDocumentOutput`](file:///d:/2-personal-project/src/docai/core/schema.py#L125-L162) để kiểm định kiểu dữ liệu.
+Đây là quy trình hậu kỳ dự kiến của Track B: bóc tách chuỗi JSON sạch, áp dụng thuật toán vá lỗi JSON (JSON Repair), sau đó đưa qua Pydantic model [`UnifiedDocumentOutput`](../../src/docai/core/schema.py) để kiểm định kiểu dữ liệu. Hiện tại `build_prompt` đã có implementation; `parse` và `parse_raw_json_to_output` vẫn là `SCAFFOLD`, chưa thực hiện inference hoặc JSON repair.
 
 ---
 
@@ -124,12 +126,12 @@ Ngược lại, đa số các VLM thế hệ đầu chỉ sinh ra văn bản thu
 | :--- | :--- | :--- |
 | **Kiến trúc** | Phối hợp 3 mô hình độc lập (YOLOv8 + PaddleOCR + LayoutLMv3) | Một mô hình đa phương thức duy nhất (PaddleOCR-VL / dots.ocr) |
 | **Số lượt suy luận (Passes)** | 3 lượt tuần tự (Layout → OCR → KIE) | 1 lượt duy nhất (End-to-End Image-to-JSON) |
-| **Yêu cầu phần cứng (VRAM)** | Thấp đến trung bình (8GB – 16GB VRAM, chạy tốt trên GPU NVIDIA T4) | Cao (thường cần 16GB – 24GB+ VRAM, khuyến nghị NVIDIA A10G hoặc A100) |
-| **Thời gian suy luận (Latency)** | Nhanh trên GPU phổ thông ($300\text{ms} - 800\text{ms}$/trang) | Chậm hơn do giải mã văn bản tự hồi quy từng token ($1.5\text{s} - 4.0\text{s}$/trang) |
+| **Yêu cầu phần cứng (VRAM)** | Chưa đo thực nghiệm; phụ thuộc checkpoint và cấu hình | Chưa đo thực nghiệm; phụ thuộc checkpoint và cấu hình |
+| **Thời gian suy luận (Latency)** | Chưa có kết quả đo; sẽ đánh giá trong benchmark | Chưa có kết quả đo; sẽ đánh giá trong benchmark |
 | **Khả năng giải thích (Explainability)** | Rõ ràng: Bounding box và attention weights gắn trực tiếp với từng token | Phức tạp hơn: Cần dùng Grad-CAM hoặc các kỹ thuật visual grounding chuyên biệt |
 | **Rủi ro lớn nhất** | **Lỗi dây chuyền (Error Cascade)**: OCR đọc sai làm hỏng các chặng sau | **Ảo giác (Hallucination)**: Tự bịa thông tin khi ảnh mờ hoặc tài liệu lạ |
-| **Khả năng thích ứng (Zero-shot)** | Yếu với tài liệu chưa từng train: cần dữ liệu có nhãn BIO để fine-tune | Xuất sắc: Có thể trích xuất các mẫu biểu chưa từng thấy nhờ khả năng đọc hiểu tổng quát |
-| **Vị trí trong repo** | [`src/docai/pipelines/track_a/`](file:///d:/2-personal-project/src/docai/pipelines/track_a/) | [`src/docai/pipelines/track_b/`](file:///d:/2-personal-project/src/docai/pipelines/track_b/) |
+| **Khả năng thích ứng (Zero-shot)** | Cần kiểm chứng trên dữ liệu chưa từng train; dự kiến cần dữ liệu có nhãn để fine-tune | Là giả thuyết cần kiểm chứng bằng benchmark; chưa có kết quả thực nghiệm |
+| **Vị trí trong repo** | [`src/docai/pipelines/track_a/`](../../src/docai/pipelines/track_a/) | [`src/docai/pipelines/track_b/`](../../src/docai/pipelines/track_b/) |
 | **Trạng thái hiện tại** | `SCAFFOLD` (Dự kiến Giai đoạn 3 & 4) | `SCAFFOLD` (Dự kiến Giai đoạn 5 & 6) |
 
 ---
@@ -143,4 +145,3 @@ Ngược lại, hợp đồng pháp lý trong bộ dữ liệu **CUAD (Contract 
 Trong Giai đoạn 6 của dự án:
 - Track A (LayoutLMv3) sẽ gặp rào cản lớn vì độ dài chuỗi tối đa của Transformer cổ điển thường bị giới hạn ở 512 tokens.
 - Track B (VLM) sẽ được thử nghiệm khả năng hiểu ngữ cảnh dài không qua huấn luyện chuyên biệt (Zero-shot Generalization). Mục tiêu là đo lường **độ suy giảm F1-score (Generalization Drop)** khi chuyển từ bài toán hóa đơn quen thuộc sang bài toán hợp đồng pháp lý phức tạp.
-

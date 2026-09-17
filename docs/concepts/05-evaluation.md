@@ -31,7 +31,7 @@ Khi đó:
 - **F1-Score (Điểm cân bằng điều hòa)**: Con số trung bình dung hòa giữa việc "nói đúng" và "tìm đủ".
 
 ### Khái niệm kỹ thuật: True Positive (TP), False Positive (FP), False Negative (FN)
-Trong module [`src/docai/evaluation/metrics.py`](file:///d:/2-personal-project/src/docai/evaluation/metrics.py#L19-L53), một trường dự đoán được coi là **True Positive (TP)** khi và chỉ khi:
+Trong module [`src/docai/evaluation/metrics.py`](../../src/docai/evaluation/metrics.py), một trường dự đoán được coi là **True Positive (TP)** khi và chỉ khi:
 1. Tên trường (`name`) khớp với nhãn chuẩn trong ground truth.
 2. Giá trị trường (`value`) sau khi chuẩn hoá (bỏ khoảng trắng thừa, đưa về chữ thường) trùng khớp với giá trị ground truth.
 
@@ -48,8 +48,8 @@ $$\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}$$
 $$\text{F1-score} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2 \times \text{TP}}{2 \times \text{TP} + \text{FP} + \text{FN}}$$
 
 ### Vị trí trong codebase và Trạng thái
-- **Hàm**: `calculate_field_f1` trong [`src/docai/evaluation/metrics.py`](file:///d:/2-personal-project/src/docai/evaluation/metrics.py#L19)
-- **Trạng thái**: `ĐANG SỬ DỤNG` (Đã được kiểm thử và bao phủ trong test suite).
+- **Hàm**: `calculate_field_f1` trong [`src/docai/evaluation/metrics.py`](../../src/docai/evaluation/metrics.py)
+- **Trạng thái**: `ĐANG SỬ DỤNG` ở mức implementation; chưa có test riêng cho metrics trong test suite hiện tại và chưa có kết quả benchmark trên dữ liệu thật.
 
 ---
 
@@ -75,8 +75,8 @@ $$\text{Agreement Ratio} = \frac{\sum_{k \in K} \mathbb{I}\left(V_A[k] == V_B[k]
 trong đó $\mathbb{I}(\cdot)$ là hàm chỉ thị (trả về 1 nếu giá trị chuẩn hoá của trường $k$ ở hai track giống nhau, ngược lại trả về 0).
 
 ### Vị trí trong codebase và Trạng thái
-- **Hàm**: `calculate_field_agreement` trong [`src/docai/evaluation/metrics.py`](file:///d:/2-personal-project/src/docai/evaluation/metrics.py#L55)
-- **Trạng thái**: `ĐANG SỬ DỤNG`.
+- **Hàm**: `calculate_field_agreement` trong [`src/docai/evaluation/metrics.py`](../../src/docai/evaluation/metrics.py)
+- **Trạng thái**: `ĐANG SỬ DỤNG` ở mức implementation; chưa có kết quả benchmark trên dữ liệu thật.
 
 ---
 
@@ -89,9 +89,9 @@ Khi đo tốc độ xử lý của hệ thống, giá trị trung bình thườn
 - Nhưng đối với khách hàng thực tế gặp phải trang tài liệu thứ 100, trình duyệt web của họ đã bị treo (timeout) và giao dịch bị hủy.
 
 ### Các phân vị đo lường bắt buộc:
-Module [`compute_latency_stats`](file:///d:/2-personal-project/src/docai/evaluation/metrics.py#L73) sử dụng các chỉ số phân vị từ [`src/docai/data/statistics.py`](file:///d:/2-personal-project/src/docai/data/statistics.py):
+Benchmark tương lai cần báo cáo các chỉ số sau. Hiện tại [`compute_latency_stats`](../../src/docai/evaluation/metrics.py) mới sử dụng helper thống kê để cung cấp count, min, max, mean, median và standard deviation; P90/P95 chưa được tính trong code.
 - **Median (Phân vị thứ 50 - P50)**: Thời gian xử lý của một tài liệu điển hình ở mức bình thường.
-- **P90 / P95**: Thời gian xử lý của 5% đến 10% các tài liệu phức tạp nhất. Đây là chỉ số then chốt để cam kết chất lượng dịch vụ (Service Level Agreement - SLA) trong kỹ nghệ phần mềm.
+- **P90 / P95**: Thời gian xử lý của 5% đến 10% các tài liệu phức tạp nhất; sẽ bổ sung khi benchmark được triển khai. Đây là chỉ số then chốt để cam kết chất lượng dịch vụ (Service Level Agreement - SLA) trong kỹ nghệ phần mềm.
 - **Standard Deviation (Độ lệch chuẩn)**: Đo lường tính ổn định của pipeline.
 
 ---
@@ -101,7 +101,7 @@ Module [`compute_latency_stats`](file:///d:/2-personal-project/src/docai/evaluat
 Một bài báo khoa học chỉ quan tâm đến F1-score, nhưng một dự án kỹ thuật thực tế phải trả lời câu hỏi: **"Mỗi trang tài liệu xử lý tốn bao nhiêu tiền điện toán?"**.
 
 ### Cơ chế tính giá theo giây của Modal Serverless GPU
-Trên nền tảng [Modal](https://modal.com), máy chủ GPU được khởi chạy theo nhu cầu (serverless) và tính tiền chính xác tới từng giây thực thi (per-second billing):
+Trên nền tảng [Modal](https://modal.com), máy chủ GPU được khởi chạy theo nhu cầu (serverless) và tính tiền theo thời gian thực thi. Bảng dưới đây chỉ là ước tính kế hoạch/tham chiếu, không phải chi phí đã phát sinh hoặc số liệu đã xác minh trong repository:
 
 | Loại GPU | VRAM | Đơn giá ước tính | Phù hợp với |
 | :--- | :--- | :--- | :--- |
@@ -162,5 +162,4 @@ Pipeline nào có $\Delta \text{F1}$ nhỏ hơn khi chịu cùng một mức đ�
 
 ### Vị trí trong kế hoạch dự án:
 - Kế hoạch triển khai: Thuộc Giai đoạn 9 (Benchmark tổng hợp).
-- Mô phỏng thực thi qua: [`src/docai/evaluation/benchmark.py`](file:///d:/2-personal-project/src/docai/evaluation/benchmark.py) (Trạng thái: `SCAFFOLD`).
-
+- Mô phỏng thực thi qua: [`src/docai/evaluation/benchmark.py`](../../src/docai/evaluation/benchmark.py) (Trạng thái: `SCAFFOLD`).

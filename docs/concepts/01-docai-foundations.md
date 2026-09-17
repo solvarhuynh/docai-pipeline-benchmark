@@ -42,7 +42,7 @@ Một bức ảnh tài liệu khi đưa vào máy tính ban đầu chỉ là m�
 ### Chi tiết từng tầng thông tin:
 
 1. **Tầng Pixel (Điểm ảnh)**:
-   Máy tính chỉ thấy các mảng số thể hiện độ sáng tối. Ở bước này, kỹ thuật **tiền xử lý ảnh (Image Preprocessing)** được sử dụng để xoay ảnh ngay ngắn, khử nhiễu, cân bằng độ sáng. Trong repository, các hàm kiểm tra kích thước và tính hợp lệ được đặt tại [`src/docai/data/preprocessing.py`](file:///d:/2-personal-project/src/docai/data/preprocessing.py).
+   Máy tính chỉ thấy các mảng số thể hiện độ sáng tối. Ở bước này, kỹ thuật **tiền xử lý ảnh (Image Preprocessing)** được sử dụng để xoay ảnh ngay ngắn, khử nhiễu, cân bằng độ sáng. Trong repository, các hàm kiểm tra kích thước và tính hợp lệ được đặt tại [`src/docai/data/preprocessing.py`](../../src/docai/data/preprocessing.py).
 2. **Tầng Vùng bố cục (Layout Regions)**:
    Mắt người khi nhìn vào hóa đơn sẽ tự động phân tách: "Đây là phần đầu hóa đơn chứa logo, đây là bảng danh sách món ăn, đây là phần chân trang có chữ ký". Máy tính cũng cần làm điều này thông qua kỹ thuật **Layout Detection (Phân vùng bố cục)**.
 3. **Tầng Nhận dạng chữ viết (OCR - Optical Character Recognition)**:
@@ -85,8 +85,8 @@ $$x_{\text{norm}} = \frac{x}{W}, \quad y_{\text{norm}} = \frac{y}{H}$$
 Khi đó, dù ảnh lớn hay ảnh nhỏ, một điểm nằm chính giữa trang giấy luôn có tọa độ $(0.5, 0.5)$.
 
 Trong repository:
-- Class [`BoundingBox`](file:///d:/2-personal-project/src/docai/core/schema.py#L36-L54) quản lý 4 tọa độ này và có validator tự động kiểm tra để đảm bảo $x_{\text{min}} \le x_{\text{max}}$ và $y_{\text{min}} \le y_{\text{max}}$.
-- Hàm chuyển đổi tọa độ chuẩn hoá được triển khai tại [`src/docai/data/preprocessing.py`](file:///d:/2-personal-project/src/docai/data/preprocessing.py#L48-L68).
+- Class [`BoundingBox`](../../src/docai/core/schema.py) quản lý 4 tọa độ này và có validator tự động kiểm tra để đảm bảo $x_{\text{min}} \le x_{\text{max}}$ và $y_{\text{min}} \le y_{\text{max}}$.
+- Hàm chuyển đổi tọa độ chuẩn hoá được triển khai tại [`src/docai/data/preprocessing.py`](../../src/docai/data/preprocessing.py).
 
 ---
 
@@ -104,7 +104,7 @@ Nếu Nhân viên A nộp báo cáo dạng bảng Excel, còn Nhân viên B nộ
 
 **Đó là lý do bắt buộc phải có JSON Schema Thống nhất (Unified JSON Schema).**
 
-Dù Track A chạy qua 3 mô hình hay Track B chạy qua 1 mô hình, cả hai đều phải xuất dữ liệu ra cùng một cấu trúc Pydantic duy nhất: [`UnifiedDocumentOutput`](file:///d:/2-personal-project/src/docai/core/schema.py#L78-L89).
+Dù Track A chạy qua 3 mô hình hay Track B chạy qua 1 mô hình, cả hai đều phải xuất dữ liệu ra cùng một cấu trúc Pydantic duy nhất: [`UnifiedDocumentOutput`](../../src/docai/core/schema.py).
 
 ```text
 [ Kết quả Track A ] ─── ép về ───┐
@@ -115,7 +115,7 @@ Dù Track A chạy qua 3 mô hình hay Track B chạy qua 1 mô hình, cả hai 
 ### Cấu trúc của `UnifiedDocumentOutput` gồm những gì?
 Mỗi tài liệu sau khi xử lý sẽ trả về một đối tượng gồm 7 trường then chốt:
 1. `document_type`: Loại tài liệu đã nhận diện (`invoice`, `receipt`, `contract`, `unknown`).
-2. `fields`: Danh sách các trường thông tin trích xuất được. Mỗi trường ([`ExtractedField`](file:///d:/2-personal-project/src/docai/core/schema.py#L57-L67)) gồm:
+2. `fields`: Danh sách các trường thông tin trích xuất được. Mỗi trường ([`ExtractedField`](../../src/docai/core/schema.py)) gồm:
    - `field_name`: Tên trường chuẩn hoá (ví dụ: `total_amount`, `seller_name`, `governing_law`).
    - `field_value`: Giá trị văn bản đọc được (ví dụ: `1.500.000 VND`).
    - `confidence`: Độ tin cậy của mô hình từ 0.0 đến 1.0.
@@ -134,7 +134,7 @@ Trong hệ sinh thái Python, **Pydantic** là thư viện số một về xác 
 
 Pydantic đóng vai trò như một "nhân viên hải quan nghiêm ngặt":
 - Nếu một mô hình AI trả về độ tin cậy $1.5$ (vượt quá dải quy định $[0.0, 1.0]$), Pydantic sẽ từ chối ngay lập tức (`ValidationError`).
-- Nếu mô hình vô tình trả về tọa độ $x_{\text{min}} = 500$ nhưng $x_{\text{max}} = 200$ (hộp bị lộn ngược), validator trong [`BoundingBox`](file:///d:/2-personal-project/src/docai/core/schema.py#L48-L54) sẽ chặn lại và báo lỗi rõ ràng.
+- Nếu mô hình vô tình trả về tọa độ $x_{\text{min}} = 500$ nhưng $x_{\text{max}} = 200$ (hộp bị lộn ngược), validator trong [`BoundingBox`](../../src/docai/core/schema.py) sẽ chặn lại và báo lỗi rõ ràng.
 
 Nhờ có Pydantic, các tầng tiếp theo như Fraud Engine, API FastAPI và Dashboard Plotly Dash hoàn toàn yên tâm rằng dữ liệu đầu vào luôn chuẩn chỉnh về kiểu và khuôn mẫu, không bao giờ bị lỗi sập chương trình vì dữ liệu rác.
 
@@ -144,9 +144,8 @@ Nhờ có Pydantic, các tầng tiếp theo như Fraud Engine, API FastAPI và D
 
 | Thành phần kỹ thuật | Vị trí file trong repo | Trạng thái thực tế | Giai đoạn triển khai |
 |---|---|---|---|
-| Hợp đồng JSON Schema (`UnifiedDocumentOutput`, `BoundingBox`, `ExtractedField`, `RiskFlag`) | [`src/docai/core/schema.py`](file:///d:/2-personal-project/src/docai/core/schema.py) | **ĐANG SỬ DỤNG** | Giai đoạn 1 (Đã có unit test đầy đủ trong `tests/unit/test_schema.py`) |
-| Quản lý cấu hình đường dẫn an toàn (`Settings`) | [`src/docai/core/config.py`](file:///d:/2-personal-project/src/docai/core/config.py) | **ĐANG SỬ DỤNG** | Giai đoạn 2 (Đã kiểm thử trong `tests/unit/test_config.py`) |
-| Nạp dữ liệu và quét metadata (`loaders.py`, `preprocessing.py`) | [`src/docai/data/`](file:///d:/2-personal-project/src/docai/data/) | **ĐANG SỬ DỤNG** | Giai đoạn 1 (Sẵn sàng nạp 4 bộ dataset thật) |
-| Notebook khảo sát EDA tương tác | [`notebooks/01-eda.ipynb`](file:///d:/2-personal-project/notebooks/01-eda.ipynb) | **ĐANG SỬ DỤNG** | Giai đoạn 1 |
-| Kịch bản dòng lệnh khảo sát dữ liệu thô | [`scripts/run_eda.py`](file:///d:/2-personal-project/scripts/run_eda.py) | **ĐANG SỬ DỤNG** | Giai đoạn 1 |
-
+| Hợp đồng JSON Schema (`UnifiedDocumentOutput`, `BoundingBox`, `ExtractedField`, `RiskFlag`) | [`src/docai/core/schema.py`](../../src/docai/core/schema.py) | **ĐANG SỬ DỤNG** | Giai đoạn 1 (Đã có unit test đầy đủ trong `tests/unit/test_schema.py`) |
+| Quản lý cấu hình đường dẫn an toàn (`Settings`) | [`src/docai/core/config.py`](../../src/docai/core/config.py) | **ĐANG SỬ DỤNG** | Giai đoạn 2 (Đã kiểm thử trong `tests/unit/test_config.py`) |
+| Nạp dữ liệu và quét metadata (`loaders.py`, `preprocessing.py`) | [`src/docai/data/`](../../src/docai/data/) | **ĐANG SỬ DỤNG** | Giai đoạn 1 (Sẵn sàng nạp 4 bộ dataset thật) |
+| Notebook khảo sát EDA tương tác | [`notebooks/01-eda.ipynb`](../../notebooks/01-eda.ipynb) | **ĐANG SỬ DỤNG** | Giai đoạn 1 |
+| Kịch bản dòng lệnh khảo sát dữ liệu thô | [`scripts/run_eda.py`](../../scripts/run_eda.py) | **ĐANG SỬ DỤNG** | Giai đoạn 1 |

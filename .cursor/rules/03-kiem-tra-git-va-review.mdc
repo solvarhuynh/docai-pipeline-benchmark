@@ -23,5 +23,5 @@ alwaysApply: true
 
 ## Kiểm duyệt và Review
 
-- Mọi thay đổi liên quan đến schema dùng chung (`shared/schema.py`), pipeline chính hoặc báo cáo benchmark cần được rà soát chéo giữa hai nhánh trước khi chốt.
+- Mọi thay đổi liên quan đến schema dùng chung (`src/docai/core/schema.py`), pipeline chính hoặc báo cáo benchmark cần được rà soát chéo giữa hai nhánh trước khi chốt.
 - Báo cáo kiểm duyệt phải phân định rõ ràng giữa kiểm tra tĩnh (static check PASS) và kiểm tra chức năng runtime.

@@ -148,7 +148,7 @@ Dự án xác định stack trực quan hoá chuẩn mực:
 `Python → pandas → Plotly → Dash`
 
 - Tuyệt đối không sử dụng Power BI, không tạo file `.pbix`, không thêm dependency hay workflow Power BI.
-- Ứng dụng Plotly Dash (`app.py`) đọc trực tiếp kết quả chuẩn hoá từ pipeline DocAI (`UnifiedDocumentOutput`) để trực quan hoá: kết quả trích xuất, confidence, so sánh 2 track, cảnh báo rủi ro, bản đồ nhiệt giải thích và các biểu đồ benchmark.
+- Theo lộ trình, ứng dụng Plotly Dash (`app.py`) sẽ đọc kết quả chuẩn hoá từ pipeline DocAI (`UnifiedDocumentOutput`) để trực quan hoá kết quả trích xuất, confidence, so sánh 2 track, cảnh báo rủi ro, bản đồ nhiệt giải thích và các biểu đồ benchmark. Hiện tại `app.py` mới là scaffold layout, chưa có callbacks hoặc dữ liệu thật.
 
 ### 2.6. Nguyên tắc tổ chức Scripts và Notebooks
 

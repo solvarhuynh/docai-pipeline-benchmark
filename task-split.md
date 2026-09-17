@@ -1,6 +1,6 @@
 # Phân chia công việc — DocAI Dual-Pipeline Benchmark
 
-Dự án chia thành 2 nhánh công việc song song, phối hợp qua `log/progress-log.md` và JSON schema thống nhất (`src/docai/core/schema.py`). Mỗi giai đoạn trong `implementation-guide.md` được tách thành các task cụ thể, gán cho từng nhánh.
+Dự án chia thành 2 nhánh công việc song song, phối hợp qua `log/progress-log.md` và JSON schema thống nhất (`src/docai/core/schema.py`). Mỗi giai đoạn trong `docs/specs/implementation-guide.md` được tách thành các task cụ thể, gán cho từng nhánh.
 
 - **Nhánh A — Hạ tầng, Dữ liệu, Sản phẩm hoá**
 - **Nhánh B — Mô hình, Đánh giá, Nghiên cứu**

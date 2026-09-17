@@ -2,6 +2,8 @@
 
 Tài liệu này đi sâu vào kiến trúc và nguyên lý hoạt động của Track A — trường phái xử lý tài liệu truyền thống dựa trên sự phối hợp của ba công đoạn độc lập: Phân vùng bố cục (Layout Detection), Nhận dạng chữ (OCR) và Trích xuất thông tin then chốt (Key Information Extraction - KIE) với mô hình đa phương thức LayoutLMv3.
 
+**Trạng thái lựa chọn model:** `CHƯA CHỐT CHECKPOINT CỤ THỂ`. YOLOv8-doc và DocLayout-YOLO là các ứng viên cho layout detection; giá trị mặc định `yolov8x-doc.pt` trong scaffold chỉ là interface default, không phải kết quả đã xác nhận.
+
 ---
 
 ## 1. Triết lý "chia để trị" của Track A là gì và tại sao lại tách thành 3 chặng?
@@ -42,7 +44,7 @@ Trong dự án này, Chặng 1 áp dụng các mô hình Object Detection hiện
   Nếu $\text{IoU}$ vượt qua một ngưỡng quy định (ví dụ 0.45) và cùng một nhãn, khung có độ tin cậy thấp hơn sẽ bị triệt tiêu để giữ lại duy nhất khung tối ưu.
 
 ### Vị trí trong codebase và Trạng thái
-- **Tập tin**: [`src/docai/pipelines/track_a/layout_detection.py`](file:///d:/2-personal-project/src/docai/pipelines/track_a/layout_detection.py)
+- **Tập tin**: [`src/docai/pipelines/track_a/layout_detection.py`](../../src/docai/pipelines/track_a/layout_detection.py)
 - **Class chính**: `LayoutDetector`
 - **Trạng thái**: `SCAFFOLD` (Dự kiến hoàn thiện nạp weights và suy luận ở Giai đoạn 3).
 
@@ -65,13 +67,13 @@ $$P = [[x_1, y_1], [x_2, y_2], [x_3, y_3], [x_4, y_4]]$$
 $$x_{\text{min}} = \min(x_1, x_2, x_3, x_4), \quad y_{\text{min}} = \min(y_1, y_2, y_3, y_4)$$
 $$x_{\text{max}} = \max(x_1, x_2, x_3, x_4), \quad y_{\text{max}} = \max(y_1, y_2, y_3, y_4)$$
 
-Hàm [`convert_polygon_to_box`](file:///d:/2-personal-project/src/docai/pipelines/track_a/ocr_extraction.py#L68-L74) trong repo đảm nhiệm phép chuyển đổi này.
+Hàm [`convert_polygon_to_box`](../../src/docai/pipelines/track_a/ocr_extraction.py) trong repo đảm nhiệm phép chuyển đổi này.
 
 ### Ghép nối không gian (Spatial Join) giữa Layout và OCR
 Một bước kỹ thuật quan trọng tại Chặng 2 là ghép nhãn layout cho từng token OCR. Nếu tọa độ của từ "Sữa tươi tiệt trùng" nằm trọn bên trong khung bao của vùng `table` do Chặng 1 tìm thấy, token này sẽ được gán nhãn phụ `layout_tag = "table"`. Điều này cung cấp thêm ngữ cảnh cho chặng KIE tiếp theo.
 
 ### Vị trí trong codebase và Trạng thái
-- **Tập tin**: [`src/docai/pipelines/track_a/ocr_extraction.py`](file:///d:/2-personal-project/src/docai/pipelines/track_a/ocr_extraction.py)
+- **Tập tin**: [`src/docai/pipelines/track_a/ocr_extraction.py`](../../src/docai/pipelines/track_a/ocr_extraction.py)
 - **Class chính**: `OCRExtractor`
 - **Trạng thái**: `SCAFFOLD` (Dự kiến tích hợp PaddleOCR tiếng Việt 'vi' và tiếng Anh 'en' ở Giai đoạn 3).
 
@@ -139,7 +141,7 @@ Minh họa phân tách BIO cho hóa đơn:
 Sau khi LayoutLMv3 gán nhãn cho từng token, Chặng 3 thực hiện thuật toán quét tuyến tính để ghép các token `B-` và các token `I-` đi liền kề thành một chuỗi văn bản hoàn chỉnh, đồng thời tính hộp giới hạn bao quát (Union Bounding Box) cho toàn bộ thực thể.
 
 ### Vị trí trong codebase và Trạng thái
-- **Tập tin**: [`src/docai/pipelines/track_a/kie_layoutlmv3.py`](file:///d:/2-personal-project/src/docai/pipelines/track_a/kie_layoutlmv3.py)
+- **Tập tin**: [`src/docai/pipelines/track_a/kie_layoutlmv3.py`](../../src/docai/pipelines/track_a/kie_layoutlmv3.py)
 - **Class chính**: `LayoutLMv3Extractor`
 - **Trạng thái**: `SCAFFOLD` (Dự kiến fine-tune trên tập hóa đơn mcocr2021 và CORD ở Giai đoạn 4).
 
@@ -169,6 +171,5 @@ Hoặc trong một trường hợp khác: Chặng 1 cắt đúng, nhưng Chặng
 ### Làm thế nào để benchmark Track A một cách công bằng?
 Trong repository này, hệ thống benchmark được thiết kế để đo lường độ chính xác độc lập ở từng mắt xích:
 - **Đo Chặng 2 (OCR)**: Sử dụng chỉ số Tỷ lệ lỗi ký tự (Character Error Rate - CER) và Tỷ lệ lỗi từ (Word Error Rate - WER).
-- **Đo Chặng 3 (KIE)**: Tính Field-level Precision, Recall, F1 trên các trường dữ liệu bằng module [`src/docai/evaluation/metrics.py`](file:///d:/2-personal-project/src/docai/evaluation/metrics.py).
+- **Đo Chặng 3 (KIE)**: Tính Field-level Precision, Recall, F1 trên các trường dữ liệu bằng module [`src/docai/evaluation/metrics.py`](../../src/docai/evaluation/metrics.py).
 Điều này giúp xác định chính xác nguyên nhân khi một tài liệu bị trích xuất thất bại là do OCR đọc sai hay do LayoutLMv3 gán nhãn nhầm.
-

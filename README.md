@@ -30,7 +30,7 @@ Khảo sát trên GitHub cho thấy tổ hợp Layout Detection + PaddleOCR + La
 
 ## 4. Nguồn dữ liệu
 
-Toàn bộ dữ liệu sử dụng trong dự án đều là dữ liệu thật, công khai, có bản quyền rõ ràng, không sử dụng dữ liệu tự sinh cho phần đánh giá chính:
+Phạm vi dữ liệu dự kiến của dự án gồm các bộ dữ liệu thật, công khai, có bản quyền rõ ràng; hiện chưa tải dataset và không sử dụng dữ liệu tự sinh cho phần đánh giá chính:
 
 | Bộ dữ liệu | Loại tài liệu | Quy mô | Vai trò |
 |---|---|---|---|
@@ -42,23 +42,23 @@ Toàn bộ dữ liệu sử dụng trong dự án đều là dữ liệu thật,
 ## 5. Kiến trúc tổng quan
 
 Hệ thống bao gồm các thành phần cốt lõi sau:
-- Track A — Classic Pipeline:
-  Layout Detection (YOLOv8-doc / DocLayout-YOLO pretrained) -> OCR (PaddleOCR trích xuất chữ và bounding box) -> KIE (LayoutLMv3 fine-tune trên subset nhỏ).
-- Track B — VLM-native Pipeline:
-  Single-pass Vision-Language Model (PaddleOCR-VL / dots.ocr pretrained) trích xuất field trực tiếp thông qua schema prompt định sẵn.
-- Chuẩn hoá output: Cả 2 track trả về cùng một cấu trúc JSON schema thống nhất (`shared/schema.py`) gồm document_type, fields, confidence, bounding_box và risk_flags để đảm bảo so sánh công bằng.
-- Explainability Layer (`shared/explainability.py`):
-  Trích attention weights từ LayoutLMv3 và visual grounding / Grad-CAM từ VLM để vẽ overlay heatmap lên ảnh gốc, giải thích căn cứ trích xuất cho từng trường.
-- Fraud/Risk Engine (`shared/fraud_rules.py`):
-  Rule-based fraud check cho hóa đơn (kiểm tra đối chiếu số học và bất thường độ tin cậy OCR vùng số) và clause-risk flagging cho hợp đồng (dựa trên taxonomy điều khoản CUAD).
-- Robustness Test Suite:
-  Sinh biến thể ảnh (xoay 5-15 độ, làm mờ Gaussian, giảm sáng, chèn watermark) và vẽ đường cong suy giảm F1-score theo mức độ nhiễu.
-- Benchmark & Cost Analysis:
-  Tổng hợp F1 field-level, độ trễ, độ bền trước nhiễu và phân tích chi phí GPU-giờ Modal đối chiếu với API thương mại (Google Cloud Document AI, AWS Textract, Azure Document Intelligence).
-- FastAPI Service & Deployment:
-  Expose các REST endpoint `/parse/classic`, `/parse/vlm`, `/compare`, `/explain` trên FastAPI, đóng gói Docker cho dev local và deploy trên Modal Serverless GPU.
-- Visualization & Dashboard:
-  Sử dụng Plotly Dash (`Python → pandas → Plotly → Dash`) làm dashboard framework chính thức để đọc kết quả từ pipeline DocAI/API hiển thị trích xuất, confidence, so sánh 2 track, fraud flags, explainability và các metric benchmark (không dùng Power BI).
+- Track A — Classic Pipeline (thiết kế/scaffold):
+  Layout Detection (ứng viên YOLOv8-doc / DocLayout-YOLO pretrained) -> OCR (PaddleOCR trích xuất chữ và bounding box) -> KIE (LayoutLMv3 fine-tune trên subset nhỏ).
+- Track B — VLM-native Pipeline (thiết kế/scaffold, model cụ thể chưa chốt):
+  Single-pass Vision-Language Model (ứng viên PaddleOCR-VL / dots.ocr pretrained) trích xuất field trực tiếp thông qua schema prompt định sẵn.
+- Chuẩn hoá output: Cả 2 track trả về cùng một cấu trúc JSON schema thống nhất (`src/docai/core/schema.py`) gồm document_type, fields, confidence, bounding_box và risk_flags để đảm bảo so sánh công bằng.
+- Explainability Layer (`src/docai/explainability/explainer.py`, SCAFFOLD):
+  Dự kiến trích attention weights từ LayoutLMv3 và visual grounding / Grad-CAM từ VLM để vẽ overlay heatmap lên ảnh gốc.
+- Fraud/Risk Engine (`src/docai/fraud/rules.py`, baseline):
+  Rule-based fraud check cho hóa đơn (đối chiếu số học và bất thường độ tin cậy OCR vùng số) và kiểm tra một số điều khoản bắt buộc cho hợp đồng; taxonomy CUAD đầy đủ thuộc phase sau.
+- Robustness Test Suite (DỰ KIẾN Giai đoạn 9):
+  Sinh biến thể ảnh (xoay 5-15 độ, làm mờ Gaussian, giảm sáng, chèn watermark) và đo đường cong suy giảm F1-score.
+- Benchmark & Cost Analysis (DỰ KIẾN):
+  Sẽ tổng hợp F1 field-level, độ trễ, độ bền trước nhiễu và phân tích chi phí GPU-giờ Modal đối chiếu với API thương mại (Google Cloud Document AI, AWS Textract, Azure Document Intelligence).
+- FastAPI Service & Deployment (SCAFFOLD):
+  Đã định nghĩa các REST endpoint `/parse/classic`, `/parse/vlm`, `/compare`, `/explain` trên FastAPI; logic pipeline, Docker demo hoàn chỉnh và deploy Modal thuộc phase sau.
+- Visualization & Dashboard (SCAFFOLD):
+  Sử dụng Plotly Dash (`Python → pandas → Plotly → Dash`) làm dashboard framework chính thức; layout hiện có sẽ kết nối kết quả pipeline/API, fraud flags, explainability và metric benchmark ở phase sau (không dùng Power BI).
 
 ## 6. Công nghệ sử dụng
 
@@ -166,7 +166,7 @@ Các cách khởi chạy nhanh:
 Theo dõi nhật ký tiến độ thực hiện theo thời gian thực tại:
 `log/progress-log.md`
 
-Hiện tại dự án đã hoàn thành tái cấu trúc sang kiến trúc chuẩn `src/ layout` (`src/docai/`), tích hợp `pyproject.toml`, chuẩn bị bộ `scripts/`, `tests/`, `data/interim/`, hoàn thiện toàn bộ tài liệu kỹ thuật và bộ tài liệu học tập chuyên sâu bằng tiếng Việt có dấu. Repository sẵn sàng 100% bước vào Giai đoạn 1 (Khảo sát & chuẩn bị dữ liệu thật).
+Hiện tại dự án đã hoàn thành tái cấu trúc sang kiến trúc chuẩn `src/ layout` (`src/docai/`), tích hợp `pyproject.toml`, chuẩn bị bộ `scripts/`, `tests/`, `data/interim/`, hoàn thiện toàn bộ tài liệu kỹ thuật và bộ tài liệu học tập chuyên sâu bằng tiếng Việt có dấu. Repository đã sẵn sàng để bước vào Giai đoạn 1 (Khảo sát & chuẩn bị dữ liệu thật); các pipeline/model/benchmark vẫn còn scaffold theo lộ trình.
 
 ## 10. Bản đồ tri thức & Tài liệu học tập
 
@@ -179,4 +179,3 @@ Các chuyên đề kỹ thuật chính:
 - `docs/concepts/03-track-b-vlm.md`: Pipeline VLM-native đơn lượt (PaddleOCR-VL, dots.ocr, structured prompting, rủi ro ảo giác).
 - `docs/concepts/04-fraud-and-explainability.md`: Động cơ kiểm tra gian lận số học & rủi ro hợp đồng CUAD; lớp giải thích trực quan bằng bản đồ nhiệt JET overlay.
 - `docs/concepts/05-evaluation.md`: Phương pháp đo lường khoa học (Field F1, Agreement ratio, Latency phân vị, chi phí GPU Modal vs API thương mại, Robustness suite).
-

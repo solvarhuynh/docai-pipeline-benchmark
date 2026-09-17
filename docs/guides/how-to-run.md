@@ -18,7 +18,7 @@ Trước khi bắt đầu, đảm bảo máy tính đã cài đặt các công c
 
 ### 2.1. Tạo môi trường ảo Python (Virtual Environment)
 
-Mở terminal tại thư mục gốc của dự án (`d:/2-personal-project` hoặc thư mục đã clone repo):
+Mở terminal tại thư mục gốc của dự án (thư mục đã clone repository):
 
 ```bash
 # Tạo virtualenv có tên là .venv
@@ -118,6 +118,8 @@ Ghi chú về dữ liệu:
 
 FastAPI cung cấp 4 endpoint: `/parse/classic`, `/parse/vlm`, `/compare`, `/explain`.
 
+Hiện tại các route parsing/compare/explain là `SCAFFOLD` và trả HTTP 501; chỉ `/health` có hành vi runtime hoàn chỉnh.
+
 ### Cách 1: Chạy trực tiếp bằng Uvicorn
 
 ```bash
@@ -151,7 +153,7 @@ Dự án sử dụng Plotly Dash làm framework trực quan hoá mặc định (
 python -m docai.dashboard.app
 ```
 
-Giao diện dashboard sẽ mở tại `http://localhost:8050`, hiển thị kết quả trích xuất, confidence, so sánh 2 track, cờ rủi ro gian lận và bản đồ nhiệt giải thích.
+Giao diện dashboard sẽ mở tại `http://localhost:8050`. Hiện tại lệnh chỉ khởi tạo scaffold layout khi Dash đã được cài; callbacks và dữ liệu thật sẽ bổ sung ở phase sau.
 
 ---
 

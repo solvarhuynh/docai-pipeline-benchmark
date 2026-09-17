@@ -5,6 +5,8 @@
 ## Mục tiêu dự án
 So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ điển nhiều tầng (Track A) và mô hình VLM-native hiện đại (Track B) — trên hai loại tài liệu thật khác hẳn nhau (hóa đơn và hợp đồng), có thêm lớp Explainability, Robustness Test và phân tích chi phí vận hành thật trên Modal.
 
+Trạng thái lựa chọn: Layout model và VLM checkpoint cụ thể chưa chốt. Các tên YOLOv8-doc/DocLayout-YOLO và PaddleOCR-VL/dots.ocr trong tài liệu là các ứng viên để đánh giá ở phase tương ứng, không phải kết quả đã chạy.
+
 ## Nguồn dữ liệu
 
 | Bộ dữ liệu | Loại tài liệu | Quy mô | Vai trò |
@@ -29,7 +31,7 @@ So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ đ
 - [ ] 4 bộ dữ liệu đã tải về đúng thư mục.
 - [ ] `docs/architecture/data-dictionary.md` mô tả đủ 4 bộ.
 - [ ] `notebooks/01-eda.ipynb` chứa khảo sát cơ bản từng bộ.
-- [ ] File `shared/schema.py` định nghĩa JSON schema thống nhất (dùng Pydantic).
+- [ ] File `src/docai/core/schema.py` định nghĩa JSON schema thống nhất (dùng Pydantic).
 
 ---
 
@@ -58,8 +60,8 @@ So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ đ
 4. Đánh giá sơ bộ chất lượng: tỷ lệ vùng bảng phát hiện đúng, tỷ lệ ký tự đọc đúng so với ground truth có sẵn.
 
 **Definition of Done:**
-- [ ] `track_a_classic/layout_detection.py` chạy được trên toàn bộ 3 bộ hóa đơn.
-- [ ] `track_a_classic/ocr_extraction.py` sinh ra JSON trung gian có bounding box.
+- [ ] `src/docai/pipelines/track_a/layout_detection.py` chạy được trên toàn bộ 3 bộ hóa đơn.
+- [ ] `src/docai/pipelines/track_a/ocr_extraction.py` sinh ra JSON trung gian có bounding box.
 - [ ] Ghi số liệu đánh giá sơ bộ vào `docs/reports/benchmark-results.md` (mục "Track A — Layout & OCR baseline").
 
 ---
@@ -73,7 +75,7 @@ So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ đ
 4. Lưu model checkpoint (không commit trực tiếp vào git nếu file lớn — dùng Modal Volume hoặc HuggingFace Hub cá nhân, ghi rõ cách tải lại trong `docs/guides/how-to-run.md`).
 
 **Definition of Done:**
-- [ ] `track_a_classic/kie_layoutlmv3.py` chạy fine-tune và inference.
+- [ ] `src/docai/pipelines/track_a/kie_layoutlmv3.py` chạy fine-tune và inference.
 - [ ] F1 field-level trên tập test ghi vào `docs/reports/benchmark-results.md`.
 - [ ] Chi phí GPU-giờ của bước fine-tune ghi vào `docs/reports/cost-analysis.md`.
 
@@ -87,7 +89,7 @@ So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ đ
 3. Đánh giá F1 field-level, latency, chi phí GPU-giờ (nếu chạy trên Modal) hoặc chi phí API (nếu dùng dịch vụ ngoài).
 
 **Definition of Done:**
-- [ ] `track_b_vlm/vlm_parser.py` chạy được, trả JSON đúng schema thống nhất.
+- [ ] `src/docai/pipelines/track_b/vlm_parser.py` chạy được, trả JSON đúng schema thống nhất.
 - [ ] F1, latency, chi phí ghi vào `docs/reports/benchmark-results.md` và `docs/reports/cost-analysis.md`, đặt cạnh số liệu Track A để so sánh trực tiếp.
 
 ---
@@ -112,10 +114,10 @@ So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ đ
 **Việc cần làm:**
 1. Với hóa đơn: viết rule kiểm tra tổng tiền trước thuế + VAT = tổng tiền, phát hiện dấu hiệu vùng số bị chỉnh sửa (dựa vào độ tin cậy OCR bất thường ở vùng số).
 2. Với hợp đồng: dùng taxonomy điều khoản có sẵn trong CUAD (loại điều khoản như Termination, Governing Law, Indemnification...) để viết rule phát hiện hợp đồng thiếu điều khoản chuẩn hoặc có điều khoản đánh dấu rủi ro cao.
-3. Đóng gói cả hai thành `shared/fraud_rules.py`, expose qua field `risk_flags` trong JSON output.
+3. Đóng gói cả hai thành `src/docai/fraud/rules.py`, expose qua field `risk_flags` trong JSON output.
 
 **Definition of Done:**
-- [ ] `shared/fraud_rules.py` chạy được cho cả hóa đơn và hợp đồng.
+- [ ] `src/docai/fraud/rules.py` chạy được cho cả hóa đơn và hợp đồng.
 - [ ] Test thử với 1 hóa đơn cố tình sai số liệu và 1 hợp đồng cố tình thiếu điều khoản, xác nhận rule phát hiện đúng.
 
 ---
@@ -125,11 +127,11 @@ So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ đ
 **Việc cần làm:**
 1. Với Track A: trích attention weights từ LayoutLMv3 cho từng field đã dự đoán, ánh xạ về bounding box tương ứng trên ảnh gốc.
 2. Với Track B: nếu model VLM hỗ trợ visual grounding/attention map, trích tương tự; nếu không hỗ trợ trực tiếp, dùng kỹ thuật gradient-based (Grad-CAM) trên input image.
-3. Vẽ overlay heatmap lên ảnh gốc, đóng gói thành hàm dùng chung trong `shared/explainability.py`.
+3. Vẽ overlay heatmap lên ảnh gốc, đóng gói thành hàm dùng chung trong `src/docai/explainability/explainer.py`.
 4. Expose qua endpoint `/explain` trả về ảnh overlay hoặc tọa độ heatmap.
 
 **Definition of Done:**
-- [ ] `shared/explainability.py` sinh được overlay heatmap cho ít nhất 3 field mẫu từ mỗi track.
+- [ ] `src/docai/explainability/explainer.py` sinh được overlay heatmap cho ít nhất 3 field mẫu từ mỗi track.
 - [ ] Ảnh minh hoạ lưu vào `docs/reports/explainability-report.md`.
 
 ---
@@ -152,7 +154,7 @@ So sánh nghiêm túc hai hướng tiếp cận Document AI — pipeline cổ đ
 ## Giai đoạn 10 — FastAPI Service & Tài liệu hoá
 
 **Việc cần làm:**
-1. Viết `api/main.py` expose các endpoint: `/parse/classic`, `/parse/vlm`, `/compare` (chạy cả 2 track, trả kết quả song song), `/explain`.
+1. Viết `src/docai/api/main.py` expose các endpoint: `/parse/classic`, `/parse/vlm`, `/compare` (chạy cả 2 track, trả kết quả song song), `/explain`.
 2. Deploy service lên Modal (`modal deploy`), xác nhận endpoint hoạt động qua request thật.
 3. Đóng gói `docker-compose.yml` hoàn chỉnh cho người khác chạy local (không cần tài khoản Modal, dùng model nhỏ hơn hoặc mock cho mục đích demo).
 4. Hoàn thiện toàn bộ `docs/` (xem cấu trúc bên dưới), README.md ở root.
@@ -171,8 +173,11 @@ docai-dual-pipeline-benchmark/
 ├── .cursor/
 │   └── rules/
 ├── .gitignore
+├── pyproject.toml
 ├── data/
 │   ├── raw/
+│   │   └── .gitkeep
+│   ├── interim/
 │   │   └── .gitkeep
 │   └── processed/
 │       └── .gitkeep
@@ -194,18 +199,20 @@ docai-dual-pipeline-benchmark/
 │       └── docai-benchmark-overview.pdf
 ├── notebooks/
 │   └── 01-eda.ipynb
-├── track_a_classic/
-│   ├── layout_detection.py
-│   ├── ocr_extraction.py
-│   └── kie_layoutlmv3.py
-├── track_b_vlm/
-│   └── vlm_parser.py
-├── shared/
-│   ├── schema.py
-│   ├── fraud_rules.py
-│   └── explainability.py
-├── api/
-│   └── main.py
+├── src/
+│   └── docai/
+│       ├── core/
+│       ├── data/
+│       ├── pipelines/
+│       │   ├── track_a/
+│       │   └── track_b/
+│       ├── fraud/
+│       ├── explainability/
+│       ├── evaluation/
+│       ├── api/
+│       └── dashboard/
+├── scripts/
+├── tests/
 ├── modal_app/
 │   └── deploy.py
 ├── log/
@@ -218,6 +225,6 @@ docai-dual-pipeline-benchmark/
 ## Ghi chú chung cho AI hỗ trợ code
 - Không train model từ đầu — luôn dùng pretrained, chỉ fine-tune LayoutLMv3 trên subset nhỏ để tiết kiệm GPU-giờ trên Modal.
 - Mọi lần chạy tốn GPU trên Modal phải ghi log chi phí vào `log/progress-log.md` và tổng hợp vào `docs/reports/cost-analysis.md`.
-- Track A và Track B luôn phải trả về cùng JSON schema (`shared/schema.py`) để so sánh công bằng.
+- Track A và Track B luôn phải trả về cùng JSON schema (`src/docai/core/schema.py`) để so sánh công bằng.
 - Không tự ý mở rộng phạm vi ngoài 10 giai đoạn đã định nghĩa — nếu phát hiện ý tưởng hay ngoài kế hoạch, ghi vào `docs/reports/benchmark-results.md` mục "Định hướng mở rộng" thay vì tự triển khai.
 - Mỗi giai đoạn hoàn thành nên commit riêng, cập nhật `log/progress-log.md` ngay sau khi hoàn thành, không dồn lại.
