@@ -72,3 +72,6 @@ Thumbs.db
 *.swp
 *.swo
 
+# React/Vite frontend artifacts
+frontend/node_modules/
+frontend/dist/

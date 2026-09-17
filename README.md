@@ -1,242 +1,164 @@
 # DocAI Document Intelligence Platform
 
-> Invoice + Contract Intelligence với FastAPI, Plotly Dash và dual-pipeline research
+DocAI is a Document Intelligence platform for two equal product domains:
 
-DocAI là nền tảng Document Intelligence hướng tới hai product domain:
+- **Invoice Intelligence** — extract structured fields from invoices and receipts, then surface validation and risk signals.
+- **Contract Intelligence** — extract contract metadata and clauses, then support clause and risk review.
 
-- **Invoice Intelligence**: trích xuất dữ liệu có cấu trúc từ hóa đơn/biên lai, kiểm tra tính nhất quán và gắn cờ rủi ro.
-- **Contract Intelligence**: trích xuất metadata/clauses/law từ hợp đồng, phát hiện thiếu điều khoản và hỗ trợ rà soát rủi ro.
+The product has one Python backend, **FastAPI**, and one independent web frontend, **React + TypeScript + Vite**. Inside the backend, Track A and Track B are alternative AI processing engines. Research compares them on Invoice and Contract; the benchmark is part of the platform, not the platform's identity.
 
-Sản phẩm cung cấp REST API bằng **FastAPI** và giao diện web tương tác bằng **Plotly Dash**. Bên trong processing layer có hai engine: **Track A Classic** và **Track B VLM-native**. Hai engine phục vụ product flow ở mức phù hợp với khả năng thực tế, đồng thời tạo nền tảng cho research benchmark trên Invoice và Contract.
-
-Repository/Git remote hiện tại có thể tiếp tục dùng tên kỹ thuật `docai-pipeline-benchmark`; không tự động rename repository hoặc remote. Display name được định hướng là **DocAI Document Intelligence Platform** để nhấn mạnh giá trị sản phẩm.
-
-## Sản phẩm giải quyết gì?
-
-Luồng sản phẩm mục tiêu:
+## What the product is meant to do
 
 ```text
 USER
   ↓
-PLOTLY DASH — Frontend / User Interface
+React + TypeScript + Vite frontend
+  ↓ HTTP / REST / JSON
+FastAPI backend
   ↓
-FASTAPI — Backend / REST API
+DocAI core → Track A or Track B
   ↓
-Document input → processing engine → UnifiedDocumentOutput
+UnifiedDocumentOutput
   ↓
-Domain validation / risk → explainability → result review
+Domain Risk / Explainability → review result
 ```
 
-Người dùng có thể chọn loại tài liệu Invoice hoặc Contract, upload tài liệu, nhận kết quả có cấu trúc, xem bằng chứng trích xuất và các cảnh báo cần được con người xem xét. Product MVP không yêu cầu Research Lab hoàn thành trước.
+The intended user flow is: choose Invoice or Contract, upload a document, choose a processing engine, process the document, and review structured output with confidence, risk flags and supporting evidence. The current repository is a scaffold; it does not claim that this end-to-end flow is complete.
 
-### Product Capabilities và trạng thái
+## Current capability status
 
-- **Invoice Intelligence — BASELINE / SCAFFOLD**: schema `invoice`/`receipt`, các rule kiểm tra tổng tiền và confidence đã có; pipeline inference và đường chạy end-to-end còn scaffold.
-- **Contract Intelligence — BASELINE / SCAFFOLD**: schema envelope hỗ trợ `contract`, rule phát hiện thiếu clause đã có; taxonomy CUAD đầy đủ, extraction và UI end-to-end còn scaffold/planned.
-- **Risk Analysis — BASELINE**: `src/docai/fraud/rules.py` có invoice arithmetic/confidence checks và contract missing-clause checks. Đây là risk flagging, không phải kết luận gian lận hay kết luận pháp lý.
-- **Explainability — SCAFFOLD**: interface cho bounding box, text/clause evidence, attention/grounding; implementation heatmap chưa hoàn thành.
-- **FastAPI REST API — SCAFFOLD**: route và response contract đã định nghĩa; parse/compare/explain hiện chưa điều phối pipeline thật.
-- **Plotly Dash — SCAFFOLD**: layout và các workspace/tab định hướng đã có; callbacks và dữ liệu thật chưa có.
-- **Dual processing engine — SCAFFOLD**: interface Track A/Track B đã có; model inference thực tế chưa chạy trong repository hiện tại.
+- **Invoice Intelligence — BASELINE / SCAFFOLD**: shared output and basic invoice risk rules exist; model inference and end-to-end processing are not enabled.
+- **Contract Intelligence — BASELINE / SCAFFOLD**: contract document type and baseline missing-clause rules exist; full CUAD taxonomy and extraction are planned.
+- **Risk Analysis — BASELINE**: invoice arithmetic/confidence checks and contract missing-clause checks are implemented and tested. They are review signals, not definitive fraud or legal conclusions.
+- **Explainability — SCAFFOLD**: interfaces for field boxes, clause spans and model evidence exist; runtime explanations are not implemented.
+- **FastAPI API — SCAFFOLD**: route contracts exist; parse, compare and explain handlers currently return `501 Not Implemented`.
+- **React frontend — SCAFFOLD**: page structure and typed API boundary exist; backend calls and result views are not complete.
+- **Research Lab — PLANNED**: no real benchmark, ground truth result or fake metric is included.
 
-## Hai product workspace
+## Product pages
 
-### Invoice Workspace
+The frontend is intentionally small and has four routes:
 
-Luồng mục tiêu là:
+- `/` — product overview.
+- `/invoice` — Invoice Workspace: upload, extraction, confidence, risk, evidence and JSON.
+- `/contract` — Contract Workspace: metadata, clause spans, supporting text and Contract Risk.
+- `/research` — Research Lab: Track A/B comparison, F1, latency, cost, robustness and agreement.
 
-```text
-Upload invoice / receipt
-  → document processing
-  → fields + confidence + bounding boxes
-  → arithmetic / missing-field / low-confidence risk flags
-  → structured JSON và explainability
-```
+The pages are placeholders until the FastAPI processing endpoints are connected. The UI must never fabricate extraction results or metrics.
 
-Các field chỉ được dùng khi schema/dataset thực tế hỗ trợ, chẳng hạn `seller_name`, `invoice_date`, `subtotal_amount`, `tax_amount`, `total_amount` và `line_items`.
+## Backend and processing
 
-### Contract Workspace
+### FastAPI backend
 
-Luồng mục tiêu là:
+`src/docai/api/` is the only business backend. It validates requests, accepts uploads, invokes the processing layer, serializes Pydantic output and handles errors. Node.js is not a second backend; it is only used for frontend tooling.
 
-```text
-Upload contract
-  → document processing
-  → metadata + clause spans
-  → missing-clause / clause-risk flags
-  → structured JSON và supporting passages
-```
-
-Các thông tin có thể bao gồm parties, effective date, termination, governing law, confidentiality, liability và các clause quan trọng. Taxonomy cụ thể phải bám schema/dataset; phần chưa có implementation được ghi là `SCAFFOLD` hoặc `PLANNED`. Hệ thống hỗ trợ information extraction, document review và decision support; không thay luật sư và không đưa ra tư vấn pháp lý chắc chắn.
-
-## Product và Research khác nhau thế nào?
-
-Product dùng một engine đã chọn để xử lý một tài liệu và trả kết quả cho người dùng. Research Lab là khu vực riêng trong frontend, dùng khi cần chạy hai engine trên cùng input/ground truth để đo:
-
-- accuracy, Precision/Recall/F1;
-- latency;
-- robustness trên tài liệu clean/noisy;
-- explainability evidence;
-- cost hoặc estimate có căn cứ;
-- agreement/disagreement giữa hai engine.
-
-Research question chính:
-
-> Khi cùng phục vụ một sản phẩm Document Intelligence cho hóa đơn và hợp đồng, pipeline Classic modular và pipeline VLM-native đánh đổi như thế nào về accuracy, latency, robustness, explainability và cost?
-
-Invoice và Contract tạo ra hai điều kiện khác nhau: Invoice thường ngắn, nhiều con số, bảng biểu và field tương đối rõ; Contract thường dài, giàu ngôn ngữ pháp lý, clause và quan hệ ngữ nghĩa phức tạp. Vì vậy CUAD có vai trò kép: hỗ trợ Contract Information Extraction/Clause Detection/Risk Analysis trong product và cung cấp dữ liệu cho generalization research. CUAD không phải dataset phụ bị hạ vai trò, nhưng cũng không được dùng để tuyên bố đã có capability khi code chưa triển khai.
-
-Research milestone chỉ được gọi là hoàn thành khi có output thật từ cả hai track, ground truth, metrics, latency, robustness và cost measurement/estimate có căn cứ. Repository hiện chưa có benchmark thật và không dùng mock result để thay thế.
-
-## Kiến trúc tổng quan
-
-```text
-                    USER
-                      │
-                      ▼
-              PLOTLY DASH
-                Frontend
-                      │
-                      ▼
-                 FASTAPI
-                  Backend
-                      │
-          ┌───────────┴───────────┐
-          │                       │
-          ▼                       ▼
- Invoice Intelligence     Contract Intelligence
-          │                       │
-          └───────────┬───────────┘
-                      │
-               Processing Layer
-                      │
-             ┌────────┴────────┐
-             │                 │
-          Track A           Track B
-          Classic          VLM-native
-             │                 │
-             └────────┬────────┘
-                      │
-            UnifiedDocumentOutput
-                      │
-             Validation / Risk
-                      │
-               Explainability
-
-Research/Evaluation chạy song song:
-
-Track A output ─┐
-                ├→ Evaluation → accuracy / latency / robustness / cost
-Track B output ─┘
-```
-
-Vai trò module:
-
-- `src/docai/api/` — **Backend** FastAPI: request validation, upload interface, pipeline invocation, serialization và error handling. Route không chứa model implementation.
-- `src/docai/dashboard/` — **Frontend** Plotly Dash: Invoice Workspace, Contract Workspace và Research Lab. UI đọc output chuẩn hoá; không copy processing logic.
-- `src/docai/core/` — shared contracts/configuration.
-- `src/docai/pipelines/` — Track A và Track B processing engines.
-- `src/docai/data/` — data ingestion, preprocessing và statistics.
-- `src/docai/fraud/` — domain-specific validation/risk rules.
-- `src/docai/explainability/` — evidence/explanation layer.
-- `src/docai/evaluation/` — research metrics và comparison orchestration.
-
-### Unified schema
-
-[`src/docai/core/schema.py`](src/docai/core/schema.py) hiện là một shared envelope tối thiểu gồm `document_type`, `fields`, confidence, optional `bounding_box`, `risk_flags`, execution metadata và pipeline metadata. Envelope này không ép Contract vào schema Invoice: field names/values có thể khác theo domain. Taxonomy Contract chi tiết hơn sẽ được bổ sung sau khi schema/dataset mapping được chốt; task hiện tại không thiết kế một schema lớn mới.
-
-Backend, Dash và Evaluation phải phụ thuộc vào contract này thay vì output tùy tiện của từng model.
-
-## Hai processing engine
-
-### Track A — Classic Document AI Pipeline
+### Track A — Specialist pipeline
 
 ```text
 Layout Detection → OCR → KIE / LayoutLMv3 → UnifiedDocumentOutput
 ```
 
-Đây là khu vực AI/ML/DL chuyên sâu, phù hợp cho layout detection, OCR, BIO tagging, fine-tuning và phân tích lỗi từng chặng. Model/checkpoint cụ thể vẫn chưa được chốt; các class hiện tại là scaffold.
+Track A is the ML/DL-intensive path. It can use specialist components for layout, OCR and document understanding, with domain-specific mapping for Invoice or Contract. Current model classes are scaffold and the exact checkpoint is not selected.
 
-### Track B — VLM-native Document AI Pipeline
+### Track B — VLM-native pipeline
 
 ```text
 Document → VLM → structured prompt/response → parsing → schema validation
 ```
 
-Đây là khu vực VLM và integration: input preparation, prompt, structured output, parsing, validation, retry/error handling và batch processing. Model cụ thể cho Track B chưa được chốt; không tự chọn checkpoint mới trong task này.
+Track B is the VLM/integration path. It will own input preparation, prompts, structured parsing, validation, retries and batching. The exact VLM is not selected.
 
-Cả hai track là processing backend dùng chung cho Invoice và Contract ở mức khả năng thực tế, không phải hai sản phẩm riêng.
+Both tracks must return `UnifiedDocumentOutput`; neither is a separate product.
 
-## Công nghệ và phạm vi hiện tại
+## Frontend/backend contract
 
-- Python, Pydantic và package `src/` layout.
-- FastAPI là backend/API chính thức.
-- Plotly Dash là frontend web/MVP chính thức; không thêm React, Vue, Angular, Next.js hoặc Power BI ở phase hiện tại.
-- Docker Compose và file/local outputs cho local development.
-- Không thêm PostgreSQL, Redis, Kafka, Celery, Airflow, Kubernetes, microservices hoặc OAuth khi chưa có requirement.
-- Chưa train model, chưa tải dataset và chưa chạy benchmark thật trong task định vị này.
+```text
+Pydantic schema
+  ↓
+FastAPI REST/JSON contract
+  ↓
+TypeScript interface
+  ↓
+React UI
+```
 
-## Cấu trúc repository
+The matching TypeScript types are in [`frontend/src/types/document.ts`](frontend/src/types/document.ts). The frontend communicates through [`frontend/src/services/api.ts`](frontend/src/services/api.ts); it does not read Python files or duplicate AI logic.
+
+## Repository layout
 
 ```text
 docai-pipeline-benchmark/
+├── frontend/                 # React + TypeScript + Vite web application
+│   ├── src/components/       # Small reusable UI pieces
+│   ├── src/pages/            # Home, Invoice, Contract, Research Lab
+│   ├── src/services/         # HTTP/API boundary
+│   ├── src/types/            # TypeScript API contract
+│   ├── src/App.tsx
+│   └── src/main.tsx
 ├── src/docai/
-│   ├── core/             # Shared contracts và config
-│   ├── data/             # Data layer
-│   ├── pipelines/        # track_a và track_b
-│   ├── fraud/            # Invoice risk và Contract risk
-│   ├── explainability/   # Evidence/explanation scaffold
-│   ├── evaluation/       # Research metrics/comparison
-│   ├── api/              # FastAPI backend
-│   └── dashboard/        # Plotly Dash frontend
-├── scripts/              # CLI entry points
-├── tests/                # Unit/integration tests
-├── data/                 # raw/interim/processed; chưa chứa dataset thật
-├── docs/
-│   ├── architecture/    # Architecture và data dictionary
-│   ├── concepts/        # Kỹ thuật nối với product/research
-│   ├── guides/          # Cách chạy và protocol
-│   ├── reports/         # Report scaffold, không phải benchmark result thật
-│   └── specs/           # Roadmap và task split
-├── modal_app/            # Modal scaffold
-├── log/                  # Progress log
+│   ├── api/                  # FastAPI backend
+│   ├── core/                 # Pydantic contracts/configuration
+│   ├── pipelines/            # Track A and Track B
+│   ├── data/                 # Data processing
+│   ├── fraud/                # Domain risk rules
+│   ├── explainability/       # Evidence scaffold
+│   └── evaluation/           # Research metrics/comparison
+├── scripts/                  # Python CLI entry points
+├── tests/                    # Unit and integration tests
+├── data/                     # raw/interim/processed data directories
+├── docs/                     # Architecture, concepts, guides, reports and specs
+├── modal_app/                # Modal infrastructure scaffold
+├── log/                      # Progress log
 ├── docker-compose.yml
-├── requirements.txt
+├── pyproject.toml
 └── README.md
 ```
 
-## Cách chạy local
+## Setup and run
+
+### Python backend
 
 ```bash
+python -m venv .venv
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 pip install -e .
-pytest
 uvicorn docai.api.main:app --host 0.0.0.0 --port 8000 --reload
-python -c "from docai.dashboard.app import create_dashboard_app; print(create_dashboard_app())"
-docker compose up --build
 ```
 
-`/health` là route có hành vi runtime; các route `/parse/classic`, `/parse/vlm`, `/compare` và `/explain` hiện trả `501 Not Implemented` vì orchestration/inference chưa hoàn thành. Dashboard hiện là layout scaffold, chưa có callbacks hoặc dữ liệu thật. Xem [`docs/guides/how-to-run.md`](docs/guides/how-to-run.md) để biết giới hạn từng lệnh.
+`/health` is the currently usable API route. The parse, compare and explain routes remain scaffold until pipeline orchestration is implemented.
 
-## Roadmap
+### React frontend
 
-Roadmap chi tiết và Definition of Done nằm trong [`docs/specs/implementation-guide.md`](docs/specs/implementation-guide.md). Trình tự product-first là:
-
-```text
-Data/input → shared schema → Track A / Track B
-→ Invoice capability + Contract capability
-→ FastAPI integration → Dash MVP
-→ domain risk + explainability
-→ end-to-end Product MVP
-→ Research benchmark → robustness / cost study
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-Product MVP cần ít nhất một đường chạy end-to-end thật cho upload, processing, structured output, basic risk và API/UI. Research Complete là milestone riêng và không được suy ra tự động từ Product MVP.
+The Vite development server runs on `http://localhost:5173` and proxies `/api` to FastAPI at `http://localhost:8000`. Build validation is `npm run build`.
 
-## Tài liệu tiếp theo
+### Tests
 
-- [System architecture](docs/architecture/architecture-explained.md)
-- [Repository structure](docs/architecture/repository-structure.md)
-- [Concept map](docs/concepts/README.md)
-- [Task split](docs/specs/task-split.md)
-- [Implementation guide và roadmap](docs/specs/implementation-guide.md)
-- [Progress log](log/progress-log.md)
+```bash
+pytest
+python -m compileall src scripts tests
+```
+
+## Research scope
+
+Research asks:
+
+> When Classic specialist processing and VLM-native processing serve the same Invoice and Contract product, how do they trade off accuracy, latency, robustness, explainability and cost?
+
+Invoice provides short, numeric and table-heavy documents. Contract provides long, legally worded documents with clause-level semantics. CUAD therefore has a dual role: it supports Contract Intelligence and provides ground truth for generalization research. It is not a secondary product afterthought.
+
+Research is complete only when both tracks have real outputs, ground truth, measured metrics, latency, robustness evidence and a reasoned cost measurement or estimate. No benchmark result in this repository should be read as real until that evidence exists.
+
+## Documentation path
+
+Start with [`docs/architecture/architecture-explained.md`](docs/architecture/architecture-explained.md), then follow [`docs/concepts/README.md`](docs/concepts/README.md). The implementation roadmap is in [`docs/specs/implementation-guide.md`](docs/specs/implementation-guide.md), responsibilities are in [`docs/specs/task-split.md`](docs/specs/task-split.md), and current status is in [`log/progress-log.md`](log/progress-log.md).
+
+## Scope boundaries
+
+This phase does not train or fine-tune models, download datasets, create fake benchmark outputs, build a production frontend, add authentication/database/microservices, or deploy to production. React, TypeScript and Vite are the frontend stack; FastAPI/Python remains the only business backend.

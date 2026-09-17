@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "docai"
 version = "0.1.0"
-description = "Document Intelligence platform for invoice and contract intelligence with FastAPI, Plotly Dash, classic and VLM processing backends, plus integrated research evaluation."
+description = "Document Intelligence platform for invoice and contract intelligence with a React frontend, FastAPI backend, classic and VLM processing backends, plus integrated research evaluation."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -31,10 +31,6 @@ api = [
     "fastapi>=0.110.0",
     "uvicorn[standard]>=0.28.0",
     "python-multipart>=0.0.9",
-]
-dashboard = [
-    "plotly>=5.19.0",
-    "dash>=2.16.0",
 ]
 
 [tool.setuptools.packages.find]
