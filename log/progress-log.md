@@ -38,9 +38,10 @@ Mục đích: ghi lại toàn bộ tiến độ dự án theo thời gian thực
 | 2026-09-17 15:25 | Review | A + B | Chuẩn hoá tiếng Việt có dấu, sửa Cursor rules, kiến trúc Plotly Dash và tái kiểm duyệt | review-report-2026-09-17.md, progress-log.md, .cursor/rules/*, docs/*, shared/*, track_* | Toàn bộ repo | Done | Chuẩn hoá tiếng Việt có dấu UTF-8 toàn repo, dọn dẹp Cursor rules, chốt Plotly Dash (loại bỏ Power BI), loại bỏ unused import, tái kiểm duyệt trung thực |
 | 2026-09-17 15:55 | Giai đoạn 2 | A + B | Tái cấu trúc repository sang kiến trúc chuẩn src/ layout (src/docai) | pyproject.toml, src/docai/*, scripts/*, tests/*, notebooks/01-eda.ipynb | Toàn bộ repo | Done | Đóng gói package docai (editable install), tách bạch src/scripts/tests/data/docs, chuyển logic EDA vào docai.data, chốt Plotly Dash, xóa legacy folders (shared, track_a_classic, track_b_vlm, api) |
 | 2026-09-17 16:15 | Giai đoạn 2 | A + B | Xây dựng bộ tài liệu giải thích kiến trúc, mô hình và thuật toán chuyên sâu | explanation-style.md, README.md, 01-docai-foundations.md, 02-track-a-classic.md, 03-track-b-vlm.md, 04-fraud-and-explainability.md, 05-evaluation.md | docs/concepts/* | Done | Hoàn thiện 7 tài liệu giải thích chi tiết theo quy chuẩn explanation-style, phân định 5 trạng thái minh bạch, neo file src/docai, không emoji, chốt Plotly Dash |
+| 2026-09-17 16:55 | Review | A + B | Audit toàn repository, đối chiếu source of truth và sửa các sai lệch nhỏ | README.md, task-split.md, docs/*, .cursor/rules/*, docker-compose.yml, src/docai/*, scripts/*, tests/* | Toàn bộ repo | Done | Đồng bộ path sau src/ layout, giữ trạng thái scaffold trung thực, loại fixed demo benchmark, sửa validation BoundingBox/config dashboard, xoá docs/specs/docai-task-split.md duplicate; không tải dataset, train model hoặc chạy benchmark thật |
 
 ## Giai đoạn hiện tại
-Giai đoạn 1 — Khảo sát & chuẩn bị dữ liệu thật (Chuẩn bị tải và tiền xử lý dữ liệu)
+Giai đoạn 1 — Khảo sát & chuẩn bị dữ liệu thật (Chưa tải dataset; package và scaffold đã sẵn sàng)
 
 ## Việc tiếp theo cần làm
 Tải 4 bộ dữ liệu về data/raw/ (mcocr2021, cord, sroie, cuad), thực hiện khảo sát thống kê cơ bản trong notebooks/01-eda.ipynb và scripts/run_eda.py, cập nhật số liệu thực nghiệm vào docs/architecture/data-dictionary.md.
