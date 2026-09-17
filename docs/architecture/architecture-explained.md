@@ -7,6 +7,8 @@ DocAI là sản phẩm Document Intelligence cho Invoice Intelligence và Contra
 ```text
 Người dùng mở React
   ↓ upload Invoice hoặc Contract
+Quality Check / Document Preprocessing nếu cần
+  ↓
 React gửi HTTP/REST/JSON tới FastAPI
   ↓
 FastAPI gọi pipeline DocAI
@@ -17,6 +19,24 @@ React hiển thị field, clause, risk flag và evidence
 ```
 
 Có thể hình dung frontend là quầy tiếp nhận, còn backend là căn bếp. Frontend nhận thao tác và hiển thị kết quả; backend mới thực hiện xử lý. React không chạy model và FastAPI là business backend duy nhất.
+
+## Chất lượng input và preprocessing
+
+Product nên có boundary chất lượng tài liệu trước hai track:
+
+```text
+Upload ảnh/PDF
+  ↓ kiểm tra loại file, kích thước, trang và chất lượng cơ bản
+Document/Image Preprocessing nếu cần
+  ↓
+Track A hoặc Track B
+  ↓
+UnifiedDocumentOutput
+```
+
+Document/Image Preprocessing cố cải thiện input: chỉnh hướng/deskew (làm trang nghiêng thẳng lại), crop, perspective correction (kéo bốn góc ảnh chụp xiên về hình chữ nhật), tăng contrast/brightness, giảm noise, sharpen hoặc resize. Các kỹ thuật cụ thể chưa được chốt; runtime layer hiện `PLANNED`.
+
+Phần này khác **Data Preprocessing** trong `src/docai/data/`: data preprocessing chuẩn bị dataset, annotation và tọa độ cho phân tích/model; document/image preprocessing xử lý tài liệu runtime người dùng upload. Không tạo `src/docai/preprocessing/` trong task audit này; nếu bắt đầu implement, nên cân nhắc tách layer đó khỏi data/EDA.
 
 ## Vai trò của từng phần
 
@@ -45,9 +65,11 @@ Inference là việc dùng model đã học để xử lý tài liệu mới. Ha
 
 ### Data, risk và research
 
-`src/docai/data/` nạp/làm sạch dữ liệu, không thuộc React. `src/docai/fraud/` chứa rule risk theo domain: Invoice Risk kiểm tra arithmetic/missing field/low confidence; Contract Risk đánh dấu clause cần review. Risk flag không phải bằng chứng fraud hay tư vấn pháp lý.
+`src/docai/data/` nạp/làm sạch dataset và có utility metadata/coordinate hiện tại, không thuộc React. `src/docai/fraud/` chứa rule risk theo domain: Invoice Risk kiểm tra arithmetic/missing field/low confidence; Contract Risk đánh dấu clause cần review. Risk flag không phải bằng chứng fraud hay tư vấn pháp lý.
 
 `src/docai/evaluation/` phục vụ Research, dùng ground truth thật để đo Precision, Recall, F1, latency, cost, robustness và agreement. Research tách khỏi luồng xử lý một tài liệu của product.
+
+Robustness Testing thuộc Research: cố tình làm input xấu bằng blur, rotation, brightness thấp, noise, watermark, crop hoặc perspective distortion rồi đo mức giảm F1/accuracy. Nó không phải bước làm sạch ảnh của product.
 
 ## Sơ đồ kiến trúc
 

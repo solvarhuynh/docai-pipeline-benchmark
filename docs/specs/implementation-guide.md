@@ -24,16 +24,17 @@ Research là milestone riêng, cần output thật của Track A/B, ground truth
 
 ## Roadmap
 
-1. **Input/data foundation:** quy định ảnh/PDF, preprocessing, raw/interim/processed và mapping dataset cho Invoice/Contract; giữ đúng semantics clause của CUAD.
+1. **Input/data foundation:** quy định ảnh/PDF, phân biệt data preprocessing với document/image preprocessing, raw/interim/processed và mapping dataset cho Invoice/Contract; giữ đúng semantics clause của CUAD.
 2. **Shared core contract:** duy trì package `src/docai`, config và Pydantic schema; không ép taxonomy Contract thành taxonomy Invoice.
 3. **Track A layout/OCR:** tích hợp layout model và OCR được duyệt, trả token/text/box qua interface. Hiện là `SCAFFOLD`.
 4. **Track A KIE:** triển khai document understanding, LayoutLMv3 hoặc lựa chọn tương đương, BIO, aggregation và checkpoint/inference test. Fine-tune là phase sau.
 5. **Track B VLM:** chọn model sau khi rõ requirement/deployment; làm input preparation, structured prompt, parser, schema validation, retry và latency logging.
 6. **Contract Intelligence/CUAD:** map metadata, clause category, text span và page evidence; ghi rõ taxonomy/context limit.
-7. **Risk/validation:** Invoice Risk kiểm tra arithmetic, missing field và confidence; Contract Risk đánh dấu clause thiếu/bất thường. Risk flag không phải kết luận fraud hay pháp lý.
-8. **Evidence/explainability:** Invoice dùng box/highlight/confidence; Contract dùng span/page/supporting passage. Attention/heatmap chỉ là diagnostic evidence.
-9. **Research evaluation:** dùng cùng workload/protocol, report riêng Invoice và Contract với Precision, Recall, F1, latency, robustness, evidence, cost và agreement.
-10. **Product integration:** nối FastAPI upload/orchestration/serialization/error handling với React pages và integration tests; hoàn thành một đường end-to-end trước khi mở rộng Research Lab.
+7. **Document quality và preprocessing:** Product Engineering kiểm tra input và có thể thêm orientation/deskew, crop/perspective, enhancement hoặc resize theo nhu cầu. Layer runtime hiện `PLANNED`; không triển khai thuật toán trong task audit.
+8. **Risk/validation:** Invoice Risk kiểm tra arithmetic, missing field và confidence; Contract Risk đánh dấu clause thiếu/bất thường. Risk flag không phải kết luận fraud hay pháp lý.
+9. **Evidence/explainability:** Invoice dùng box/highlight/confidence; Contract dùng span/page/supporting passage. Attention/heatmap chỉ là diagnostic evidence.
+10. **Research evaluation và Robustness Testing:** tạo clean/noisy protocol, đo degradation sau blur/rotation/noise/dark/watermark/crop/perspective và so sánh Track A/B. Đây là research, không phải preprocessing product.
+11. **Product integration:** nối FastAPI upload/orchestration/serialization/error handling với React pages và integration tests; hoàn thành một đường end-to-end trước khi mở rộng Research Lab.
 
 ## Trạng thái repository
 

@@ -102,7 +102,7 @@ src/docai/
 Ví dụ:
 
 - data loading;
-- preprocessing;
+- data preprocessing và document/image preprocessing (hai khái niệm phải tách riêng);
 - OCR/KIE/VLM wrappers;
 - schema;
 - fraud rules;
@@ -144,7 +144,7 @@ Notebook `.ipynb` được dùng để:
 Notebook không nên là nơi duy nhất chứa:
 
 - loader;
-- preprocessing;
+- data preprocessing và document/image preprocessing;
 - metric;
 - model wrapper;
 - reusable utility;

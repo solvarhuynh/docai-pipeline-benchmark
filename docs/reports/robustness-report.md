@@ -4,7 +4,16 @@
 
 ## Phạm vi và phép thử
 
-Đánh giá Track A/B trên Invoice và Contract bằng clean input và noisy variants có ground truth. Perturbation dự kiến gồm rotation, Gaussian blur, low light/contrast, watermark hoặc che khuất nhẹ.
+Đánh giá Track A/B trên Invoice và Contract bằng clean input và noisy variants có ground truth. Đây là Robustness Testing thuộc Research: cố tình làm input xấu để đo sức chịu đựng, không phải Document/Image Preprocessing của product.
+
+Tách riêng hai phép so sánh:
+
+```text
+Product: raw image → preprocessing nếu cần → pipeline
+Research: clean image → artificial degradation → pipeline → đo degradation
+```
+
+Perturbation dự kiến gồm rotation, Gaussian blur, low light/contrast, noise, watermark, crop và perspective distortion.
 
 ## Metrics
 

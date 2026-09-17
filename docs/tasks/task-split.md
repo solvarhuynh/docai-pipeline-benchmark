@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | Track A | Thành viên A | Pipeline AI/ML/DL cổ điển: layout, OCR, KIE và hỗ trợ đánh giá model. |
 | Track B | Thành viên B | Parsing bằng VLM, prompt, validate response và tích hợp model. |
-| Product Engineering | Hai thành viên phối hợp | FastAPI, React, API contract, risk/evidence và luồng end-to-end. |
-| Research & Evaluation | Hai thành viên cùng làm | Ground truth, protocol, metrics, robustness, latency và cost. |
+| Product Engineering | Hai thành viên phối hợp | FastAPI, React, API contract, document/image preprocessing, risk/evidence và luồng end-to-end. |
+| Research & Evaluation | Hai thành viên cùng làm | Ground truth, protocol, robustness testing, metrics, latency và cost. |
 
 Owner là người dẫn dắt và chuẩn bị bàn giao. Không thành viên nào tự đổi shared schema hoặc evaluation protocol mà không review với track còn lại.
 
@@ -23,6 +23,13 @@ Owner là người dẫn dắt và chuẩn bị bàn giao. Không thành viên n
 - Chỉ dùng `Implemented` hoặc `Baseline` khi có code và evidence; nếu chưa thì dùng `SCAFFOLD`, `PLANNED` hoặc `NOT SELECTED`.
 - Mỗi task phải cập nhật [`log/progress-log.md`](../../log/progress-log.md).
 - Không train, fine-tune, tải dataset, bịa metric hoặc deploy production nếu chưa có task được duyệt.
+
+## Phân biệt preprocessing và robustness testing
+
+- **Document/Image Preprocessing — Product Engineering:** kiểm tra và có thể cải thiện ảnh/PDF người dùng gửi trước Track A/B. Runtime layer hiện `PLANNED`; không đồng nghĩa với data preprocessing trong `src/docai/data/`.
+- **Robustness Testing — Research & Evaluation:** cố tình tạo blur, rotation, noise, brightness thấp, watermark, crop hoặc perspective distortion rồi đo mức suy giảm performance. Trạng thái hiện `PLANNED`.
+
+Preprocessing cố làm input tốt hơn; robustness testing cố làm input xấu hơn để đo hệ thống chịu được đến đâu. Hai phần có thể dùng chung một số kỹ thuật nhưng không được gộp thành một task.
 
 ## Ranh giới Product và Research
 

@@ -36,6 +36,24 @@ Luồng dự kiến là người dùng chọn Invoice hoặc Contract, upload t�
 
 Các trang không được tự tạo extraction result hoặc metric khi backend chưa trả dữ liệu thật.
 
+## Chất lượng tài liệu và Document/Image Preprocessing
+
+Tài liệu ngoài đời có thể là ảnh điện thoại bị nghiêng, tối, mờ, có bóng hoặc chụp xiên. Luồng product hướng tới việc kiểm tra chất lượng đầu vào trước khi gọi engine:
+
+```text
+Upload PDF/Image
+  ↓
+Document Quality Check
+  ↓
+Document/Image Preprocessing nếu cần
+  ↓
+Track A hoặc Track B
+  ↓
+UnifiedDocumentOutput
+```
+
+**Document/Image Preprocessing** là việc cố cải thiện tài liệu đầu vào để AI dễ đọc hơn, ví dụ orientation/deskew, crop, perspective correction, điều chỉnh contrast/brightness, denoise, sharpen hoặc resize. Đây khác với **Data Preprocessing**, là việc chuẩn bị dataset, annotation và train/test split cho code/model. Runtime preprocessing hiện chưa có pipeline riêng; trạng thái là `PLANNED` và chỉ nên chốt kỹ thuật sau khi có dữ liệu/thử nghiệm.
+
 ## Backend và hai engine
 
 ### FastAPI
@@ -50,6 +68,8 @@ Layout Detection → OCR → KIE / LayoutLMv3 → UnifiedDocumentOutput
 
 Track A có thể dùng nhiều specialist model cho layout, OCR và document understanding, sau đó mapping riêng cho Invoice/Contract. Model/checkpoint production chưa được chọn.
 
+Track A có thể nhạy hơn với chất lượng ảnh vì OCR/layout detector phụ thuộc vào chữ và biên vùng rõ ràng. Đây là giả thuyết cần Robustness Testing kiểm chứng, không phải kết luận sẵn.
+
 ### Track B — pipeline VLM-native
 
 ```text
@@ -57,6 +77,8 @@ Document → VLM → structured prompt/response → parse → schema validation
 ```
 
 Track B phụ trách input preparation, prompt, structured parsing, validation, retry và batching. VLM cụ thể chưa được chọn.
+
+Một VLM có thể chịu một số loại noise tốt hơn hoặc kém hơn Track A tùy model. Không suy ra ưu thế từ kiến trúc; cần đo trên cùng protocol.
 
 ## Contract giữa backend và frontend
 
@@ -123,6 +145,16 @@ Research trả lời câu hỏi: khi Classic specialist pipeline và VLM-native 
 Invoice có tài liệu ngắn, nhiều số và bảng. Contract có văn bản dài, ngôn ngữ pháp lý và clause phức tạp. CUAD có thể phục vụ cả Contract product và research ground truth.
 
 Research chỉ hoàn thành khi có output thật, ground truth, metric, latency, robustness evidence và cost có căn cứ. Không đọc report scaffold như kết quả thật.
+
+### Robustness Testing
+
+Robustness Testing thuộc Research, không phải preprocessing của product. Test cố tình làm input xấu đi bằng blur, rotation, giảm brightness/contrast, noise, watermark, crop hoặc perspective distortion, rồi đo performance degradation như F1 giảm bao nhiêu:
+
+```text
+Ảnh sạch → Artificial Degradation → Track A/B → so sánh performance degradation
+```
+
+Nói ngắn gọn: preprocessing cố làm input tốt hơn; robustness test cố làm input xấu hơn để xem hệ thống chịu được đến đâu. Câu hỏi nghiên cứu phụ là: preprocessing có cải thiện Track A và Track B giống nhau không?
 
 ## Tài liệu nên đọc
 
