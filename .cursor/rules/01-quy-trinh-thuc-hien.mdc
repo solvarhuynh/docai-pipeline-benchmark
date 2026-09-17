@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Trước khi bắt đầu
 
-1. Đọc kỹ các tài liệu tham chiếu: `README.md`, `docs/specs/implementation-guide.md`, `task-split.md` và `log/progress-log.md`.
+1. Đọc kỹ các tài liệu tham chiếu: `README.md`, `docs/specs/implementation-guide.md`, `docs/specs/task-split.md` và `log/progress-log.md`.
 2. Xác định rõ mục tiêu task, nhánh phụ trách (Nhánh A: Hạ tầng/Dữ liệu/Sản phẩm hoá, hoặc Nhánh B: Mô hình/Đánh giá/Nghiên cứu), input, output canonical, kiểm tra cần chạy và điều kiện dừng (Definition of Done).
 3. Sử dụng file/thư mục hiện có theo đúng cấu trúc chuẩn. Tuyệt đối không tạo bản song song (như `final2`, `copy`, `latest`, `backup`).
 4. Mọi thay đổi với `src/docai/core/schema.py`, tiêu chí đánh giá hoặc phạm vi 10 giai đoạn phải được đối chiếu và thống nhất giữa hai nhánh.

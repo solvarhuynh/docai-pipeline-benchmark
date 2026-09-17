@@ -2,7 +2,7 @@
 Module tính toán chỉ số đánh giá thực nghiệm (Evaluation Metrics).
 
 Thuộc: Giai đoạn 4, 5, 6, 9 (Đánh giá benchmark và so sánh 2 track).
-Tham chiếu: docs/specs/implementation-guide.md; task-split.md.
+Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md.
 
 Mục đích:
 Cung cấp các công thức tính toán chỉ số khách quan:

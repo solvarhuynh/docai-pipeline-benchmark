@@ -2,7 +2,7 @@
 Module động cơ kiểm tra gian lận và cảnh báo rủi ro (Fraud & Risk Engine).
 
 Thuộc: Giai đoạn 7 (Fraud/Risk Engine).
-Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 7; task-split.md, Giai đoạn 7.
+Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 7.
 
 Mục đích:
 Kết hợp AI trích xuất với luật logic nghiệp vụ để phát hiện rủi ro:

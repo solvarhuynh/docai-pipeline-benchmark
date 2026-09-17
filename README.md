@@ -134,7 +134,9 @@ docai-dual-pipeline-benchmark/
 ├── pyproject.toml
 ├── requirements.txt
 ├── docker-compose.yml
-├── task-split.md
+├── docs/
+│   └── specs/
+│       └── task-split.md
 ├── README.md
 │
 ├── src/                               # Mã nguồn Python chính (package docai)

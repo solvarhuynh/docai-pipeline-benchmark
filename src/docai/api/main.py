@@ -2,7 +2,7 @@
 FastAPI Service cho DocAI Document Intelligence Platform.
 
 Thuộc: Giai đoạn 10 (FastAPI Service & Tài liệu hoá).
-Tham chiếu: docs/specs/implementation-guide.md, Giai đoạn 10; task-split.md, Giai đoạn 10.
+Tham chiếu: docs/specs/implementation-guide.md và docs/specs/task-split.md, Giai đoạn 10.
 
 Mục đích:
 Cung cấp các REST API endpoint để đưa vào sử dụng thực tế hoặc kiểm thử local:
