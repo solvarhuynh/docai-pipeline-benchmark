@@ -11,7 +11,6 @@ alwaysApply: false
 - Tuân thủ kiến trúc `src/ layout`: Toàn bộ mã nguồn nằm dưới `src/docai/`, import bằng namespace `docai.*` (ví dụ: `from docai.core.schema import ...`). Tuyệt đối không dùng các thủ thuật `sys.path.append(...)` hoặc `sys.path.insert(...)`.
 - Không để lại print debug bừa bãi, mã nguồn chết, import thừa (unused import) hoặc đường dẫn tuyệt đối gắn cứng vào máy cá nhân.
 - Tuyệt đối không để rò rỉ dữ liệu tập kiểm thử (test set) vào tập fine-tune LayoutLMv3 hoặc prompt của VLM.
-- Stack trực quan hoá và Dashboard mặc định: Sử dụng `Python → pandas → Plotly → Dash`. Tuyệt đối không sử dụng Power BI, không tạo file .pbix, không thêm dependency hoặc workflow liên quan Power BI.
+- Frontend chính thức là `React + TypeScript + Vite`. Python chỉ cung cấp backend FastAPI và pipeline/data logic. Nếu cần biểu đồ trong frontend, dùng thư viện JavaScript phù hợp (Plotly.js chỉ là chart library, không phải framework). Không khôi phục legacy Python UI framework, Power BI hoặc file `.pbix` khi chưa có requirement.
 - Không nạp dữ liệu thô hoặc trọng số mô hình lớn vào Git; tải và lưu trữ thông qua cấu hình tập trung hoặc Modal Volume.
 - Trước khi commit, chạy tối thiểu kiểm tra cú pháp `python -m py_compile` cho tất cả các file Python bị tác động.
-
