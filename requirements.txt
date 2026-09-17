@@ -1,0 +1,36 @@
+# DocAI Dual-Pipeline Benchmark Dependencies
+
+# Web API and Validation
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+python-multipart>=0.0.9
+
+# Track A - Classic Pipeline
+ultralytics>=8.1.0
+paddleocr>=2.7.0
+paddlepaddle>=2.6.0
+transformers>=4.38.0
+torch>=2.2.0
+torchvision>=0.17.0
+seqeval>=1.2.2
+
+# Track B - VLM Native & Cloud Inference
+modal>=0.62.0
+accelerate>=0.28.0
+
+# Computer Vision and Image Processing
+pillow>=10.2.0
+opencv-python-headless>=4.9.0.80
+
+# Data Science & EDA
+numpy>=1.26.0
+pandas>=2.2.0
+matplotlib>=3.8.0
+jupyter>=1.0.0
+
+# Visualization & Dashboard (Plotly Dash)
+plotly>=5.19.0
+dash>=2.16.0
+
+

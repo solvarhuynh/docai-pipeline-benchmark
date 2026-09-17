@@ -1,0 +1,33 @@
+---
+description: Quy trình bắt buộc khi thực hiện task trong dự án DocAI Dual-Pipeline Benchmark.
+alwaysApply: true
+---
+
+# Quy trình thực hiện task
+
+## Trước khi bắt đầu
+
+1. Đọc kỹ các tài liệu tham chiếu: `README.md`, `docs/specs/implementation-guide.md`, `task-split.md` và `log/progress-log.md`.
+2. Xác định rõ mục tiêu task, nhánh phụ trách (Nhánh A: Hạ tầng/Dữ liệu/Sản phẩm hoá, hoặc Nhánh B: Mô hình/Đánh giá/Nghiên cứu), input, output canonical, kiểm tra cần chạy và điều kiện dừng (Definition of Done).
+3. Sử dụng file/thư mục hiện có theo đúng cấu trúc chuẩn. Tuyệt đối không tạo bản song song (như `final2`, `copy`, `latest`, `backup`).
+4. Mọi thay đổi với `shared/schema.py`, tiêu chí đánh giá hoặc phạm vi 10 giai đoạn phải được đối chiếu và thống nhất giữa hai nhánh.
+
+## Khi giao việc cho AI
+
+Prompt phải nêu rõ: tài liệu tham chiếu, việc cần làm, phạm vi không được thay đổi, output/đường dẫn mong đợi, cách kiểm tra PASS và điều kiện dừng.
+
+Một prompt chỉ làm một task kỹ thuật cụ thể. Không tự suy diễn rằng làm scaffold được phép train model, hoặc sửa docs được phép thay đổi schema/data.
+
+## Trong khi làm
+
+- Không bịa số liệu thực nghiệm, metric (F1, latency), chi phí GPU hoặc kết quả chạy khi chưa thực hiện thật.
+- Không dùng dữ liệu kiểm thử (test set) để tinh chỉnh threshold hay chọn mô hình.
+- Ưu tiên mã nguồn độc lập, tái lập được trong các module (`track_a_classic/`, `track_b_vlm/`, `shared/`, `api/`); notebook chỉ dùng cho khảo sát EDA và phân tích trực quan.
+- Không sửa file ngoài phạm vi task. Nếu phát hiện vấn đề phát sinh, ghi nhận vào `log/progress-log.md` ở mục việc tiếp theo.
+
+## Sau khi làm
+
+1. Kiểm tra lại đường dẫn file, tính nhất quán schema và loại bỏ file thừa/orphan.
+2. Chạy kiểm tra kỹ thuật phù hợp (static check, compile, unit test). Không tuyên bố task chạy được nếu chưa có bằng chứng kiểm tra.
+3. Cập nhật `log/progress-log.md` ngay sau mỗi task hoàn thành, ghi rõ nhánh phụ trách (A/B), file tác động và ghi chú thực tế.
+4. Báo cáo ngắn gọn: công việc đã làm, kiểm tra nào PASS/FAIL, file nào thay đổi, tồn đọng và bước tiếp theo.

@@ -1,0 +1,20 @@
+---
+description: Quy tắc quản lý file canonical, dọn dẹp và ghi nhận nhật ký tiến độ dự án.
+alwaysApply: true
+---
+
+# Quản lý file và nhật ký tiến độ
+
+- Trước khi tạo file/thư mục mới, đối chiếu với cấu trúc chuẩn trong `docs/specs/implementation-guide.md`.
+- Cập nhật file hiện có nếu cùng mục đích. Nếu phải thay thế, xóa file lỗi thời trong cùng thay đổi và cập nhật mọi liên kết tham chiếu.
+- Tuyệt đối không đặt tên file dạng `final2`, `new`, `latest`, `copy`, `backup`, `temp`, `test_ok` hoặc tên không thể hiện rõ vai trò.
+- Không tạo thư mục trống để dành (ngoại trừ `.gitkeep` tại `data/raw/` và `data/processed/` theo thiết kế).
+- Artifact dữ liệu và checkpoint mô hình lớn phải lưu tại `data/` hoặc `models/` và tuân thủ `.gitignore`, không đưa vào Git.
+- Tuyệt đối không commit raw data, checkpoint nhị phân lớn, secret token, credential Modal hoặc log terminal dài vào repository.
+
+## Nhật ký tiến độ bắt buộc
+
+- Toàn bộ tiến độ dự án được ghi nhận tập trung và duy nhất tại file canonical: `log/progress-log.md`.
+- Thêm một dòng mới sau mỗi task hoàn thành, bao gồm: Thời gian thực tế, Giai đoạn, Nhánh phụ trách (A/B), Việc đã làm, File đã tạo/sửa, Đường dẫn, Trạng thái (Done/Pending), Ghi chú thực tế.
+- Không xóa, không ghi đè lịch sử cũ trong bảng tiến độ.
+- Luôn cập nhật mục "Giai đoạn hiện tại" và "Việc tiếp theo cần làm" phản ánh chính xác trạng thái mới nhất của repository.

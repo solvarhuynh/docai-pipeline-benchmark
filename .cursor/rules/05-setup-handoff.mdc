@@ -1,0 +1,12 @@
+---
+description: Hướng dẫn thiết lập môi trường và bàn giao mã nguồn trong dự án.
+alwaysApply: true
+---
+
+# Thiết lập và bàn giao mã nguồn
+
+- Tài liệu hướng dẫn cài đặt và vận hành canonical duy nhất của dự án là `docs/guides/how-to-run.md`.
+- Khi tạo mới hoặc chỉnh sửa pipeline, endpoint API, script Modal hoặc notebook mà người khác cần chạy, phải cập nhật tài liệu hướng dẫn tương ứng trong `docs/guides/` hoặc `docs/architecture/`.
+- Hướng dẫn phải ghi rõ: mục đích, yêu cầu tiên quyết (prerequisites), lệnh chạy cụ thể, input/output, và giới hạn/tồn đọng hiện tại.
+- Chỉ ghi các lệnh đã tồn tại và đã được kiểm chứng tính khả thi; các phần chưa triển khai phải ghi rõ `PENDING`, `SCAFFOLD` hoặc `CHƯA TRIỂN KHAI`, tuyệt đối không bịa lệnh hoặc output mẫu giả mạo.
+- Không tạo các file hướng dẫn trùng lặp hoặc cạnh tranh như `setup_new.md`, `quickstart2.md`; mọi bổ sung phải được cập nhật trực tiếp vào các tài liệu chuẩn trong `docs/`.

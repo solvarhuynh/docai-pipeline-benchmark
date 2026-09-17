@@ -1,0 +1,27 @@
+---
+description: Quy tắc kiểm tra chất lượng, Git commit và review trong dự án.
+alwaysApply: true
+---
+
+# Kiểm tra chất lượng, Git và review
+
+## Tiêu chuẩn chất lượng (Quality gate)
+
+- Chạy kiểm tra phù hợp trước khi commit:
+  - Tài liệu Markdown: Kiểm tra liên kết, định dạng không dùng icon/emoji, sử dụng tiếng Việt có dấu chuẩn UTF-8.
+  - Python: Kiểm tra cú pháp bằng `python -m py_compile`, kiểm tra import và kiểu dữ liệu Pydantic.
+  - Cấu hình hạ tầng: Kiểm tra tính hợp lệ cú pháp của `docker-compose.yml` và `requirements.txt`.
+- Nếu không thể chạy kiểm tra runtime (ví dụ chưa nạp dữ liệu thật hoặc chưa kết nối GPU), ghi rõ trạng thái `PENDING` hoặc `SCAFFOLD` trong log; tuyệt đối không tuyên bố PASS runtime khi mới chỉ chạy static check.
+- Kiểm tra `git status` và `git diff` trước khi commit để tránh đưa file tạm, dữ liệu thô, model weights hoặc credential vào Git.
+
+## Quy tắc Git và Commit
+
+1. Làm việc trên nhánh tính năng hoặc nhánh công việc tương ứng theo phân chia (Nhánh A / Nhánh B trong `task-split.md`).
+2. Stage từng đường dẫn cụ thể, tránh `git add .` bừa bãi.
+3. Commit thông điệp rõ ràng theo chuẩn: `feat(scope)`, `fix(scope)`, `docs(scope)`, `refactor(scope)`, `test(scope)`, `chore(scope)`.
+4. Mỗi commit hoàn thành phải đồng bộ với một dòng ghi nhận trong `log/progress-log.md`.
+
+## Kiểm duyệt và Review
+
+- Mọi thay đổi liên quan đến schema dùng chung (`shared/schema.py`), pipeline chính hoặc báo cáo benchmark cần được rà soát chéo giữa hai nhánh trước khi chốt.
+- Báo cáo kiểm duyệt phải phân định rõ ràng giữa kiểm tra tĩnh (static check PASS) và kiểm tra chức năng runtime.

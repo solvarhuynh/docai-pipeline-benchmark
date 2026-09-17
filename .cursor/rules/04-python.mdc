@@ -1,0 +1,16 @@
+---
+description: Quy ước phát triển Python cho pipeline Document AI, mô hình và dịch vụ API.
+globs: **/*.py
+alwaysApply: false
+---
+
+# Quy ước Python cho DocAI Benchmark
+
+- Mỗi module/hàm công khai (public) phải có docstring tiếng Việt có dấu chuẩn, ghi rõ thuộc giai đoạn nào trong `docs/specs/implementation-guide.md`, input/output mong đợi và các bước xử lý (hoặc TODO chi tiết nếu là scaffold).
+- Type hint đầy đủ, sử dụng các model Pydantic từ `shared/schema.py` khi trao đổi dữ liệu đầu ra giữa các track.
+- Không để lại print debug bừa bãi, mã nguồn chết, import thừa (unused import) hoặc đường dẫn tuyệt đối gắn cứng vào máy cá nhân.
+- Tuyệt đối không để rò rỉ dữ liệu tập kiểm thử (test set) vào tập fine-tune LayoutLMv3 hoặc prompt của VLM.
+- Stack trực quan hoá và Dashboard mặc định: Sử dụng `Python → pandas → Plotly → Dash`. Tuyệt đối không sử dụng Power BI, không tạo file .pbix, không thêm dependency hoặc workflow liên quan Power BI.
+- Không nạp dữ liệu thô hoặc trọng số mô hình lớn vào Git; tải và lưu trữ thông qua cấu hình tập trung hoặc Modal Volume.
+- Trước khi commit, chạy tối thiểu kiểm tra cú pháp `python -m py_compile` cho tất cả các file Python bị tác động.
+
