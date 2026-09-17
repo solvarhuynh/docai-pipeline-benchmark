@@ -1,231 +1,242 @@
 # DocAI Document Intelligence Platform
 
-> Dual-Pipeline Product & Research Benchmark
+> Invoice + Contract Intelligence với FastAPI, Plotly Dash và dual-pipeline research
 
-Repository này xây dựng một sản phẩm Document Intelligence có khả năng tiếp nhận tài liệu thật, trích xuất dữ liệu có cấu trúc, kiểm tra rủi ro, cung cấp API và giao diện trực quan. Hai processing engine độc lập — Track A Classic và Track B VLM-native — là thành phần bên trong sản phẩm, đồng thời tạo nền cho phần nghiên cứu/benchmark.
+DocAI là nền tảng Document Intelligence hướng tới hai product domain:
 
-Tên repository kỹ thuật vẫn có thể giữ là `docai-pipeline-benchmark`; thay đổi ở đây là định vị sản phẩm, không phải rename Git remote.
+- **Invoice Intelligence**: trích xuất dữ liệu có cấu trúc từ hóa đơn/biên lai, kiểm tra tính nhất quán và gắn cờ rủi ro.
+- **Contract Intelligence**: trích xuất metadata/clauses/law từ hợp đồng, phát hiện thiếu điều khoản và hỗ trợ rà soát rủi ro.
 
-## 1. Product definition và use case chính
+Sản phẩm cung cấp REST API bằng **FastAPI** và giao diện web tương tác bằng **Plotly Dash**. Bên trong processing layer có hai engine: **Track A Classic** và **Track B VLM-native**. Hai engine phục vụ product flow ở mức phù hợp với khả năng thực tế, đồng thời tạo nền tảng cho research benchmark trên Invoice và Contract.
 
-Use case ưu tiên của Product MVP là **Invoice / Receipt Document Intelligence**:
+Repository/Git remote hiện tại có thể tiếp tục dùng tên kỹ thuật `docai-pipeline-benchmark`; không tự động rename repository hoặc remote. Display name được định hướng là **DocAI Document Intelligence Platform** để nhấn mạnh giá trị sản phẩm.
 
-```text
-Upload PDF hoặc Image hóa đơn/biên lai
-        ↓
-Validate và chuẩn hoá input
-        ↓
-Chọn processing engine Track A hoặc Track B
-        ↓
-UnifiedDocumentOutput
-        ↓
-Validation + Fraud/Risk baseline
-        ↓
-Confidence và bằng chứng vùng ảnh khi khả dụng
-        ↓
-FastAPI + Plotly Dash
-```
+## Sản phẩm giải quyết gì?
 
-Người dùng cần hình dung được việc upload hóa đơn, nhận JSON chuẩn hoá, xem field/confidence, phát hiện các inconsistency rõ ràng và xem hoặc tải kết quả. Contract/CUAD không bị loại bỏ; đây là extension để nghiên cứu khả năng tổng quát hoá sang tài liệu pháp lý dài và khác biệt.
-
-## 2. Product MVP và trạng thái hiện tại
-
-Product MVP về mặt mục tiêu gồm:
-
-- nhận một tài liệu hóa đơn/biên lai;
-- trả structured output theo schema chung;
-- chạy validation và các risk rule cơ bản;
-- cung cấp kết quả qua API và hiển thị qua Dash.
-
-Hiện tại Product MVP **chưa hoàn thành end-to-end**. Schema, data layer, fraud baseline, API routes và Dash layout đã có; các model inference, API orchestration, Dashboard callbacks và output thật vẫn là `SCAFFOLD` hoặc `DỰ KIẾN`.
-
-## 3. Điểm khác biệt
-
-Product value của repository gồm:
-
-- End-to-end document processing cho invoice/receipt theo lộ trình.
-- Unified output contract để các engine và consumer dùng cùng cấu trúc dữ liệu.
-- Validation và Fraud/Risk baseline giúp kết quả có kiểm soát nghiệp vụ.
-- Explainability hướng tới việc cho người dùng biết field được lấy từ vùng nào hoặc vì sao risk flag được kích hoạt.
-- FastAPI và Plotly Dash làm giao diện tích hợp của sản phẩm.
-- Hai processing engine cho phép nghiên cứu trade-off mà không biến chúng thành hai sản phẩm riêng.
-
-## 4. Research component
-
-Phần research dùng cùng `UnifiedDocumentOutput` của Product để trả lời câu hỏi:
-
-> Khi cùng phục vụ một hệ thống Document AI thực tế, pipeline Classic modular và pipeline VLM-native đánh đổi như thế nào về độ chính xác, latency, robustness, explainability và cost?
-
-Research flow:
+Luồng sản phẩm mục tiêu:
 
 ```text
-Track A ─┐
-         ├→ Evaluation / Benchmark / Robustness / Cost Analysis
-Track B ─┘
-                         ↓
-                  Research reports
+USER
+  ↓
+PLOTLY DASH — Frontend / User Interface
+  ↓
+FASTAPI — Backend / REST API
+  ↓
+Document input → processing engine → UnifiedDocumentOutput
+  ↓
+Domain validation / risk → explainability → result review
 ```
 
-Benchmark là quality/research layer của sản phẩm, không phải identity duy nhất của repository. Research Complete chỉ được xác nhận khi có output thật của hai track, ground truth, evaluation, latency, cost và robustness thực nghiệm.
+Người dùng có thể chọn loại tài liệu Invoice hoặc Contract, upload tài liệu, nhận kết quả có cấu trúc, xem bằng chứng trích xuất và các cảnh báo cần được con người xem xét. Product MVP không yêu cầu Research Lab hoàn thành trước.
 
-## 5. Kiến trúc tổng quan
+### Product Capabilities và trạng thái
 
-### Product Architecture
+- **Invoice Intelligence — BASELINE / SCAFFOLD**: schema `invoice`/`receipt`, các rule kiểm tra tổng tiền và confidence đã có; pipeline inference và đường chạy end-to-end còn scaffold.
+- **Contract Intelligence — BASELINE / SCAFFOLD**: schema envelope hỗ trợ `contract`, rule phát hiện thiếu clause đã có; taxonomy CUAD đầy đủ, extraction và UI end-to-end còn scaffold/planned.
+- **Risk Analysis — BASELINE**: `src/docai/fraud/rules.py` có invoice arithmetic/confidence checks và contract missing-clause checks. Đây là risk flagging, không phải kết luận gian lận hay kết luận pháp lý.
+- **Explainability — SCAFFOLD**: interface cho bounding box, text/clause evidence, attention/grounding; implementation heatmap chưa hoàn thành.
+- **FastAPI REST API — SCAFFOLD**: route và response contract đã định nghĩa; parse/compare/explain hiện chưa điều phối pipeline thật.
+- **Plotly Dash — SCAFFOLD**: layout và các workspace/tab định hướng đã có; callbacks và dữ liệu thật chưa có.
+- **Dual processing engine — SCAFFOLD**: interface Track A/Track B đã có; model inference thực tế chưa chạy trong repository hiện tại.
+
+## Hai product workspace
+
+### Invoice Workspace
+
+Luồng mục tiêu là:
 
 ```text
-Người dùng / hệ thống bên ngoài
-          ↓
-Upload PDF / Image
-          ↓
-Document Input & Validation
-          ↓
-Document Processing Engine
-       ┌──┴──┐
-       ↓     ↓
-   Track A  Track B
-       └──┬──┘
-          ↓
-UnifiedDocumentOutput
-          ↓
-Validation → Fraud/Risk → Explainability khi khả dụng
-          ↓
-FastAPI → Plotly Dash
+Upload invoice / receipt
+  → document processing
+  → fields + confidence + bounding boxes
+  → arithmetic / missing-field / low-confidence risk flags
+  → structured JSON và explainability
 ```
 
-### Research Architecture
+Các field chỉ được dùng khi schema/dataset thực tế hỗ trợ, chẳng hạn `seller_name`, `invoice_date`, `subtotal_amount`, `tax_amount`, `total_amount` và `line_items`.
 
-Hai track có thể được chạy trên cùng input và cùng output contract để đo F1/Precision/Recall, latency, cost, robustness và explainability. Endpoint `/compare` và các báo cáo benchmark là research/analysis capability; các endpoint `/parse/*` là hướng product processing.
+### Contract Workspace
 
-## 6. Nguồn dữ liệu
+Luồng mục tiêu là:
 
-Phạm vi dữ liệu dự kiến của dự án gồm các bộ dữ liệu thật, công khai, có bản quyền rõ ràng; hiện chưa tải dataset và không sử dụng dữ liệu tự sinh cho phần đánh giá chính:
-
-| Bộ dữ liệu | Loại tài liệu | Quy mô | Vai trò |
-|---|---|---|---|
-| mcocr2021 | Hóa đơn/biên lai Việt Nam | Ảnh chụp thật, có nhãn | Nguồn chính, khớp bối cảnh Việt Nam |
-| CORD | Biên lai | Chuẩn quốc tế, có ground truth field-level | Đối chiếu benchmark |
-| SROIE (ICDAR2019) | Hóa đơn scan | 626 mẫu train, 347 test | Đối chiếu benchmark OCR + IE |
-| CUAD | Hợp đồng pháp lý thật | 510 hợp đồng, hơn 13.000 điều khoản do luật sư gán nhãn | Kiểm tra tổng quát hoá sang loại tài liệu khác |
-
-## 7. Công nghệ sử dụng
-
-| Hạng mục | Công cụ |
-|---|---|
-| Layout Detection (Track A) | YOLOv8-doc / DocLayout-YOLO (pretrained) |
-| OCR (Track A) | PaddleOCR |
-| KIE (Track A) | LayoutLMv3 (fine-tune subset nhỏ) |
-| VLM-native (Track B) | PaddleOCR-VL / dots.ocr (pretrained) |
-| Explainability | Attention weights (LayoutLMv3), Grad-CAM / visual grounding |
-| Compute | Modal (GPU serverless, free credit hàng tháng) |
-| API | FastAPI, đóng gói Docker cho dev local |
-| Dashboard & Trực quan hoá | Plotly Dash (Python → pandas → Plotly → Dash) |
-| Quản lý mã nguồn & tài liệu | Git/GitHub, log tiến độ trong log/progress-log.md |
-
-
-## 8. Cấu trúc repo (`src/ layout`)
-
-Repository được tổ chức theo kiến trúc chuẩn `src/ layout`, phân định rõ ràng giữa mã nguồn đóng gói, entry point CLI, notebook khám phá, kiểm thử tự động, dữ liệu và tài liệu kỹ thuật:
-
+```text
+Upload contract
+  → document processing
+  → metadata + clause spans
+  → missing-clause / clause-risk flags
+  → structured JSON và supporting passages
 ```
-docai-dual-pipeline-benchmark/
-├── .cursor/
-│   └── rules/
-├── .gitignore
-├── pyproject.toml
-├── requirements.txt
-├── docker-compose.yml
+
+Các thông tin có thể bao gồm parties, effective date, termination, governing law, confidentiality, liability và các clause quan trọng. Taxonomy cụ thể phải bám schema/dataset; phần chưa có implementation được ghi là `SCAFFOLD` hoặc `PLANNED`. Hệ thống hỗ trợ information extraction, document review và decision support; không thay luật sư và không đưa ra tư vấn pháp lý chắc chắn.
+
+## Product và Research khác nhau thế nào?
+
+Product dùng một engine đã chọn để xử lý một tài liệu và trả kết quả cho người dùng. Research Lab là khu vực riêng trong frontend, dùng khi cần chạy hai engine trên cùng input/ground truth để đo:
+
+- accuracy, Precision/Recall/F1;
+- latency;
+- robustness trên tài liệu clean/noisy;
+- explainability evidence;
+- cost hoặc estimate có căn cứ;
+- agreement/disagreement giữa hai engine.
+
+Research question chính:
+
+> Khi cùng phục vụ một sản phẩm Document Intelligence cho hóa đơn và hợp đồng, pipeline Classic modular và pipeline VLM-native đánh đổi như thế nào về accuracy, latency, robustness, explainability và cost?
+
+Invoice và Contract tạo ra hai điều kiện khác nhau: Invoice thường ngắn, nhiều con số, bảng biểu và field tương đối rõ; Contract thường dài, giàu ngôn ngữ pháp lý, clause và quan hệ ngữ nghĩa phức tạp. Vì vậy CUAD có vai trò kép: hỗ trợ Contract Information Extraction/Clause Detection/Risk Analysis trong product và cung cấp dữ liệu cho generalization research. CUAD không phải dataset phụ bị hạ vai trò, nhưng cũng không được dùng để tuyên bố đã có capability khi code chưa triển khai.
+
+Research milestone chỉ được gọi là hoàn thành khi có output thật từ cả hai track, ground truth, metrics, latency, robustness và cost measurement/estimate có căn cứ. Repository hiện chưa có benchmark thật và không dùng mock result để thay thế.
+
+## Kiến trúc tổng quan
+
+```text
+                    USER
+                      │
+                      ▼
+              PLOTLY DASH
+                Frontend
+                      │
+                      ▼
+                 FASTAPI
+                  Backend
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+          ▼                       ▼
+ Invoice Intelligence     Contract Intelligence
+          │                       │
+          └───────────┬───────────┘
+                      │
+               Processing Layer
+                      │
+             ┌────────┴────────┐
+             │                 │
+          Track A           Track B
+          Classic          VLM-native
+             │                 │
+             └────────┬────────┘
+                      │
+            UnifiedDocumentOutput
+                      │
+             Validation / Risk
+                      │
+               Explainability
+
+Research/Evaluation chạy song song:
+
+Track A output ─┐
+                ├→ Evaluation → accuracy / latency / robustness / cost
+Track B output ─┘
+```
+
+Vai trò module:
+
+- `src/docai/api/` — **Backend** FastAPI: request validation, upload interface, pipeline invocation, serialization và error handling. Route không chứa model implementation.
+- `src/docai/dashboard/` — **Frontend** Plotly Dash: Invoice Workspace, Contract Workspace và Research Lab. UI đọc output chuẩn hoá; không copy processing logic.
+- `src/docai/core/` — shared contracts/configuration.
+- `src/docai/pipelines/` — Track A và Track B processing engines.
+- `src/docai/data/` — data ingestion, preprocessing và statistics.
+- `src/docai/fraud/` — domain-specific validation/risk rules.
+- `src/docai/explainability/` — evidence/explanation layer.
+- `src/docai/evaluation/` — research metrics và comparison orchestration.
+
+### Unified schema
+
+[`src/docai/core/schema.py`](src/docai/core/schema.py) hiện là một shared envelope tối thiểu gồm `document_type`, `fields`, confidence, optional `bounding_box`, `risk_flags`, execution metadata và pipeline metadata. Envelope này không ép Contract vào schema Invoice: field names/values có thể khác theo domain. Taxonomy Contract chi tiết hơn sẽ được bổ sung sau khi schema/dataset mapping được chốt; task hiện tại không thiết kế một schema lớn mới.
+
+Backend, Dash và Evaluation phải phụ thuộc vào contract này thay vì output tùy tiện của từng model.
+
+## Hai processing engine
+
+### Track A — Classic Document AI Pipeline
+
+```text
+Layout Detection → OCR → KIE / LayoutLMv3 → UnifiedDocumentOutput
+```
+
+Đây là khu vực AI/ML/DL chuyên sâu, phù hợp cho layout detection, OCR, BIO tagging, fine-tuning và phân tích lỗi từng chặng. Model/checkpoint cụ thể vẫn chưa được chốt; các class hiện tại là scaffold.
+
+### Track B — VLM-native Document AI Pipeline
+
+```text
+Document → VLM → structured prompt/response → parsing → schema validation
+```
+
+Đây là khu vực VLM và integration: input preparation, prompt, structured output, parsing, validation, retry/error handling và batch processing. Model cụ thể cho Track B chưa được chốt; không tự chọn checkpoint mới trong task này.
+
+Cả hai track là processing backend dùng chung cho Invoice và Contract ở mức khả năng thực tế, không phải hai sản phẩm riêng.
+
+## Công nghệ và phạm vi hiện tại
+
+- Python, Pydantic và package `src/` layout.
+- FastAPI là backend/API chính thức.
+- Plotly Dash là frontend web/MVP chính thức; không thêm React, Vue, Angular, Next.js hoặc Power BI ở phase hiện tại.
+- Docker Compose và file/local outputs cho local development.
+- Không thêm PostgreSQL, Redis, Kafka, Celery, Airflow, Kubernetes, microservices hoặc OAuth khi chưa có requirement.
+- Chưa train model, chưa tải dataset và chưa chạy benchmark thật trong task định vị này.
+
+## Cấu trúc repository
+
+```text
+docai-pipeline-benchmark/
+├── src/docai/
+│   ├── core/             # Shared contracts và config
+│   ├── data/             # Data layer
+│   ├── pipelines/        # track_a và track_b
+│   ├── fraud/            # Invoice risk và Contract risk
+│   ├── explainability/   # Evidence/explanation scaffold
+│   ├── evaluation/       # Research metrics/comparison
+│   ├── api/              # FastAPI backend
+│   └── dashboard/        # Plotly Dash frontend
+├── scripts/              # CLI entry points
+├── tests/                # Unit/integration tests
+├── data/                 # raw/interim/processed; chưa chứa dataset thật
 ├── docs/
-│   └── specs/
-│       └── task-split.md
-├── README.md
-│
-├── src/                               # Mã nguồn Python chính (package docai)
-│   └── docai/
-│       ├── core/                      # Cấu hình tập trung và schema Pydantic thống nhất
-│       ├── data/                      # Module tải dữ liệu, tiền xử lý, thống kê và EDA
-│       ├── pipelines/                 # Hai pipeline Document AI chính (track_a và track_b)
-│       ├── fraud/                     # Động cơ kiểm tra gian lận và rủi ro điều khoản
-│       ├── explainability/            # Lớp giải thích bản đồ nhiệt chú ý
-│       ├── evaluation/                # Công thức tính chỉ số đánh giá và so sánh benchmark
-│       ├── api/                       # Dịch vụ FastAPI REST endpoints
-│       └── dashboard/                 # Giao diện Plotly Dash trực quan hoá
-│
-├── scripts/                           # Entry point chạy bằng Python CLI (không cần mở Jupyter)
-│   ├── run_eda.py                     # CLI khảo sát dữ liệu thô
-│   ├── run_track_a.py                 # CLI chạy pipeline Track A
-│   ├── run_track_b.py                 # CLI chạy pipeline Track B
-│   └── run_benchmark.py               # CLI so sánh đối đầu 2 track
-│
-├── notebooks/                         # Khám phá, phân tích tương tác và hiển thị (EDA)
-│   └── 01-eda.ipynb
-│
-├── tests/                             # Kiểm thử tự động (Unit & Integration tests)
-│   ├── unit/                          # Kiểm thử schema, fraud rules, cấu hình
-│   └── integration/                   # Kiểm thử router và endpoints FastAPI
-│
-├── data/                              # Dữ liệu phục vụ nghiên cứu và thực nghiệm
-│   ├── raw/                           # Dữ liệu gốc tải về (mcocr2021, CORD, SROIE, CUAD)
-│   ├── interim/                       # Dữ liệu trung gian trong quá trình chuyển đổi
-│   └── processed/                     # Dữ liệu đã chuẩn hoá sẵn sàng cho benchmark
-│
-├── modal_app/                         # Triển khai hạ tầng điện toán đám mây Modal Serverless
-│   └── deploy.py
-│
-├── log/                               # Nhật ký tiến độ và báo cáo kiểm duyệt
-│   ├── progress-log.md
-│   └── track_b/
-│       └── review-report-2026-09-17.md
-│
-└── docs/                              # Tài liệu kỹ thuật chi tiết
-    ├── architecture/                  # Kiến trúc hệ thống, từ điển dữ liệu, cấu trúc repo
-    ├── concepts/                      # Bản đồ tri thức, giải thích thuật toán & mô hình chuyên sâu
-    ├── guides/                        # Hướng dẫn vận hành và bảng thuật ngữ
-    ├── reports/                       # Báo cáo thực nghiệm chuyên đề
-    └── specs/                         # Đặc tả yêu cầu gốc của dự án
+│   ├── architecture/    # Architecture và data dictionary
+│   ├── concepts/        # Kỹ thuật nối với product/research
+│   ├── guides/          # Cách chạy và protocol
+│   ├── reports/         # Report scaffold, không phải benchmark result thật
+│   └── specs/           # Roadmap và task split
+├── modal_app/            # Modal scaffold
+├── log/                  # Progress log
+├── docker-compose.yml
+├── requirements.txt
+└── README.md
 ```
 
-### Vai trò của các phân vùng thư mục:
-- `src/docai/`: Chứa toàn bộ mã nguồn có thể tái sử dụng. Mọi module đều được import qua package `docai` (ví dụ: `from docai.core.schema import UnifiedDocumentOutput`).
-- `scripts/`: Chứa các kịch bản chạy dòng lệnh độc lập. Đóng vai trò là entry point gọi hàm từ `src/docai/`, không chứa logic nghiệp vụ nhân bản.
-- `notebooks/`: Chỉ dùng cho mục đích khám phá, minh họa biểu đồ và trình bày kết luận; toàn bộ hàm xử lý được gọi trực tiếp từ `docai.data.*`.
-- `tests/`: Bộ kiểm thử tự động với các ca kiểm thử có ý nghĩa cho schema, logic kiểm tra gian lận và cấu hình.
-- `data/`: Lưu trữ dữ liệu qua 3 giai đoạn: `raw` (gốc), `interim` (trung gian), `processed` (chuẩn hoá).
-- `docs/`: Hệ thống tài liệu kỹ thuật hoàn chỉnh không dùng emoji/icon, tra cứu thuật ngữ và phân tích kiến trúc.
+## Cách chạy local
 
-## 9. Cách chạy dự án
+```bash
+pip install -e .
+pytest
+uvicorn docai.api.main:app --host 0.0.0.0 --port 8000 --reload
+python -c "from docai.dashboard.app import create_dashboard_app; print(create_dashboard_app())"
+docker compose up --build
+```
 
-Hướng dẫn thiết lập môi trường và vận hành chi tiết được trình bày tại:
-`docs/guides/how-to-run.md`
+`/health` là route có hành vi runtime; các route `/parse/classic`, `/parse/vlm`, `/compare` và `/explain` hiện trả `501 Not Implemented` vì orchestration/inference chưa hoàn thành. Dashboard hiện là layout scaffold, chưa có callbacks hoặc dữ liệu thật. Xem [`docs/guides/how-to-run.md`](docs/guides/how-to-run.md) để biết giới hạn từng lệnh.
 
-Các cách khởi chạy nhanh:
-- Cài đặt package ở chế độ phát triển (editable mode):
-  `pip install -e .`
-- Chạy kiểm thử tự động:
-  `pytest` hoặc `python -m unittest discover -s tests`
-- Chạy CLI khảo sát dữ liệu EDA:
-  `python scripts/run_eda.py --dataset all`
-- Chạy FastAPI server local bằng Uvicorn:
-  `uvicorn docai.api.main:app --host 0.0.0.0 --port 8000 --reload`
-- Chạy bằng Docker Compose:
-  `docker compose up --build`
-- Kiểm tra billing và kết nối Modal GPU:
-  `modal run modal_app/deploy.py`
+## Roadmap
 
-## 10. Trạng thái hiện tại
+Roadmap chi tiết và Definition of Done nằm trong [`docs/specs/implementation-guide.md`](docs/specs/implementation-guide.md). Trình tự product-first là:
 
-Theo dõi nhật ký tiến độ thực hiện theo thời gian thực tại:
-`log/progress-log.md`
+```text
+Data/input → shared schema → Track A / Track B
+→ Invoice capability + Contract capability
+→ FastAPI integration → Dash MVP
+→ domain risk + explainability
+→ end-to-end Product MVP
+→ Research benchmark → robustness / cost study
+```
 
-Hiện tại dự án đã hoàn thành tái cấu trúc sang kiến trúc chuẩn `src/ layout` (`src/docai/`), tích hợp `pyproject.toml`, chuẩn bị bộ `scripts/`, `tests/`, `data/interim/`, hoàn thiện toàn bộ tài liệu kỹ thuật và bộ tài liệu học tập chuyên sâu bằng tiếng Việt có dấu. Repository đã sẵn sàng để bước vào Giai đoạn 1 (Khảo sát & chuẩn bị dữ liệu thật); các pipeline/model/benchmark vẫn còn scaffold theo lộ trình.
+Product MVP cần ít nhất một đường chạy end-to-end thật cho upload, processing, structured output, basic risk và API/UI. Research Complete là milestone riêng và không được suy ra tự động từ Product MVP.
 
-## 11. Bản đồ tri thức & Tài liệu học tập
+## Tài liệu tiếp theo
 
-Để hiểu cặn kẽ bản chất bài toán Document AI, sự khác biệt giữa hai trường phái Track A và Track B, cũng như nguyên lý hoạt động của từng mô hình và thuật toán được triển khai trong repository, xem chi tiết bộ tài liệu tại:
-`docs/concepts/README.md`
-
-Các chuyên đề kỹ thuật chính:
-- `docs/concepts/01-docai-foundations.md`: Nền tảng Document AI, 7 tầng thông tin và chuẩn hoá tọa độ Bounding Box.
-- `docs/concepts/02-track-a-classic.md`: Pipeline cổ điển đa chặng (YOLOv8, PaddleOCR, LayoutLMv3, BIO tagging).
-- `docs/concepts/03-track-b-vlm.md`: Pipeline VLM-native đơn lượt (PaddleOCR-VL, dots.ocr, structured prompting, rủi ro ảo giác).
-- `docs/concepts/04-fraud-and-explainability.md`: Động cơ kiểm tra gian lận số học & rủi ro hợp đồng CUAD; lớp giải thích trực quan bằng bản đồ nhiệt JET overlay.
-- `docs/concepts/05-evaluation.md`: Phương pháp đo lường khoa học (Field F1, Agreement ratio, Latency phân vị, chi phí GPU Modal vs API thương mại, Robustness suite).
+- [System architecture](docs/architecture/architecture-explained.md)
+- [Repository structure](docs/architecture/repository-structure.md)
+- [Concept map](docs/concepts/README.md)
+- [Task split](docs/specs/task-split.md)
+- [Implementation guide và roadmap](docs/specs/implementation-guide.md)
+- [Progress log](log/progress-log.md)
