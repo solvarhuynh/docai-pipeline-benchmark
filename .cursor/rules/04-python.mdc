@@ -7,7 +7,8 @@ alwaysApply: false
 # Quy ước Python cho DocAI Benchmark
 
 - Mỗi module/hàm công khai (public) phải có docstring tiếng Việt có dấu chuẩn, ghi rõ thuộc giai đoạn nào trong `docs/specs/implementation-guide.md`, input/output mong đợi và các bước xử lý (hoặc TODO chi tiết nếu là scaffold).
-- Type hint đầy đủ, sử dụng các model Pydantic từ `shared/schema.py` khi trao đổi dữ liệu đầu ra giữa các track.
+- Type hint đầy đủ, sử dụng các model Pydantic từ `src/docai/core/schema.py` khi trao đổi dữ liệu đầu ra giữa các track.
+- Tuân thủ kiến trúc `src/ layout`: Toàn bộ mã nguồn nằm dưới `src/docai/`, import bằng namespace `docai.*` (ví dụ: `from docai.core.schema import ...`). Tuyệt đối không dùng các thủ thuật `sys.path.append(...)` hoặc `sys.path.insert(...)`.
 - Không để lại print debug bừa bãi, mã nguồn chết, import thừa (unused import) hoặc đường dẫn tuyệt đối gắn cứng vào máy cá nhân.
 - Tuyệt đối không để rò rỉ dữ liệu tập kiểm thử (test set) vào tập fine-tune LayoutLMv3 hoặc prompt của VLM.
 - Stack trực quan hoá và Dashboard mặc định: Sử dụng `Python → pandas → Plotly → Dash`. Tuyệt đối không sử dụng Power BI, không tạo file .pbix, không thêm dependency hoặc workflow liên quan Power BI.

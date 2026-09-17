@@ -32,13 +32,13 @@ Hệ thống được thiết kế để nhận đầu vào là một file ảnh
             +----------------------------+----------------------------+
                                          |
                         [ Unified JSON Schema Output ]
-                        (shared/schema.py: DocumentType,
+                        (docai.core.schema: DocumentType,
                          Fields, Confidence, BoundingBox)
                                          |
             +----------------------------+----------------------------+
             |                                                         |
   [ Fraud/Risk Engine ]                                    [ Explainability Layer ]
-  (shared/fraud_rules.py)                                  (shared/explainability.py)
+  (docai.fraud.rules)                                      (docai.explainability.explainer)
   - Hóa đơn: Kiểm tra số học,                              - Track A: LayoutLMv3 attention
     bất thường độ tin cậy OCR                                - Track B: Visual grounding / Grad-CAM
   - Hợp đồng: Rủi ro điều khoản CUAD                       - Tạo overlay heatmap lên ảnh gốc
@@ -46,8 +46,8 @@ Hệ thống được thiết kế để nhận đầu vào là một file ảnh
             +----------------------------+----------------------------+
                                          |
                             [ FastAPI REST Endpoints ]
-                            (/parse/classic, /parse/vlm,
-                             /compare, /explain)
+                            (docai.api.main: /parse/classic,
+                             /parse/vlm, /compare, /explain)
                                          |
                                          v
                          [ Visualization Dashboard ]
@@ -95,7 +95,7 @@ Mỗi quyết định dưới đây giải thích rõ lý do vì sao dự án kh
   - Xu hướng cổ điển (Track A) được tối ưu hoá qua nhiều năm, các thành phần mô-đun hoá rất rõ ràng, dễ kiểm soát lỗi ở từng bước nhưng hệ thống cồng kềnh và tốn công fine-tune riêng từng mô hình.
   - Xu hướng VLM-native (Track B) đơn giản hoá toàn bộ pipeline chỉ với một mô hình duy nhất, không cần gán nhãn tọa độ phức tạp, nhưng lại tốn nhiều tài nguyên tính toán (GPU VRAM lớn) và có nguy cơ tạo ra thông tin sai lệch (hallucination — hiện tượng mô hình ngôn ngữ tự sinh ra thông tin không có thật trong ảnh).
 - **Giải pháp**:
-  Triển khai song song cả hai pipeline trên cùng một hệ thống mã nguồn, áp dụng cùng một bộ dữ liệu đánh giá và ép đầu ra về cùng một JSON schema thống nhất (`shared/schema.py`).
+  Triển khai song song cả hai pipeline trên cùng một hệ thống mã nguồn, áp dụng cùng một bộ dữ liệu đánh giá và ép đầu ra về cùng một JSON schema thống nhất (`docai.core.schema`).
 - **Lý do chọn**:
   Chỉ khi đặt hai hướng tiếp cận trên cùng một bàn cân với cùng điều kiện thử nghiệm, chúng ta mới có thể đưa ra kết luận khoa học và khách quan về sự đánh đổi giữa độ chính xác (F1-score), thời gian phản hồi (latency), chi phí vận hành (cost) và tài nguyên phần cứng.
 
@@ -113,7 +113,7 @@ Mỗi quyết định dưới đây giải thích rõ lý do vì sao dự án kh
 - **Vấn đề**:
   Các mô hình học sâu truyền thống hoạt động như một "hộp đen" (black-box). Khi mô hình trả về một con số "Tổng tiền: 5.000.000 VND", người dùng, kế toán viên hoặc cơ quan kiểm toán không thể biết mô hình dựa vào đâu trên hóa đơn để ra được con số đó. Nếu trích xuất sai, rất khó để truy vết lỗi nằm ở khâu OCR hay khâu hiểu layout.
 - **Giải pháp**:
-  Xây dựng module `shared/explainability.py`:
+  Xây dựng module `docai.explainability.explainer`:
   - Với Track A: Trích xuất attention weights (trọng số chú ý của cơ chế Transformer) từ LayoutLMv3, quy đổi về tọa độ hộp giới hạn và vẽ bản đồ nhiệt (attention heatmap).
   - Với Track B: Trích xuất visual grounding (cơ chế ánh xạ từ khóa vào vùng nhìn của ảnh) hoặc dùng Grad-CAM (kỹ thuật tính gradient của lớp tích chập để xác định vùng ảnh ảnh hưởng nhiều nhất đến kết quả).
   - Dùng OpenCV tạo ảnh overlay bản đồ nhiệt màu (JET colormap) phủ lên ảnh gốc.
@@ -139,8 +139,8 @@ Mỗi quyết định dưới đây giải thích rõ lý do vì sao dự án kh
 - **Vấn đề**:
   Một hệ thống Document AI hoàn chỉnh không chỉ dừng ở việc nhận dạng chữ, mà phải giúp doanh nghiệp phát hiện rủi ro nghiệp vụ. Đối với hóa đơn, đó là rủi ro bị sửa số tiền hoặc chèn thêm số. Đối với hợp đồng, đó là rủi ro thiếu điều khoản bắt buộc bảo vệ pháp lý.
 - **Giải pháp**:
-  - Thiết kế JSON schema thống nhất (`shared/schema.py`) chứa trường `risk_flags`.
-  - Module `shared/fraud_rules.py` triển khai:
+  - Thiết kế JSON schema thống nhất (`docai.core.schema`) chứa trường `risk_flags`.
+  - Module `docai.fraud.rules` triển khai:
     - Rule đối chiếu số học hóa đơn: Tổng tiền trước thuế + Tiền thuế VAT = Tổng thanh toán.
     - Rule bất thường độ tin cậy OCR: Phát hiện các ký tự số có confidence thấp hơn bất thường so với các chữ xung quanh (dấu hiệu tẩy xóa, chỉnh sửa ảnh).
     - Rule hợp đồng: Kiểm tra sự hiện diện của các điều khoản bắt buộc (Governing Law, Termination, Dispute Resolution) và cảnh báo các điều khoản bất lợi dựa trên taxonomy CUAD.

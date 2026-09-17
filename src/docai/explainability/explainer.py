@@ -1,5 +1,5 @@
 """
-Module giải thích mô hình (Explainability Layer) dùng chung.
+Module giải thích mô hình (Explainability Layer) cho DocAI Benchmark.
 
 Thuộc: Giai đoạn 8 (Explainability Layer).
 Tham chiếu: implementation-guide.md, Giai đoạn 8; task-split.md, Giai đoạn 8.
@@ -36,7 +36,7 @@ import numpy as np
 from PIL import Image
 
 
-class DocumentExplainability:
+class DocumentExplainer:
     """
     Trình tạo overlay heatmap giải thích vùng ảnh mô hình dựa vào để trích xuất dữ liệu.
     """
@@ -89,3 +89,7 @@ class DocumentExplainability:
         """
         # TODO: Giai đoạn 8 - Điều phối trích xuất và tạo ảnh trả về cho endpoint /explain
         raise NotImplementedError("TODO: Giai đoạn 8 - Hàm tổng hợp tạo giải thích cho field")
+
+
+# Alias tương thích tên cũ
+DocumentExplainability = DocumentExplainer

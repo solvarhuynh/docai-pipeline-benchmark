@@ -1,5 +1,5 @@
 """
-Module schema chung cho toàn bộ pipeline DocAI Dual-Pipeline Benchmark.
+Module schema chuẩn hoá cho toàn bộ pipeline DocAI Dual-Pipeline Benchmark.
 
 Thuộc: Giai đoạn 1 (Khảo sát và chuẩn bị dữ liệu thật) và Giai đoạn 7 (Fraud/Risk Engine).
 Nhiệm vụ: Định nghĩa khung Pydantic model cho JSON schema thống nhất để cả Track A (Classic)
@@ -16,7 +16,7 @@ Các thành phần bắt buộc:
 
 from enum import Enum
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class DocumentType(str, Enum):
@@ -43,6 +43,14 @@ class BoundingBox(BaseModel):
     xmax: float = Field(..., description="Tọa độ x lớn nhất")
     ymax: float = Field(..., description="Tọa độ y lớn nhất")
     normalized: bool = Field(default=False, description="True nếu tọa độ đã chuẩn hoá về khoảng [0, 1]")
+
+    @model_validator(mode="after")
+    def validate_coordinates(self) -> "BoundingBox":
+        if self.xmin > self.xmax:
+            raise ValueError(f"xmin ({self.xmin}) không thể lớn hơn xmax ({self.xmax})")
+        if self.ymin > self.ymax:
+            raise ValueError(f"ymin ({self.ymin}) không thể lớn hơn ymax ({self.ymax})")
+        return self
 
 
 class ExtractedField(BaseModel):

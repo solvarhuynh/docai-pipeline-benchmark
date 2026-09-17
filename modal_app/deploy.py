@@ -48,7 +48,7 @@ def test_gpu_billing():
 # @app.function(image=image, gpu="T4")
 # @modal.asgi_app()
 # def fastapi_app():
-#     from api.main import app as web_app
+#     from docai.api.main import app as web_app
 #     return web_app
 
 

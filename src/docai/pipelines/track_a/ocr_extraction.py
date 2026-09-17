@@ -19,7 +19,7 @@ Output mong đợi:
   - confidence: float
   - bbox: [xmin, ymin, xmax, ymax]
   - layout_label: Optional[str] (nhãn layout tương ứng)
-- Hoặc đối tượng JSON trung gian sẵn sàng ánh xạ sang schema tại shared/schema.py.
+- Hoặc đối tượng JSON trung gian sẵn sàng ánh xạ sang schema tại docai.core.schema.
 
 TODO chi tiết:
 1. Khởi tạo PaddleOCR với hỗ trợ tiếng Việt ('vi') và tiếng Anh ('en').

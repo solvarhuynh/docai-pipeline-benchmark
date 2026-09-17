@@ -31,8 +31,15 @@ wheels/
 # Data directories (keep only .gitkeep)
 data/raw/*
 !data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+
+# Testing and Pytest
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Model checkpoints and large weights
 *.pt

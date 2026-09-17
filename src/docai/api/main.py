@@ -6,20 +6,26 @@ Tham chiếu: implementation-guide.md, Giai đoạn 10; task-split.md, Giai đo�
 
 Mục đích:
 Cung cấp các REST API endpoint để đưa vào sử dụng thực tế hoặc kiểm thử local:
+- GET  /health: Kiểm tra tình trạng sức khỏe dịch vụ
 - POST /parse/classic: Xử lý tài liệu bằng Track A (YOLO + PaddleOCR + LayoutLMv3)
 - POST /parse/vlm: Xử lý tài liệu bằng Track B (VLM-native: PaddleOCR-VL / dots.ocr)
-- POST /compare: Chạy đồng thời cả 2 track, trả về kết quả đối chiếu song song
+- POST /compare: Chạy đối chiếu song song 2 track và so sánh kết quả
 - POST /explain: Trả về bản đồ nhiệt chú ý (heatmap overlay) giải thích trường trích xuất
+
+Nguyên tắc kiến trúc:
+API chỉ là tầng giao tiếp HTTP, toàn bộ logic nghiệp vụ được điều phối qua
+các package docai.pipelines, docai.fraud và docai.evaluation.
 """
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
-from shared.schema import DocumentType, UnifiedDocumentOutput
+from docai.core.config import settings
+from docai.core.schema import DocumentType, UnifiedDocumentOutput
 
 app = FastAPI(
-    title="DocAI Dual-Pipeline Benchmark API",
-    version="1.0.0",
+    title=settings.api_title,
+    version=settings.api_version,
     description="API so sánh pipeline Document AI cổ điển (Track A) và VLM-native (Track B) trên hóa đơn và hợp đồng."
 )
 
@@ -41,7 +47,11 @@ async def health_check():
     """
     Kiểm tra trạng thái hoạt động của hệ thống.
     """
-    return {"status": "ok", "service": "docai-dual-pipeline-benchmark"}
+    return {
+        "status": "ok",
+        "service": "docai-dual-pipeline-benchmark",
+        "version": settings.api_version
+    }
 
 
 @app.post(
@@ -57,7 +67,7 @@ async def parse_classic(
     """
     Endpoint chạy Track A: Layout Detection -> OCR -> KIE (LayoutLMv3) -> Fraud/Risk rules.
     """
-    # TODO: Giai đoạn 10 - Tích hợp Track A: đọc file bytes -> LayoutDetector -> OCRExtractor -> LayoutLMv3Extractor -> FraudRiskEngine
+    # TODO: Giai đoạn 10 - Điều phối qua docai.pipelines.track_a và docai.fraud
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="TODO: Giai đoạn 10 - Handler /parse/classic chưa được kích hoạt logic thực thi."
@@ -77,7 +87,7 @@ async def parse_vlm(
     """
     Endpoint chạy Track B: VLM-native parser (PaddleOCR-VL / dots.ocr) -> Fraud/Risk rules.
     """
-    # TODO: Giai đoạn 10 - Tích hợp Track B: đọc file bytes -> VLMDocumentParser -> FraudRiskEngine
+    # TODO: Giai đoạn 10 - Điều phối qua docai.pipelines.track_b và docai.fraud
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="TODO: Giai đoạn 10 - Handler /parse/vlm chưa được kích hoạt logic thực thi."
@@ -97,7 +107,7 @@ async def compare_pipelines(
     """
     Endpoint chạy đồng thời cả hai track, đánh giá độ đồng thuận giữa các trường và so sánh thời gian suy luận.
     """
-    # TODO: Giai đoạn 10 - Gọi parse_classic và parse_vlm đồng thời bằng asyncio.gather, tính tỷ lệ đồng thuận
+    # TODO: Giai đoạn 10 - Điều phối qua docai.evaluation.benchmark.BenchmarkRunner
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="TODO: Giai đoạn 10 - Handler /compare chưa được kích hoạt logic thực thi."
@@ -117,7 +127,7 @@ async def explain_field(
     """
     Endpoint trả về ảnh overlay heatmap hoặc tọa độ vùng chú ý (visual grounding / attention weights).
     """
-    # TODO: Giai đoạn 10 - Tích hợp shared/explainability.py tạo ảnh heatmap overlay và trả về Response(media_type='image/png')
+    # TODO: Giai đoạn 10 - Điều phối qua docai.explainability.explainer.DocumentExplainer
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="TODO: Giai đoạn 10 - Handler /explain chưa được kích hoạt logic thực thi."

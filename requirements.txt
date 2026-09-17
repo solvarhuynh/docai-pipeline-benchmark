@@ -33,4 +33,8 @@ jupyter>=1.0.0
 plotly>=5.19.0
 dash>=2.16.0
 
+# Testing & Quality
+pytest>=8.0.0
+
+
 

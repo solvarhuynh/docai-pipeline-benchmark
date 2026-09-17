@@ -75,64 +75,87 @@ Hệ thống bao gồm các thành phần cốt lõi sau:
 | Quản lý mã nguồn & tài liệu | Git/GitHub, log tiến độ trong log/progress-log.md |
 
 
-## 7. Cấu trúc repo
+## 7. Cấu trúc repo (`src/ layout`)
+
+Repository được tổ chức theo kiến trúc chuẩn `src/ layout`, phân định rõ ràng giữa mã nguồn đóng gói, entry point CLI, notebook khám phá, kiểm thử tự động, dữ liệu và tài liệu kỹ thuật:
 
 ```
 docai-dual-pipeline-benchmark/
 ├── .cursor/
 │   └── rules/
 ├── .gitignore
-├── data/
-│   ├── raw/
-│   │   └── .gitkeep
-│   └── processed/
-│       └── .gitkeep
-├── docs/
-│   ├── architecture/
-│   │   ├── architecture-explained.md
-│   │   ├── data-dictionary.md
-│   │   └── repository-structure.md
-│   ├── guides/
-│   │   ├── glossary.md
-│   │   └── how-to-run.md
-│   ├── reports/
-│   │   ├── benchmark-results.md
-│   │   ├── cost-analysis.md
-│   │   ├── explainability-report.md
-│   │   └── robustness-report.md
-│   └── specs/
-│       ├── implementation-guide.md
-│       └── docai-benchmark-overview.pdf
-├── notebooks/
-│   └── 01-eda.ipynb
-├── track_a_classic/
-│   ├── layout_detection.py
-│   ├── ocr_extraction.py
-│   └── kie_layoutlmv3.py
-├── track_b_vlm/
-│   └── vlm_parser.py
-├── shared/
-│   ├── schema.py
-│   ├── fraud_rules.py
-│   └── explainability.py
-├── api/
-│   └── main.py
-├── modal_app/
-│   └── deploy.py
-├── log/
-│   └── progress-log.md
-├── docker-compose.yml
+├── pyproject.toml
 ├── requirements.txt
-└── README.md
+├── docker-compose.yml
+├── task-split.md
+├── README.md
+│
+├── src/                               # Mã nguồn Python chính (package docai)
+│   └── docai/
+│       ├── core/                      # Cấu hình tập trung và schema Pydantic thống nhất
+│       ├── data/                      # Module tải dữ liệu, tiền xử lý, thống kê và EDA
+│       ├── pipelines/                 # Hai pipeline Document AI chính (track_a và track_b)
+│       ├── fraud/                     # Động cơ kiểm tra gian lận và rủi ro điều khoản
+│       ├── explainability/            # Lớp giải thích bản đồ nhiệt chú ý
+│       ├── evaluation/                # Công thức tính chỉ số đánh giá và so sánh benchmark
+│       ├── api/                       # Dịch vụ FastAPI REST endpoints
+│       └── dashboard/                 # Giao diện Plotly Dash trực quan hoá
+│
+├── scripts/                           # Entry point chạy bằng Python CLI (không cần mở Jupyter)
+│   ├── run_eda.py                     # CLI khảo sát dữ liệu thô
+│   ├── run_track_a.py                 # CLI chạy pipeline Track A
+│   ├── run_track_b.py                 # CLI chạy pipeline Track B
+│   └── run_benchmark.py               # CLI so sánh đối đầu 2 track
+│
+├── notebooks/                         # Khám phá, phân tích tương tác và hiển thị (EDA)
+│   └── 01-eda.ipynb
+│
+├── tests/                             # Kiểm thử tự động (Unit & Integration tests)
+│   ├── unit/                          # Kiểm thử schema, fraud rules, cấu hình
+│   └── integration/                   # Kiểm thử router và endpoints FastAPI
+│
+├── data/                              # Dữ liệu phục vụ nghiên cứu và thực nghiệm
+│   ├── raw/                           # Dữ liệu gốc tải về (mcocr2021, CORD, SROIE, CUAD)
+│   ├── interim/                       # Dữ liệu trung gian trong quá trình chuyển đổi
+│   └── processed/                     # Dữ liệu đã chuẩn hoá sẵn sàng cho benchmark
+│
+├── modal_app/                         # Triển khai hạ tầng điện toán đám mây Modal Serverless
+│   └── deploy.py
+│
+├── log/                               # Nhật ký tiến độ và báo cáo kiểm duyệt
+│   ├── progress-log.md
+│   └── review-report-2026-09-17.md
+│
+└── docs/                              # Tài liệu kỹ thuật chi tiết
+    ├── architecture/                  # Kiến trúc hệ thống, từ điển dữ liệu, cấu trúc repo
+    ├── guides/                        # Hướng dẫn vận hành và bảng thuật ngữ
+    ├── reports/                       # Báo cáo thực nghiệm chuyên đề
+    └── specs/                         # Đặc tả yêu cầu gốc của dự án
 ```
+
+### Vai trò của các phân vùng thư mục:
+- `src/docai/`: Chứa toàn bộ mã nguồn có thể tái sử dụng. Mọi module đều được import qua package `docai` (ví dụ: `from docai.core.schema import UnifiedDocumentOutput`).
+- `scripts/`: Chứa các kịch bản chạy dòng lệnh độc lập. Đóng vai trò là entry point gọi hàm từ `src/docai/`, không chứa logic nghiệp vụ nhân bản.
+- `notebooks/`: Chỉ dùng cho mục đích khám phá, minh họa biểu đồ và trình bày kết luận; toàn bộ hàm xử lý được gọi trực tiếp từ `docai.data.*`.
+- `tests/`: Bộ kiểm thử tự động với các ca kiểm thử có ý nghĩa cho schema, logic kiểm tra gian lận và cấu hình.
+- `data/`: Lưu trữ dữ liệu qua 3 giai đoạn: `raw` (gốc), `interim` (trung gian), `processed` (chuẩn hoá).
+- `docs/`: Hệ thống tài liệu kỹ thuật hoàn chỉnh không dùng emoji/icon, tra cứu thuật ngữ và phân tích kiến trúc.
 
 ## 8. Cách chạy dự án
 
 Hướng dẫn thiết lập môi trường và vận hành chi tiết được trình bày tại:
 `docs/guides/how-to-run.md`
 
-Các cách khởi chạy nhanh hiện tại:
-- Chạy FastAPI server local bằng Docker Compose:
+Các cách khởi chạy nhanh:
+- Cài đặt package ở chế độ phát triển (editable mode):
+  `pip install -e .`
+- Chạy kiểm thử tự động:
+  `pytest` hoặc `python -m unittest discover -s tests`
+- Chạy CLI khảo sát dữ liệu EDA:
+  `python scripts/run_eda.py --dataset all`
+- Chạy FastAPI server local bằng Uvicorn:
+  `uvicorn docai.api.main:app --host 0.0.0.0 --port 8000 --reload`
+- Chạy bằng Docker Compose:
   `docker compose up --build`
 - Kiểm tra billing và kết nối Modal GPU:
   `modal run modal_app/deploy.py`
@@ -142,4 +165,5 @@ Các cách khởi chạy nhanh hiện tại:
 Theo dõi nhật ký tiến độ thực hiện theo thời gian thực tại:
 `log/progress-log.md`
 
-Hiện tại dự án đã hoàn thành xong phần dựng khung repo (Scaffold Giai đoạn 1 đến 10) và bộ tài liệu kỹ thuật toàn diện (`docs/architecture/` và `docs/guides/`). Các file mã nguồn đang ở dạng stub với TODO chi tiết, sẵn sàng để bước vào Giai đoạn 1 (tải và tiền xử lý 4 bộ dữ liệu thật).
+Hiện tại dự án đã hoàn thành tái cấu trúc sang kiến trúc chuẩn `src/ layout` (`src/docai/`), tích hợp `pyproject.toml`, chuẩn bị bộ `scripts/`, `tests/`, `data/interim/`, và hoàn thiện toàn bộ tài liệu kỹ thuật bằng tiếng Việt có dấu. Repository sẵn sàng 100% bước vào Giai đoạn 1 (Khảo sát & chuẩn bị dữ liệu thật).
+
