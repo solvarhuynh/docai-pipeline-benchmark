@@ -155,3 +155,4 @@ Bản đồ nhiệt thô ban đầu chỉ là một ma trận số thực trong 
 - **Tập tin**: [`src/docai/explainability/explainer.py`](file:///d:/2-personal-project/src/docai/explainability/explainer.py)
 - **Class chính**: `DocumentExplainer`
 - **Trạng thái**: `SCAFFOLD` (Dự kiến hoàn thiện trích xuất attention weights và Grad-CAM ở Giai đoạn 8).
+

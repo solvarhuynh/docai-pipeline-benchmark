@@ -171,3 +171,4 @@ Trong repository này, hệ thống benchmark được thiết kế để đo l�
 - **Đo Chặng 2 (OCR)**: Sử dụng chỉ số Tỷ lệ lỗi ký tự (Character Error Rate - CER) và Tỷ lệ lỗi từ (Word Error Rate - WER).
 - **Đo Chặng 3 (KIE)**: Tính Field-level Precision, Recall, F1 trên các trường dữ liệu bằng module [`src/docai/evaluation/metrics.py`](file:///d:/2-personal-project/src/docai/evaluation/metrics.py).
 Điều này giúp xác định chính xác nguyên nhân khi một tài liệu bị trích xuất thất bại là do OCR đọc sai hay do LayoutLMv3 gán nhãn nhầm.
+

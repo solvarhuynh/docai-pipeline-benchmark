@@ -149,3 +149,4 @@ Nhờ có Pydantic, các tầng tiếp theo như Fraud Engine, API FastAPI và D
 | Nạp dữ liệu và quét metadata (`loaders.py`, `preprocessing.py`) | [`src/docai/data/`](file:///d:/2-personal-project/src/docai/data/) | **ĐANG SỬ DỤNG** | Giai đoạn 1 (Sẵn sàng nạp 4 bộ dataset thật) |
 | Notebook khảo sát EDA tương tác | [`notebooks/01-eda.ipynb`](file:///d:/2-personal-project/notebooks/01-eda.ipynb) | **ĐANG SỬ DỤNG** | Giai đoạn 1 |
 | Kịch bản dòng lệnh khảo sát dữ liệu thô | [`scripts/run_eda.py`](file:///d:/2-personal-project/scripts/run_eda.py) | **ĐANG SỬ DỤNG** | Giai đoạn 1 |
+

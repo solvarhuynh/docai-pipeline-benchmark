@@ -163,3 +163,4 @@ Pipeline nào có $\Delta \text{F1}$ nhỏ hơn khi chịu cùng một mức đ�
 ### Vị trí trong kế hoạch dự án:
 - Kế hoạch triển khai: Thuộc Giai đoạn 9 (Benchmark tổng hợp).
 - Mô phỏng thực thi qua: [`src/docai/evaluation/benchmark.py`](file:///d:/2-personal-project/src/docai/evaluation/benchmark.py) (Trạng thái: `SCAFFOLD`).
+

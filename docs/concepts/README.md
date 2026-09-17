@@ -97,3 +97,4 @@ Tùy theo mục tiêu nghiên cứu hoặc phát triển của bạn:
   Ưu tiên đọc `01-docai-foundations.md` → `04-fraud-and-explainability.md` → `05-evaluation.md` kết hợp đối chiếu [`docs/architecture/architecture-explained.md`](file:///d:/2-personal-project/docs/architecture/architecture-explained.md) và [`docs/guides/how-to-run.md`](file:///d:/2-personal-project/docs/guides/how-to-run.md). Tập trung vào luồng xử lý API, hợp đồng dữ liệu Pydantic, rule engine và quản lý chi phí GPU-giờ trên Modal.
 - **Dành cho Chuyên viên Phân tích Nghiệp vụ / Quản lý Sản phẩm (BA / Product Manager)**:
   Ưu tiên đọc `01-docai-foundations.md` → `04-fraud-and-explainability.md` → `05-evaluation.md`. Tập trung vào nghiệp vụ đối chiếu hóa đơn, kiểm tra rủi ro hợp đồng, ý nghĩa của bản đồ nhiệt minh bạch hoá và bài toán tối ưu chi phí vận hành doanh nghiệp.
+

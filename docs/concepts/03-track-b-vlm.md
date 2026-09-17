@@ -143,3 +143,4 @@ Ngược lại, hợp đồng pháp lý trong bộ dữ liệu **CUAD (Contract 
 Trong Giai đoạn 6 của dự án:
 - Track A (LayoutLMv3) sẽ gặp rào cản lớn vì độ dài chuỗi tối đa của Transformer cổ điển thường bị giới hạn ở 512 tokens.
 - Track B (VLM) sẽ được thử nghiệm khả năng hiểu ngữ cảnh dài không qua huấn luyện chuyên biệt (Zero-shot Generalization). Mục tiêu là đo lường **độ suy giảm F1-score (Generalization Drop)** khi chuyển từ bài toán hóa đơn quen thuộc sang bài toán hợp đồng pháp lý phức tạp.
+

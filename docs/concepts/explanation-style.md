@@ -127,3 +127,4 @@ Không để người đọc nhầm lẫn giữa các cấp độ:
 - **Ngôn ngữ**: Sử dụng tiếng Việt chuẩn có dấu UTF-8.
 - **Tuyệt đối không dùng emoji hoặc icon**: Không dùng bất kỳ biểu tượng cảm xúc nào để đảm bảo tính trang trọng và độ tin cậy của tài liệu kỹ thuật chuẩn công nghiệp.
 - **Liên kết chéo**: Trỏ link markdown trực tiếp đến các file mã nguồn và tài liệu liên quan để người đọc dễ dàng đối chiếu.
+
