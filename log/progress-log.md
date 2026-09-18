@@ -5,6 +5,7 @@ Mục đích: ghi lại toàn bộ tiến độ dự án theo thời gian thực
 ## Cách dùng
 - Sau mỗi task hoàn thành, thêm một dòng mới vào bảng. Không xóa dòng cũ.
 - Trước khi bắt đầu phiên làm việc mới, đọc toàn bộ bảng, ưu tiên đọc từ dưới lên.
+- Trạng thái `Done` của một task scaffold/structural chỉ xác nhận hoàn thành cấu trúc hoặc đặc tả, không đồng nghĩa mô hình hoặc luồng sản phẩm đã chạy runtime hoàn chỉnh. Minh chứng runtime (runtime evidence) phải được ghi nhận riêng khi thực thi.
 
 ## Bảng tiến độ
 
@@ -45,9 +46,11 @@ Mục đích: ghi lại toàn bộ tiến độ dự án theo thời gian thực
 | 2026-09-17 | Architecture + Docs | A + B | Chuyển frontend chính thức sang React/TypeScript/Vite, xóa Dash scaffold, chuẩn hóa API proxy và viết lại tài liệu cho người có nền tảng lập trình/data nhưng chưa chuyên AI/ML/DL | frontend/*, docs/concepts/*, docs/architecture/data-dictionary.md, docs/guides/*, docs/specs/*, .cursor/rules/04-python.mdc, .gitignore | Toàn bộ repo | Done | FastAPI/Python vẫn là business backend duy nhất; frontend và parse orchestration còn scaffold; không tạo output hoặc benchmark giả |
 | 2026-09-17 | Docs + Task Planning | A + B | Dịch các Markdown trong `docs/` sang tiếng Việt, chuyển task split vào thư mục chung và bổ sung kế hoạch chi tiết cho Track A Classic/Track B VLM | docs/tasks/*, docs/architecture/*, docs/concepts/*, docs/guides/*, docs/reports/*, docs/specs/implementation-guide.md, README.md, src/docai/* | Toàn bộ repo | Done | `docs/tasks/` là nơi canonical cho phân công; gồm task-split chung và task plan riêng của hai thành viên; giữ nguyên thuật ngữ kỹ thuật cần thiết |
 | 2026-09-17 | Docs Audit | A + B | Phân biệt Document/Image Preprocessing của Product với Robustness Testing của Research; cập nhật flow, status, task ownership và research question | README.md, docs/architecture/architecture-explained.md, docs/concepts/README.md, docs/concepts/05-evaluation.md, docs/concepts/06-preprocessing-and-robustness.md, docs/guides/glossary.md, docs/reports/robustness-report.md, docs/specs/implementation-guide.md, docs/tasks/task-split.md | Toàn bộ repo | Done | Runtime document preprocessing chưa có implementation riêng (`PLANNED`); robustness testing chưa chạy (`PLANNED`); không tạo thuật toán hoặc benchmark giả |
+| 2026-09-18 | Docs/Governance | A + B | P2-WF-01 — Canonical task-split path sync | .cursor/rules/01-quy-trinh-thuc-hien.mdc, .cursor/rules/03-kiem-tra-git-va-review.mdc | Toàn bộ repo | Done | Đã sửa các active reference trỏ về `docs/tasks/task-split.md`; giữ nguyên historical progress log entries; không di chuyển file |
+| 2026-09-18 | Docs/Governance | A + B | P2-WF-02 — Repository hygiene audit | .gitignore, log/progress-log.md | Toàn bộ repo | Done | Kiểm tra git ls-files: không có generated/runtime artifact nào bị tracked trong Git; .gitignore đã cover đầy đủ; giữ nguyên historical log; bổ sung quy ước status semantics |
 
 ## Giai đoạn hiện tại
 Giai đoạn 1 — Nền tảng Product Invoice + Contract và chuẩn bị dữ liệu (Chưa tải dataset; package, schema và scaffold đã sẵn sàng)
 
 ## Việc tiếp theo cần làm
-Hoàn thiện data/input layer và Product flow Invoice + Contract theo phase được phê duyệt; khi bắt đầu phase dữ liệu mới tải các bộ dữ liệu cần thiết vào data/raw/, khảo sát bằng notebooks/01-eda.ipynb và scripts/run_eda.py, rồi cập nhật số liệu thực nghiệm vào docs/architecture/data-dictionary.md.
+Thực hiện các task tiếp theo theo lộ trình định hướng sản phẩm trong `docs/tasks/`.

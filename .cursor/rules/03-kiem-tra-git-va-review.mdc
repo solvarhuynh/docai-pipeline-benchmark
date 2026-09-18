@@ -16,7 +16,7 @@ alwaysApply: true
 
 ## Quy tắc Git và Commit
 
-1. Làm việc trên nhánh tính năng hoặc nhánh công việc tương ứng theo phân chia (Nhánh A / Nhánh B trong `docs/specs/task-split.md`).
+1. Làm việc trên nhánh tính năng hoặc nhánh công việc tương ứng theo phân chia (Nhánh A / Nhánh B trong `docs/tasks/task-split.md`).
 2. Stage từng đường dẫn cụ thể, tránh `git add .` bừa bãi.
 3. Commit thông điệp rõ ràng theo chuẩn: `feat(scope)`, `fix(scope)`, `docs(scope)`, `refactor(scope)`, `test(scope)`, `chore(scope)`.
 4. Mỗi commit hoàn thành phải đồng bộ với một dòng ghi nhận trong `log/progress-log.md`.
